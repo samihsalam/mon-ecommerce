@@ -1,0 +1,12 @@
+﻿<!-- See https://aka.ms/dotnet/msbuild/customize for more details on customizing your build -->
+<Project>
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <!-- Allow known audit warnings during initialization; address in Story 1.2+ -->
+    <WarningsNotAsErrors>NU1903</WarningsNotAsErrors>
+    <ArtifactsPath>$(MSBuildThisFileDirectory)artifacts</ArtifactsPath>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+</Project>

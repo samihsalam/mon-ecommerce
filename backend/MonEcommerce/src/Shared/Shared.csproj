@@ -1,0 +1,9 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>MonEcommerce.Shared</RootNamespace>
+    <AssemblyName>MonEcommerce.Shared</AssemblyName>
+  </PropertyGroup>
+
+
+</Project>

@@ -1,0 +1,64 @@
+# =============================================================
+# .gitignore racine — mon-ecommerce monorepo
+# Couvre: .NET 9 + Angular 19 + Flutter 3.41 + Secrets
+# =============================================================
+
+# ─── .NET ────────────────────────────────────────────────────
+bin/
+obj/
+*.user
+.vs/
+appsettings.*.json
+!appsettings.json
+!appsettings.Example.json
+*.nupkg
+*.snupkg
+.nuget/
+TestResults/
+coverage/
+
+# ─── Angular ─────────────────────────────────────────────────
+node_modules/
+dist/
+.angular/
+*.js.map
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# ─── Flutter ─────────────────────────────────────────────────
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+build/
+*.g.dart
+*.freezed.dart
+.packages
+pubspec.lock
+
+# ─── Secrets (CRITIQUE — ne jamais committer) ────────────────
+.env
+.env.*
+!.env.example
+*.key
+*.pem
+*.p12
+*.pfx
+secrets/
+**/appsettings.Production.json
+**/appsettings.Staging.json
+
+# ─── IDE ─────────────────────────────────────────────────────
+.idea/
+.vscode/settings.json
+.vscode/launch.json
+*.suo
+*.swp
+*~
+.DS_Store
+Thumbs.db
+
+# ─── Logs & temporaires ──────────────────────────────────────
+*.log
+*.tmp
+*.temp
