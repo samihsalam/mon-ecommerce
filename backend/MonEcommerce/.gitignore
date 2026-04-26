@@ -486,6 +486,14 @@ $RECYCLE.BIN/
 *.swp
 .azure
 
+# Secrets
+.env
+.env.*
+!.env.example
+
+# Claude Code internal state
+**/agent-memory/
+
 # SQLite database files
 *.db
 *.db-shm

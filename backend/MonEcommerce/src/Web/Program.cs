@@ -1,11 +1,21 @@
 using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.RateLimiting;
 using MonEcommerce.Infrastructure.Data;
+using MonEcommerce.Web.Infrastructure;
 using Scalar.AspNetCore;
+using Serilog;
+
+Log.Logger = new LoggerConfiguration()
+    .WriteTo.Console()
+    .CreateBootstrapLogger();
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+builder.Host.UseSerilog((context, services, config) => config
+    .ReadFrom.Configuration(context.Configuration)
+    .ReadFrom.Services(services)
+    .Enrich.FromLogContext());
+
 builder.AddKeyVaultIfConfigured();
 builder.AddApplicationServices();
 builder.AddInfrastructureServices();
@@ -25,10 +35,9 @@ builder.Services.AddRateLimiter(options =>
 
 var app = builder.Build();
 
-// Exception handler must be first in the pipeline
 app.UseExceptionHandler(options => { });
+app.UseMiddleware<CorrelationIdMiddleware>();
 
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     await app.InitialiseDatabaseAsync();
@@ -47,6 +56,7 @@ else
     app.UseHsts();
 }
 
+app.UseSerilogRequestLogging();
 app.UseHttpsRedirection();
 app.UseRateLimiter();
 app.UseAuthentication();

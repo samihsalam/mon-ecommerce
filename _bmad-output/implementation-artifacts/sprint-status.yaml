@@ -35,7 +35,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 
 generated: 2026-04-13
-last_updated: 2026-04-26 (1.4 done, 1.5 next)
+last_updated: 2026-04-26 (1.6 done, 1.7 next)
 project: mon-ecommerce
 project_key: NOKEY
 tracking_system: file-system
@@ -49,8 +49,8 @@ development_status:
   1-2-environnement-de-developpement-local: done
   1-3-schema-domain-et-migrations-ef-core: done
   1-4-infrastructure-authentification-jwt: done
-  1-5-couche-application-pipeline-mediatr-et-error-handling: backlog
-  1-6-integration-services-externes: backlog
+  1-5-couche-application-pipeline-mediatr-et-error-handling: done
+  1-6-integration-services-externes: done
   1-7-infrastructure-domain-events: backlog
   1-8-design-system-foundation: backlog
   1-9-cicd-pipeline-et-deploiement: backlog

@@ -1,6 +1,7 @@
-using MonEcommerce.Application.Common.Exceptions;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
+using MonEcommerce.Application.Common.Exceptions;
+using AppNotFoundException = MonEcommerce.Application.Common.Exceptions.NotFoundException;
 
 namespace MonEcommerce.Web.Infrastructure;
 
@@ -16,12 +17,12 @@ public class ProblemDetailsExceptionHandler : IExceptionHandler
     {
         var (statusCode, problemDetails) = exception switch
         {
-            ValidationException ve => (StatusCodes.Status400BadRequest, (ProblemDetails)new ValidationProblemDetails(ve.Errors)
+            ValidationException ve => (StatusCodes.Status422UnprocessableEntity, (ProblemDetails)new ValidationProblemDetails(ve.Errors)
             {
-                Status = StatusCodes.Status400BadRequest,
-                Type = "https://tools.ietf.org/html/rfc9110#section-15.5.1"
+                Status = StatusCodes.Status422UnprocessableEntity,
+                Type = "https://tools.ietf.org/html/rfc9110#section-15.5.21"
             }),
-            NotFoundException ne => (StatusCodes.Status404NotFound, new ProblemDetails
+            AppNotFoundException ne => (StatusCodes.Status404NotFound, new ProblemDetails
             {
                 Status = StatusCodes.Status404NotFound,
                 Type = "https://tools.ietf.org/html/rfc9110#section-15.5.5",

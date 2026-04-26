@@ -1,8 +1,11 @@
-﻿using System.Text;
+using System.Text;
+using CloudinaryDotNet;
 using MonEcommerce.Application.Common.Interfaces;
 using MonEcommerce.Infrastructure.Data;
 using MonEcommerce.Infrastructure.Data.Interceptors;
+using MonEcommerce.Infrastructure.ExternalServices;
 using MonEcommerce.Infrastructure.Identity;
+using AppIdentityService = MonEcommerce.Infrastructure.Identity.IdentityService;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -10,6 +13,9 @@ using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
+using SendGrid;
+using StackExchange.Redis;
+using Stripe;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
@@ -31,9 +37,9 @@ public static class DependencyInjection
         });
 
         builder.Services.AddScoped<IApplicationDbContext>(provider => provider.GetRequiredService<ApplicationDbContext>());
-
         builder.Services.AddScoped<ApplicationDbContextInitialiser>();
 
+        // JWT
         var jwtSecret = builder.Configuration["Jwt:Secret"]!;
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecret));
 
@@ -65,8 +71,43 @@ public static class DependencyInjection
             .AddEntityFrameworkStores<ApplicationDbContext>();
 
         builder.Services.AddSingleton(TimeProvider.System);
-        builder.Services.AddTransient<IIdentityService, IdentityService>();
+        builder.Services.AddTransient<IIdentityService, AppIdentityService>();
         builder.Services.AddTransient<IJwtService, JwtService>();
         builder.Services.AddTransient<IAuthService, AuthService>();
+
+        // Cloudinary
+        var cloudinaryUrl = builder.Configuration["Cloudinary:Url"];
+        if (!string.IsNullOrWhiteSpace(cloudinaryUrl))
+        {
+            builder.Services.AddSingleton(new Cloudinary(cloudinaryUrl) { Api = { Secure = true } });
+            builder.Services.AddTransient<IFileStorageService, CloudinaryFileStorageService>();
+        }
+
+        // Redis
+        var redisConnection = builder.Configuration.GetConnectionString("Redis");
+        if (!string.IsNullOrWhiteSpace(redisConnection))
+        {
+            builder.Services.AddSingleton<IConnectionMultiplexer>(_ =>
+                ConnectionMultiplexer.Connect(redisConnection));
+            builder.Services.AddTransient<ICacheService, RedisCacheService>();
+        }
+
+        // SendGrid
+        var sendGridKey = builder.Configuration["SendGrid:ApiKey"];
+        if (!string.IsNullOrWhiteSpace(sendGridKey))
+        {
+            builder.Services.AddTransient<ISendGridClient>(_ => new SendGridClient(sendGridKey));
+            builder.Services.AddTransient<IEmailService, SendGridEmailService>();
+        }
+
+        // Stripe
+        var stripeKey = builder.Configuration["Stripe:SecretKey"];
+        if (!string.IsNullOrWhiteSpace(stripeKey))
+        {
+            StripeConfiguration.ApiKey = stripeKey;
+            builder.Services.AddTransient<PaymentIntentService>();
+            builder.Services.AddTransient<RefundService>();
+            builder.Services.AddTransient<IPaymentService, StripePaymentService>();
+        }
     }
 }
