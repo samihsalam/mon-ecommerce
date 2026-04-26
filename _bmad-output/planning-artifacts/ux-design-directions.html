@@ -1,0 +1,1366 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>mon-ecommerce — Directions Design</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    /* ==========================================
+       DESIGN TOKENS — Élégance Naturelle
+       ========================================== */
+    :root {
+      --white:    #FFFFFF;
+      --black:    #111111;
+      --gold:     #C9A96E;
+      --gold-dk:  #A8864A;
+      --ivory:    #FAF8F5;
+      --border:   #E5E5E5;
+      --grey-mid: #888888;
+      --grey-lt:  #F5F5F3;
+      --success:  #6B8F71;
+      --error:    #C0564A;
+      --radius-card: 4px;
+      --radius-btn:  2px;
+      --grid: 8px;
+      --serif: 'Cormorant Garamond', Georgia, serif;
+      --sans:  'DM Sans', system-ui, sans-serif;
+    }
+
+    /* ==========================================
+       SHELL / NAVIGATION
+       ========================================== */
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: var(--sans); background: #1a1a1a; color: var(--black); }
+
+    /* NAV */
+    .shell-nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+      background: #1a1a1a; padding: 0 24px;
+      display: flex; align-items: center; gap: 8px;
+      height: 56px; overflow-x: auto;
+      border-bottom: 1px solid #333;
+    }
+    .shell-nav h1 {
+      font-family: var(--serif); color: var(--gold);
+      font-size: 16px; font-weight: 400; white-space: nowrap;
+      margin-right: 16px; letter-spacing: 0.1em;
+    }
+    .nav-btn {
+      flex-shrink: 0; padding: 6px 16px;
+      border: 1px solid #444; background: transparent;
+      color: #ccc; font-family: var(--sans); font-size: 12px;
+      cursor: pointer; border-radius: 2px; white-space: nowrap;
+      transition: all 0.2s;
+    }
+    .nav-btn:hover, .nav-btn.active {
+      border-color: var(--gold); color: var(--gold); background: rgba(201,169,110,0.08);
+    }
+
+    /* COMPARE TOGGLE */
+    .compare-bar {
+      position: fixed; bottom: 0; left: 0; right: 0; z-index: 1000;
+      background: #1a1a1a; border-top: 1px solid #333;
+      padding: 12px 24px; display: flex; align-items: center; gap: 12px;
+    }
+    .compare-bar span { color: #aaa; font-size: 12px; }
+    .compare-btn {
+      padding: 8px 20px; background: var(--gold); color: var(--black);
+      border: none; border-radius: 2px; font-family: var(--sans);
+      font-size: 12px; font-weight: 500; cursor: pointer; letter-spacing: 0.08em;
+    }
+    .compare-btn:hover { background: var(--gold-dk); }
+
+    /* LAYOUT */
+    .screen { display: none; padding-top: 56px; padding-bottom: 64px; min-height: 100vh; }
+    .screen.active { display: block; }
+
+    /* COMPARE MODE */
+    .compare-screen { display: none; padding-top: 56px; padding-bottom: 64px; }
+    .compare-screen.active { display: grid; grid-template-columns: 1fr 1fr; gap: 2px; }
+
+    /* DIRECTION BADGE */
+    .dir-badge {
+      position: absolute; top: 16px; left: 16px; z-index: 10;
+      background: rgba(17,17,17,0.85); color: var(--gold);
+      font-family: var(--sans); font-size: 10px; font-weight: 500;
+      padding: 4px 10px; letter-spacing: 0.12em; text-transform: uppercase;
+      border-radius: 2px; backdrop-filter: blur(4px);
+    }
+
+    /* ==========================================
+       DIRECTION 1 — Éditorial Minimaliste
+       ========================================== */
+    .d1 { background: var(--white); }
+
+    .d1 .topbar {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 40px; height: 72px; border-bottom: 1px solid var(--border);
+      background: var(--white); position: sticky; top: 56px; z-index: 5;
+    }
+    .d1 .logo { font-family: var(--serif); font-size: 22px; font-weight: 300; letter-spacing: 0.3em; text-transform: uppercase; }
+    .d1 .nav-links { display: flex; gap: 32px; }
+    .d1 .nav-links a { font-size: 12px; letter-spacing: 0.1em; text-decoration: none; color: var(--black); text-transform: uppercase; }
+    .d1 .nav-links a:hover { color: var(--gold); }
+    .d1 .nav-actions { display: flex; gap: 20px; align-items: center; }
+    .d1 .icon-btn { font-size: 18px; cursor: pointer; color: var(--black); }
+
+    .d1 .hero {
+      display: grid; grid-template-columns: 1fr 1fr; min-height: 600px;
+    }
+    .d1 .hero-img {
+      background: linear-gradient(135deg, #e8e0d6 0%, #d4c5b0 50%, #c9a96e22 100%);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 80px; position: relative; overflow: hidden;
+    }
+    .d1 .hero-img::after {
+      content: ''; position: absolute; inset: 0;
+      background: linear-gradient(to right, transparent 60%, var(--white));
+    }
+    .d1 .hero-content {
+      display: flex; flex-direction: column; justify-content: center;
+      padding: 80px 56px; gap: 24px;
+    }
+    .d1 .hero-label { font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--gold); }
+    .d1 .hero-title { font-family: var(--serif); font-size: 52px; font-weight: 300; line-height: 1.1; }
+    .d1 .hero-sub { font-size: 15px; color: var(--grey-mid); line-height: 1.7; max-width: 360px; }
+    .d1 .hero-cta {
+      display: inline-flex; align-items: center; gap: 12px;
+      padding: 14px 32px; background: var(--black); color: var(--white);
+      font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase;
+      border-radius: var(--radius-btn); cursor: pointer; width: fit-content;
+      transition: background 0.2s;
+    }
+    .d1 .hero-cta:hover { background: var(--gold); color: var(--black); }
+
+    .d1 .category-bar {
+      padding: 32px 40px 0; display: flex; gap: 8px; overflow-x: auto;
+    }
+    .d1 .cat-chip {
+      flex-shrink: 0; padding: 8px 20px; border: 1px solid var(--border);
+      font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase;
+      cursor: pointer; border-radius: var(--radius-btn); transition: all 0.2s;
+      background: var(--white);
+    }
+    .d1 .cat-chip:hover, .d1 .cat-chip.sel { border-color: var(--black); background: var(--black); color: var(--white); }
+    .d1 .cat-chip.gold { border-color: var(--gold); color: var(--gold); }
+
+    .d1 .products { padding: 40px; display: grid; grid-template-columns: repeat(4,1fr); gap: 24px; }
+    .d1 .prod-card { cursor: pointer; }
+    .d1 .prod-img {
+      aspect-ratio: 3/4; background: var(--ivory);
+      border-radius: var(--radius-card); margin-bottom: 16px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 48px; transition: transform 0.3s; overflow: hidden; position: relative;
+    }
+    .d1 .prod-card:hover .prod-img { transform: scale(1.02); }
+    .d1 .prod-badge {
+      position: absolute; top: 12px; right: 12px;
+      background: var(--gold); color: var(--white); font-size: 10px;
+      padding: 3px 8px; border-radius: var(--radius-btn); font-weight: 500;
+    }
+    .d1 .prod-brand { font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--grey-mid); margin-bottom: 4px; }
+    .d1 .prod-name { font-family: var(--serif); font-size: 17px; margin-bottom: 4px; }
+    .d1 .prod-mat { font-size: 12px; color: var(--grey-mid); margin-bottom: 8px; }
+    .d1 .prod-price { font-size: 15px; font-weight: 500; }
+
+    /* ==========================================
+       DIRECTION 2 — Boutique Luxe
+       ========================================== */
+    .d2 { background: var(--black); color: var(--white); }
+
+    .d2 .topbar {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 40px; height: 64px; border-bottom: 1px solid #2a2a2a;
+      background: var(--black); position: sticky; top: 56px; z-index: 5;
+    }
+    .d2 .logo { font-family: var(--serif); font-size: 20px; font-weight: 300; letter-spacing: 0.4em; color: var(--gold); text-transform: uppercase; }
+    .d2 .nav-links { display: flex; gap: 28px; }
+    .d2 .nav-links a { font-size: 11px; letter-spacing: 0.12em; text-decoration: none; color: #aaa; text-transform: uppercase; }
+    .d2 .nav-links a:hover { color: var(--gold); }
+    .d2 .nav-actions { display: flex; gap: 16px; color: #aaa; font-size: 18px; cursor: pointer; }
+
+    .d2 .hero {
+      height: 560px; position: relative; overflow: hidden;
+      display: flex; align-items: center;
+      background: linear-gradient(160deg, #1a1510 0%, #0d0d0d 60%, #1a1208 100%);
+    }
+    .d2 .hero-decor {
+      position: absolute; right: 80px; top: 50%; transform: translateY(-50%);
+      font-size: 200px; opacity: 0.06;
+    }
+    .d2 .hero-content { padding: 0 80px; position: relative; z-index: 1; }
+    .d2 .hero-eyebrow {
+      font-size: 10px; letter-spacing: 0.25em; text-transform: uppercase;
+      color: var(--gold); margin-bottom: 20px; display: flex; align-items: center; gap: 12px;
+    }
+    .d2 .hero-eyebrow::before { content: ''; display: block; width: 32px; height: 1px; background: var(--gold); }
+    .d2 .hero-title { font-family: var(--serif); font-size: 64px; font-weight: 300; line-height: 1.05; color: var(--white); margin-bottom: 8px; }
+    .d2 .hero-title em { color: var(--gold); font-style: italic; }
+    .d2 .hero-sub { font-size: 14px; color: #888; line-height: 1.8; max-width: 400px; margin-bottom: 32px; }
+    .d2 .hero-cta {
+      display: inline-flex; align-items: center; gap: 12px;
+      padding: 14px 36px; background: var(--gold); color: var(--black);
+      font-size: 11px; letter-spacing: 0.15em; text-transform: uppercase;
+      border-radius: var(--radius-btn); cursor: pointer; font-weight: 500;
+      transition: background 0.2s;
+    }
+    .d2 .hero-cta:hover { background: var(--gold-dk); }
+
+    .d2 .collection-header { padding: 48px 40px 24px; display: flex; align-items: baseline; justify-content: space-between; }
+    .d2 .collection-title { font-family: var(--serif); font-size: 32px; font-weight: 300; color: var(--white); }
+    .d2 .collection-see { font-size: 11px; letter-spacing: 0.12em; color: var(--gold); text-transform: uppercase; cursor: pointer; }
+
+    .d2 .products { padding: 0 40px 48px; display: grid; grid-template-columns: repeat(3,1fr); gap: 2px; }
+    .d2 .prod-card { position: relative; cursor: pointer; }
+    .d2 .prod-img {
+      aspect-ratio: 3/4; background: #1e1a15;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 56px; overflow: hidden; position: relative;
+      transition: filter 0.3s;
+    }
+    .d2 .prod-card:hover .prod-img { filter: brightness(1.1); }
+    .d2 .prod-overlay {
+      position: absolute; bottom: 0; left: 0; right: 0; padding: 24px;
+      background: linear-gradient(transparent, rgba(0,0,0,0.85));
+    }
+    .d2 .prod-name { font-family: var(--serif); font-size: 20px; font-weight: 300; color: var(--white); }
+    .d2 .prod-price { font-size: 14px; color: var(--gold); margin-top: 4px; }
+    .d2 .prod-material { font-size: 11px; color: #888; }
+
+    /* ==========================================
+       DIRECTION 3 — Architecture Moderne
+       ========================================== */
+    .d3 { background: var(--ivory); }
+
+    .d3 .topbar {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 32px; height: 60px; border-bottom: 1px solid var(--border);
+      background: var(--white); position: sticky; top: 56px; z-index: 5;
+    }
+    .d3 .logo {
+      font-family: var(--sans); font-size: 14px; font-weight: 600;
+      letter-spacing: 0.2em; text-transform: uppercase;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .d3 .logo-accent { color: var(--gold); }
+    .d3 .nav-links { display: flex; gap: 24px; }
+    .d3 .nav-links a { font-size: 12px; text-decoration: none; color: var(--grey-mid); font-weight: 400; }
+    .d3 .nav-links a.active { color: var(--black); font-weight: 500; }
+    .d3 .search-bar {
+      display: flex; align-items: center; gap: 8px;
+      padding: 8px 16px; background: var(--grey-lt); border-radius: 2px;
+      font-size: 12px; color: var(--grey-mid); cursor: pointer;
+    }
+
+    .d3 .grid-hero {
+      display: grid; grid-template-columns: 2fr 1fr 1fr; grid-template-rows: 340px 220px;
+      gap: 2px; margin-top: 2px;
+    }
+    .d3 .cell {
+      display: flex; align-items: center; justify-content: center;
+      font-size: 60px; position: relative; overflow: hidden; cursor: pointer;
+    }
+    .d3 .cell-1 { grid-row: 1/3; background: linear-gradient(135deg, #e5ddd5 0%, #d4c8bc 100%); }
+    .d3 .cell-2 { background: var(--gold); }
+    .d3 .cell-3 { background: var(--black); }
+    .d3 .cell-4 { background: linear-gradient(135deg, #f0ece7 0%, #e5ddd5 100%); }
+    .d3 .cell-5 { background: #e8e0d8; }
+
+    .d3 .cell-content {
+      position: absolute; bottom: 0; left: 0; right: 0; padding: 20px;
+    }
+    .d3 .cell-1 .cell-content {
+      background: linear-gradient(transparent, rgba(0,0,0,0.6));
+    }
+    .d3 .cell-label { font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: rgba(255,255,255,0.7); }
+    .d3 .cell-name { font-family: var(--serif); font-size: 22px; color: var(--white); font-weight: 300; }
+    .d3 .cell-2 .cell-content { background: none; }
+    .d3 .cell-2 .cell-label { color: rgba(17,17,17,0.5); }
+    .d3 .cell-2 .cell-name { color: var(--black); }
+
+    .d3 .filter-strip {
+      padding: 24px 32px; background: var(--white);
+      display: flex; gap: 8px; align-items: center; border-bottom: 1px solid var(--border);
+      flex-wrap: wrap;
+    }
+    .d3 .filter-label { font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--grey-mid); margin-right: 8px; }
+    .d3 .filter-chip {
+      padding: 6px 14px; border: 1px solid var(--border); border-radius: 20px;
+      font-size: 12px; cursor: pointer; background: var(--white);
+      transition: all 0.2s;
+    }
+    .d3 .filter-chip:hover { border-color: var(--gold); }
+    .d3 .filter-chip.active { background: var(--black); color: var(--white); border-color: var(--black); }
+    .d3 .filter-chip.gold-chip { background: var(--gold); color: var(--black); border-color: var(--gold); }
+
+    .d3 .products { padding: 32px; display: grid; grid-template-columns: repeat(4,1fr); gap: 16px; }
+    .d3 .prod-card { background: var(--white); border-radius: var(--radius-card); overflow: hidden; cursor: pointer; }
+    .d3 .prod-img {
+      aspect-ratio: 1/1; display: flex; align-items: center; justify-content: center;
+      font-size: 48px; background: var(--ivory); position: relative;
+    }
+    .d3 .prod-fav {
+      position: absolute; top: 8px; right: 8px; width: 28px; height: 28px;
+      background: var(--white); border-radius: 50%; display: flex; align-items: center;
+      justify-content: center; font-size: 14px; cursor: pointer;
+    }
+    .d3 .prod-info { padding: 12px 14px; }
+    .d3 .prod-name { font-size: 13px; font-weight: 500; margin-bottom: 2px; }
+    .d3 .prod-cat { font-size: 11px; color: var(--grey-mid); }
+    .d3 .prod-footer { padding: 8px 14px 12px; display: flex; justify-content: space-between; align-items: center; }
+    .d3 .prod-price { font-size: 14px; font-weight: 600; }
+    .d3 .add-btn {
+      padding: 6px 12px; background: var(--gold); color: var(--black);
+      font-size: 11px; border-radius: var(--radius-btn); cursor: pointer; font-weight: 500;
+    }
+
+    /* ==========================================
+       DIRECTION 4 — Artisanal Chaleureux
+       ========================================== */
+    .d4 { background: #F7F1E8; }
+
+    .d4 .topbar {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 40px; height: 68px; border-bottom: 2px solid #E8DCCB;
+      background: #F7F1E8; position: sticky; top: 56px; z-index: 5;
+    }
+    .d4 .logo { font-family: var(--serif); font-size: 24px; font-weight: 400; color: #5C4A2A; letter-spacing: 0.05em; }
+    .d4 .logo span { color: var(--gold); font-style: italic; }
+    .d4 .nav-links { display: flex; gap: 28px; }
+    .d4 .nav-links a { font-size: 13px; text-decoration: none; color: #8B7355; font-style: italic; font-family: var(--serif); }
+    .d4 .nav-links a:hover { color: #5C4A2A; }
+
+    .d4 .banner {
+      background: #5C4A2A; color: var(--white); text-align: center;
+      padding: 10px; font-size: 12px; letter-spacing: 0.1em;
+    }
+    .d4 .banner span { color: var(--gold); }
+
+    .d4 .hero {
+      display: grid; grid-template-columns: 1.2fr 1fr; min-height: 520px; gap: 0;
+    }
+    .d4 .hero-img {
+      background: linear-gradient(140deg, #E8D5B5 0%, #D4B896 40%, #C9A96E44 100%);
+      display: flex; align-items: center; justify-content: center; font-size: 100px;
+      position: relative;
+    }
+    .d4 .hero-texture {
+      position: absolute; inset: 0; opacity: 0.03;
+      background-image: repeating-linear-gradient(45deg, #5C4A2A 0, #5C4A2A 1px, transparent 0, transparent 50%);
+      background-size: 8px 8px;
+    }
+    .d4 .hero-content {
+      display: flex; flex-direction: column; justify-content: center;
+      padding: 64px 56px; background: #FDFAF4; gap: 20px;
+    }
+    .d4 .hero-eyebrow { font-family: var(--serif); font-size: 14px; color: var(--gold); font-style: italic; }
+    .d4 .hero-title { font-family: var(--serif); font-size: 44px; font-weight: 400; color: #3D2E14; line-height: 1.15; }
+    .d4 .hero-sub { font-size: 14px; color: #8B7355; line-height: 1.8; }
+    .d4 .hero-cta {
+      display: inline-flex; align-items: center; gap: 10px;
+      padding: 14px 28px; background: #5C4A2A; color: #F7F1E8;
+      font-size: 12px; letter-spacing: 0.1em; border-radius: var(--radius-btn);
+      cursor: pointer; width: fit-content; font-weight: 500;
+    }
+    .d4 .hero-cta:hover { background: var(--gold); color: #3D2E14; }
+
+    .d4 .crafted-bar {
+      padding: 32px 40px; display: flex; gap: 32px; align-items: center;
+      border-top: 1px solid #E8DCCB; border-bottom: 1px solid #E8DCCB;
+      background: #FDFAF4;
+    }
+    .d4 .craft-item { display: flex; align-items: center; gap: 12px; }
+    .d4 .craft-icon { font-size: 22px; }
+    .d4 .craft-text { }
+    .d4 .craft-text strong { display: block; font-size: 13px; color: #3D2E14; font-weight: 500; }
+    .d4 .craft-text span { font-size: 11px; color: #8B7355; }
+    .d4 .craft-sep { height: 32px; width: 1px; background: #E8DCCB; }
+
+    .d4 .products { padding: 40px; display: grid; grid-template-columns: repeat(3,1fr); gap: 28px; }
+    .d4 .prod-card { cursor: pointer; }
+    .d4 .prod-img {
+      aspect-ratio: 4/5; background: linear-gradient(135deg, #EDE0C8 0%, #D9C5A0 100%);
+      border-radius: 4px; display: flex; align-items: center; justify-content: center;
+      font-size: 56px; margin-bottom: 16px; position: relative; overflow: hidden;
+    }
+    .d4 .prod-img::after {
+      content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 3px;
+      background: var(--gold);
+    }
+    .d4 .prod-label { font-family: var(--serif); font-size: 11px; color: var(--gold); font-style: italic; margin-bottom: 4px; }
+    .d4 .prod-name { font-family: var(--serif); font-size: 19px; color: #3D2E14; margin-bottom: 6px; }
+    .d4 .prod-desc { font-size: 12px; color: #8B7355; margin-bottom: 12px; line-height: 1.6; }
+    .d4 .prod-footer { display: flex; justify-content: space-between; align-items: center; }
+    .d4 .prod-price { font-size: 16px; font-weight: 500; color: #3D2E14; }
+    .d4 .prod-cta { font-size: 11px; color: var(--gold); cursor: pointer; letter-spacing: 0.08em; }
+
+    /* ==========================================
+       DIRECTION 5 — Fashion Forward
+       ========================================== */
+    .d5 { background: var(--white); }
+
+    .d5 .topbar {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 24px; height: 52px; border-bottom: 2px solid var(--black);
+      background: var(--white); position: sticky; top: 56px; z-index: 5;
+    }
+    .d5 .logo {
+      font-family: var(--sans); font-size: 13px; font-weight: 600;
+      letter-spacing: 0.25em; text-transform: uppercase;
+    }
+    .d5 .nav-links { display: flex; gap: 20px; }
+    .d5 .nav-links a { font-size: 11px; letter-spacing: 0.12em; text-decoration: none; color: var(--black); text-transform: uppercase; font-weight: 500; }
+    .d5 .cart-count {
+      background: var(--gold); color: var(--black); width: 20px; height: 20px;
+      border-radius: 50%; font-size: 10px; display: flex; align-items: center;
+      justify-content: center; font-weight: 600;
+    }
+
+    .d5 .hero {
+      display: grid; grid-template-columns: 1fr 480px; min-height: 580px;
+    }
+    .d5 .hero-editorial {
+      background: var(--black); display: flex; flex-direction: column;
+      justify-content: flex-end; padding: 60px; position: relative; overflow: hidden;
+    }
+    .d5 .hero-bg-text {
+      position: absolute; top: 20px; left: 0; right: 0; text-align: center;
+      font-family: var(--serif); font-size: 180px; font-weight: 300; color: rgba(255,255,255,0.03);
+      line-height: 1; pointer-events: none; letter-spacing: -0.05em;
+    }
+    .d5 .hero-img-container {
+      position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+    }
+    .d5 .hero-img-circle {
+      width: 280px; height: 360px; background: linear-gradient(145deg, #2a2520 0%, #1a1a1a 100%);
+      border-radius: 140px; display: flex; align-items: center; justify-content: center;
+      font-size: 80px;
+    }
+    .d5 .hero-text { position: relative; z-index: 1; }
+    .d5 .hero-season { font-size: 10px; letter-spacing: 0.25em; color: var(--gold); text-transform: uppercase; margin-bottom: 12px; }
+    .d5 .hero-title { font-family: var(--serif); font-size: 56px; font-weight: 300; color: var(--white); line-height: 1; }
+    .d5 .hero-title strong { display: block; font-weight: 300; font-style: italic; color: var(--gold); }
+
+    .d5 .hero-sidebar {
+      background: var(--ivory); display: flex; flex-direction: column;
+      padding: 48px 40px; gap: 24px;
+    }
+    .d5 .sidebar-title { font-family: var(--serif); font-size: 20px; color: var(--black); }
+    .d5 .filter-section { }
+    .d5 .filter-title { font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--grey-mid); margin-bottom: 8px; }
+    .d5 .filter-options { display: flex; flex-wrap: wrap; gap: 6px; }
+    .d5 .f-opt {
+      padding: 5px 12px; border: 1px solid var(--border);
+      font-size: 11px; cursor: pointer; border-radius: 2px; transition: all 0.15s;
+    }
+    .d5 .f-opt:hover { border-color: var(--black); }
+    .d5 .f-opt.active { background: var(--black); color: var(--white); border-color: var(--black); }
+    .d5 .price-slider { margin-top: 4px; }
+    .d5 .price-track {
+      height: 2px; background: var(--border); position: relative; margin: 12px 0;
+    }
+    .d5 .price-fill { position: absolute; left: 15%; right: 30%; height: 100%; background: var(--black); }
+    .d5 .price-vals { display: flex; justify-content: space-between; font-size: 12px; color: var(--grey-mid); }
+    .d5 .apply-btn {
+      margin-top: auto; padding: 14px; background: var(--black); color: var(--white);
+      text-align: center; font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase;
+      cursor: pointer; border-radius: var(--radius-btn);
+    }
+    .d5 .apply-btn:hover { background: var(--gold); color: var(--black); }
+
+    .d5 .products { padding: 32px 24px; display: grid; grid-template-columns: repeat(5,1fr); gap: 2px; }
+    .d5 .prod-card { position: relative; overflow: hidden; cursor: pointer; }
+    .d5 .prod-img {
+      aspect-ratio: 2/3; background: var(--ivory);
+      display: flex; align-items: center; justify-content: center; font-size: 48px;
+      transition: transform 0.4s;
+    }
+    .d5 .prod-card:hover .prod-img { transform: scale(1.05); }
+    .d5 .prod-overlay {
+      position: absolute; inset: 0; background: rgba(17,17,17,0.4); opacity: 0;
+      transition: opacity 0.3s; display: flex; align-items: flex-end; padding: 16px;
+    }
+    .d5 .prod-card:hover .prod-overlay { opacity: 1; }
+    .d5 .overlay-btn {
+      width: 100%; padding: 10px; background: var(--white); color: var(--black);
+      text-align: center; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase;
+      border-radius: var(--radius-btn); font-weight: 500;
+    }
+    .d5 .prod-info { padding: 10px 4px; }
+    .d5 .prod-name { font-size: 12px; font-weight: 500; }
+    .d5 .prod-price { font-size: 12px; color: var(--grey-mid); }
+
+    /* ==========================================
+       DIRECTION 6 — Intemporel Classique
+       ========================================== */
+    .d6 { background: var(--white); }
+
+    .d6 .announcement {
+      background: var(--black); color: var(--white); text-align: center;
+      padding: 8px; font-size: 11px; letter-spacing: 0.1em;
+    }
+    .d6 .announcement span { color: var(--gold); }
+
+    .d6 .topbar {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 24px 48px; border-bottom: 1px solid var(--border);
+      background: var(--white); position: sticky; top: 56px; z-index: 5;
+    }
+    .d6 .logo { font-family: var(--serif); font-size: 26px; font-weight: 300; letter-spacing: 0.2em; text-transform: uppercase; }
+    .d6 .nav-links { display: flex; gap: 36px; }
+    .d6 .nav-links a { font-size: 12px; letter-spacing: 0.08em; text-decoration: none; color: var(--black); text-transform: uppercase; border-bottom: 1px solid transparent; padding-bottom: 2px; }
+    .d6 .nav-links a:hover { border-bottom-color: var(--gold); }
+    .d6 .nav-actions { display: flex; gap: 20px; align-items: center; font-size: 20px; cursor: pointer; }
+
+    .d6 .hero {
+      height: 540px; background: var(--ivory); display: flex;
+      align-items: center; justify-content: space-between; padding: 0 80px;
+      position: relative; overflow: hidden;
+    }
+    .d6 .hero-left { max-width: 480px; }
+    .d6 .hero-eyebrow {
+      font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase;
+      color: var(--gold); margin-bottom: 20px;
+      display: flex; align-items: center; gap: 12px;
+    }
+    .d6 .hero-eyebrow::after { content: ''; flex: 1; max-width: 40px; height: 1px; background: var(--gold); }
+    .d6 .hero-title { font-family: var(--serif); font-size: 56px; font-weight: 300; line-height: 1.1; margin-bottom: 20px; }
+    .d6 .hero-sub { font-size: 15px; color: var(--grey-mid); line-height: 1.8; margin-bottom: 32px; max-width: 360px; }
+    .d6 .hero-actions { display: flex; gap: 16px; align-items: center; }
+    .d6 .btn-primary {
+      padding: 14px 36px; background: var(--black); color: var(--white);
+      font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase;
+      border-radius: var(--radius-btn); cursor: pointer;
+    }
+    .d6 .btn-primary:hover { background: var(--gold); color: var(--black); }
+    .d6 .btn-secondary {
+      font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase;
+      color: var(--black); cursor: pointer; border-bottom: 1px solid var(--black);
+      padding-bottom: 2px;
+    }
+    .d6 .hero-right { font-size: 120px; }
+
+    .d6 .categories { padding: 56px 48px; }
+    .d6 .section-header { text-align: center; margin-bottom: 40px; }
+    .d6 .section-title { font-family: var(--serif); font-size: 36px; font-weight: 300; margin-bottom: 8px; }
+    .d6 .section-line { width: 40px; height: 1px; background: var(--gold); margin: 0 auto; }
+    .d6 .cat-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 20px; }
+    .d6 .cat-card {
+      text-align: center; cursor: pointer; padding: 24px 16px;
+      border: 1px solid var(--border); border-radius: var(--radius-card);
+      transition: all 0.2s;
+    }
+    .d6 .cat-card:hover { border-color: var(--gold); }
+    .d6 .cat-icon { font-size: 40px; margin-bottom: 12px; display: block; }
+    .d6 .cat-name { font-family: var(--serif); font-size: 18px; font-weight: 300; margin-bottom: 4px; }
+    .d6 .cat-count { font-size: 11px; color: var(--grey-mid); }
+
+    .d6 .products { padding: 0 48px 56px; display: grid; grid-template-columns: repeat(4,1fr); gap: 28px; }
+    .d6 .prod-card { cursor: pointer; text-align: center; }
+    .d6 .prod-img {
+      aspect-ratio: 3/4; background: var(--ivory); border-radius: var(--radius-card);
+      display: flex; align-items: center; justify-content: center; font-size: 56px;
+      margin-bottom: 16px; position: relative; overflow: hidden; transition: transform 0.3s;
+    }
+    .d6 .prod-card:hover .prod-img { transform: translateY(-4px); }
+    .d6 .prod-name { font-family: var(--serif); font-size: 17px; font-weight: 300; margin-bottom: 4px; }
+    .d6 .prod-type { font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--grey-mid); margin-bottom: 8px; }
+    .d6 .prod-price { font-size: 16px; font-weight: 500; margin-bottom: 12px; }
+    .d6 .prod-cta {
+      display: inline-block; padding: 10px 24px; border: 1px solid var(--black);
+      font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase;
+      cursor: pointer; border-radius: var(--radius-btn);
+      transition: all 0.2s;
+    }
+    .d6 .prod-cta:hover { background: var(--black); color: var(--white); }
+
+    /* ==========================================
+       COMPARE MODE
+       ========================================== */
+    .compare-pane {
+      min-height: 100vh; position: relative; overflow: hidden;
+      background: var(--white);
+    }
+    .compare-pane .mini-nav {
+      padding: 12px 20px; background: rgba(255,255,255,0.95);
+      border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 5;
+      backdrop-filter: blur(8px);
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .compare-pane .mini-nav-title { font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; font-weight: 500; }
+    .compare-pane .mini-nav-sub { font-size: 10px; color: var(--grey-mid); }
+
+    /* Collapsed preview cards for compare */
+    .compare-preview { padding: 0; }
+    .cp-hero {
+      height: 200px; display: flex; align-items: center; justify-content: center;
+      font-size: 64px; position: relative; overflow: hidden;
+    }
+    .cp-1 { background: linear-gradient(135deg, #e8e0d6 0%, #c9a96e22 100%); }
+    .cp-2 { background: linear-gradient(160deg, #1a1510 0%, #0d0d0d 100%); }
+    .cp-3 { background: linear-gradient(135deg, #e5ddd5 0%, #d4c8bc 100%); }
+    .cp-4 { background: linear-gradient(135deg, #E8D5B5 0%, #D4B896 100%); }
+    .cp-5 { background: var(--black); }
+    .cp-6 { background: var(--ivory); }
+
+    .cp-info { padding: 20px; }
+    .cp-dir { font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--gold); margin-bottom: 4px; }
+    .cp-name { font-family: var(--serif); font-size: 18px; margin-bottom: 8px; }
+    .cp-desc { font-size: 12px; color: var(--grey-mid); line-height: 1.6; margin-bottom: 12px; }
+
+    .cp-traits { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 16px; }
+    .cp-trait {
+      padding: 4px 10px; border: 1px solid var(--border);
+      font-size: 10px; border-radius: 20px; color: var(--grey-mid);
+    }
+
+    .cp-score { }
+    .cp-score-row { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+    .cp-score-label { font-size: 10px; color: var(--grey-mid); width: 80px; flex-shrink: 0; }
+    .cp-score-bar { flex: 1; height: 3px; background: var(--border); border-radius: 2px; overflow: hidden; }
+    .cp-score-fill { height: 100%; background: var(--gold); }
+
+    /* ==========================================
+       UTILS
+       ========================================== */
+    .tag-new { background: var(--gold); color: var(--black); font-size: 9px; padding: 2px 6px; border-radius: 2px; font-weight: 600; letter-spacing: 0.05em; }
+    .tag-sale { background: var(--error); color: var(--white); font-size: 9px; padding: 2px 6px; border-radius: 2px; font-weight: 600; }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #1a1a1a; }
+    ::-webkit-scrollbar-thumb { background: #444; border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--gold); }
+  </style>
+</head>
+<body>
+
+<!-- ===================== SHELL NAV ===================== -->
+<nav class="shell-nav">
+  <h1>mon-ecommerce — Directions Design</h1>
+  <button class="nav-btn active" onclick="showDir(1)">D1 · Éditorial Minimaliste</button>
+  <button class="nav-btn" onclick="showDir(2)">D2 · Boutique Luxe</button>
+  <button class="nav-btn" onclick="showDir(3)">D3 · Architecture Moderne</button>
+  <button class="nav-btn" onclick="showDir(4)">D4 · Artisanal Chaleureux</button>
+  <button class="nav-btn" onclick="showDir(5)">D5 · Fashion Forward</button>
+  <button class="nav-btn" onclick="showDir(6)">D6 · Intemporel Classique</button>
+  <button class="nav-btn" id="cmp-btn" onclick="toggleCompare()">⊞ Comparer</button>
+</nav>
+
+<!-- ===================== COMPARE VIEW ===================== -->
+<div class="compare-screen" id="compare-screen">
+  <!-- D1 -->
+  <div class="compare-pane" style="border-right:1px solid #eee;">
+    <div class="mini-nav">
+      <div><div class="mini-nav-title">D1 · Éditorial Minimaliste</div><div class="mini-nav-sub">Blanc · Espace · Typographie éditoriale</div></div>
+      <button class="compare-btn" onclick="showDir(1)">Voir complet</button>
+    </div>
+    <div class="compare-preview">
+      <div class="cp-hero cp-1">👜</div>
+      <div class="cp-info">
+        <div class="cp-dir">Direction 01</div>
+        <div class="cp-name">Éditorial Minimaliste</div>
+        <div class="cp-desc">Maximum d'espace blanc, grande typographie éditoriale Cormorant, accents or subtils. Grille 4 colonnes, images format portrait 3:4. Navigation légère et aérée. Approche « moins c'est plus ».</div>
+        <div class="cp-traits">
+          <span class="cp-trait">Blanc dominant</span>
+          <span class="cp-trait">Typographie forte</span>
+          <span class="cp-trait">Espace négatif</span>
+          <span class="cp-trait">Or discret</span>
+        </div>
+        <div class="cp-score">
+          <div class="cp-score-row"><span class="cp-score-label">Élégance</span><div class="cp-score-bar"><div class="cp-score-fill" style="width:92%"></div></div></div>
+          <div class="cp-score-row"><span class="cp-score-label">Lisibilité</span><div class="cp-score-bar"><div class="cp-score-fill" style="width:95%"></div></div></div>
+          <div class="cp-score-row"><span class="cp-score-label">Modernité</span><div class="cp-score-bar"><div class="cp-score-fill" style="width:88%"></div></div></div>
+          <div class="cp-score-row"><span class="cp-score-label">Chaleur</span><div class="cp-score-bar"><div class="cp-score-fill" style="width:55%"></div></div></div>
+          <div class="cp-score-row"><span class="cp-score-label">Conversion</span><div class="cp-score-bar"><div class="cp-score-fill" style="width:80%"></div></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- D2 -->
+  <div class="compare-pane" style="border-right:1px solid #eee;">
+    <div class="mini-nav">
+      <div><div class="mini-nav-title">D2 · Boutique Luxe</div><div class="mini-nav-sub">Noir · Or · Prestige absolu</div></div>
+      <button class="compare-btn" onclick="showDir(2)">Voir complet</button>
+    </div>
+    <div class="compare-preview">
+      <div class="cp-hero cp-2"><span style="font-size:64px">👜</span></div>
+      <div class="cp-info">
+        <div class="cp-dir">Direction 02</div>
+        <div class="cp-name">Boutique Luxe</div>
+        <div class="cp-desc">Fond noir dominant, typographie or Cormorant, overlay texte sur images pleine largeur. Ambiance joaillier / maison de couture. 3 colonnes bord à bord, navigation minimaliste.</div>
+        <div class="cp-traits">
+          <span class="cp-trait">Noir premium</span>
+          <span class="cp-trait">Or Cormorant</span>
+          <span class="cp-trait">Overlay photo</span>
+          <span class="cp-trait">Prestige</span>
+        </div>
+        <div class="cp-score">
+          <div class="cp-score-row"><span class="cp-score-label">Élégance</span><div class="cp-score-bar"><div class="cp-score-fill" style="width:98%"></div></div></div>
+          <div class="cp-score-row"><span class="cp-score-label">Lisibilité</span><div class="cp-score-bar"><div class="cp-score-fill" style="width:72%"></div></div></div>
+          <div class="cp-score-row"><span class="cp-score-label">Modernité</span><div class="cp-score-bar"><div class="cp-score-fill" style="width:82%"></div></div></div>
+          <div class="cp-score-row"><span class="cp-score-label">Chaleur</span><div class="cp-score-bar"><div class="cp-score-fill" style="width:40%"></div></div></div>
+          <div class="cp-score-row"><span class="cp-score-label">Conversion</span><div class="cp-score-bar"><div class="cp-score-fill" style="width:70%"></div></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- D3 -->
+  <div class="compare-pane" style="border-right:1px solid #eee;">
+    <div class="mini-nav">
+      <div><div class="mini-nav-title">D3 · Architecture Moderne</div><div class="mini-nav-sub">Grille · Structure · UX-first</div></div>
+      <button class="compare-btn" onclick="showDir(3)">Voir complet</button>
+    </div>
+    <div class="compare-preview">
+      <div class="cp-hero cp-3">🎒</div>
+      <div class="cp-info">
+        <div class="cp-dir">Direction 03</div>
+        <div class="cp-name">Architecture Moderne</div>
+        <div class="cp-desc">Fond ivoire, grille editoriale asymétrique en hero (2+1+1), filtres ronds inline. Approche "UX boutique digitale" — produits carrés 1:1, navigation structurée, très lisible.</div>
+        <div class="cp-traits">
+          <span class="cp-trait">Grille forte</span>
+          <span class="cp-trait">Ivoire fond</span>
+          <span class="cp-trait">Filtres ronds</span>
+          <span class="cp-trait">UX-first</span>
+        </div>
+        <div class="cp-score">
+          <div class="cp-score-row"><span class="cp-score-label">Élégance</span><div class="cp-score-bar"><div class="cp-score-fill" style="width:78%"></div></div></div>
+          <div class="cp-score-row"><span class="cp-score-label">Lisibilité</span><div class="cp-score-bar"><div class="cp-score-fill" style="width:98%"></div></div></div>
+          <div class="cp-score-row"><span class="cp-score-label">Modernité</span><div class="cp-score-bar"><div class="cp-score-fill" style="width:90%"></div></div></div>
+          <div class="cp-score-row"><span class="cp-score-label">Chaleur</span><div class="cp-score-bar"><div class="cp-score-fill" style="width:65%"></div></div></div>
+          <div class="cp-score-row"><span class="cp-score-label">Conversion</span><div class="cp-score-bar"><div class="cp-score-fill" style="width:95%"></div></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- D4 -->
+  <div class="compare-pane" style="border-right:1px solid #eee;">
+    <div class="mini-nav">
+      <div><div class="mini-nav-title">D4 · Artisanal Chaleureux</div><div class="mini-nav-sub">Terre · Chaud · Savoir-faire</div></div>
+      <button class="compare-btn" onclick="showDir(4)">Voir complet</button>
+    </div>
+    <div class="compare-preview">
+      <div class="cp-hero cp-4">👝</div>
+      <div class="cp-info">
+        <div class="cp-dir">Direction 04</div>
+        <div class="cp-name">Artisanal Chaleureux</div>
+        <div class="cp-desc">Tons terres chaudes (#F7F1E8, #5C4A2A), typographie Cormorant italique, accents artisanaux. Grille 3 col, ratio portrait 4:5. Emphase sur la qualité matière et le savoir-faire.</div>
+        <div class="cp-traits">
+          <span class="cp-trait">Tons terre</span>
+          <span class="cp-trait">Savoir-faire</span>
+          <span class="cp-trait">Italique serif</span>
+          <span class="cp-trait">Chaleur</span>
+        </div>
+        <div class="cp-score">
+          <div class="cp-score-row"><span class="cp-score-label">Élégance</span><div class="cp-score-bar"><div class="cp-score-fill" style="width:80%"></div></div></div>
+          <div class="cp-score-row"><span class="cp-score-label">Lisibilité</span><div class="cp-score-bar"><div class="cp-score-fill" style="width:85%"></div></div></div>
+          <div class="cp-score-row"><span class="cp-score-label">Modernité</span><div class="cp-score-bar"><div class="cp-score-fill" style="width:60%"></div></div></div>
+          <div class="cp-score-row"><span class="cp-score-label">Chaleur</span><div class="cp-score-bar"><div class="cp-score-fill" style="width:98%"></div></div></div>
+          <div class="cp-score-row"><span class="cp-score-label">Conversion</span><div class="cp-score-bar"><div class="cp-score-fill" style="width:78%"></div></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- D5 -->
+  <div class="compare-pane" style="border-right:1px solid #eee;">
+    <div class="mini-nav">
+      <div><div class="mini-nav-title">D5 · Fashion Forward</div><div class="mini-nav-sub">Dynamique · Filtre sidebar · 5 col</div></div>
+      <button class="compare-btn" onclick="showDir(5)">Voir complet</button>
+    </div>
+    <div class="compare-preview">
+      <div class="cp-hero cp-5"><span style="font-size:64px;opacity:0.6">👛</span></div>
+      <div class="cp-info">
+        <div class="cp-dir">Direction 05</div>
+        <div class="cp-name">Fashion Forward</div>
+        <div class="cp-desc">Hero noir éditorial + sidebar filtre intégré. Grille 5 colonnes compacte, ratio 2:3, overlay hover. DM Sans dominant, Cormorant réservé aux grandes affiches. Maximal sans être surchargé.</div>
+        <div class="cp-traits">
+          <span class="cp-trait">Sidebar filtre</span>
+          <span class="cp-trait">Grille dense</span>
+          <span class="cp-trait">Hover overlay</span>
+          <span class="cp-trait">Fashion</span>
+        </div>
+        <div class="cp-score">
+          <div class="cp-score-row"><span class="cp-score-label">Élégance</span><div class="cp-score-bar"><div class="cp-score-fill" style="width:82%"></div></div></div>
+          <div class="cp-score-row"><span class="cp-score-label">Lisibilité</span><div class="cp-score-bar"><div class="cp-score-fill" style="width:80%"></div></div></div>
+          <div class="cp-score-row"><span class="cp-score-label">Modernité</span><div class="cp-score-bar"><div class="cp-score-fill" style="width:95%"></div></div></div>
+          <div class="cp-score-row"><span class="cp-score-label">Chaleur</span><div class="cp-score-bar"><div class="cp-score-fill" style="width:45%"></div></div></div>
+          <div class="cp-score-row"><span class="cp-score-label">Conversion</span><div class="cp-score-bar"><div class="cp-score-fill" style="width:88%"></div></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- D6 -->
+  <div class="compare-pane">
+    <div class="mini-nav">
+      <div><div class="mini-nav-title">D6 · Intemporel Classique</div><div class="mini-nav-sub">Équilibré · Boutique · Classique</div></div>
+      <button class="compare-btn" onclick="showDir(6)">Voir complet</button>
+    </div>
+    <div class="compare-preview">
+      <div class="cp-hero cp-6">🧳</div>
+      <div class="cp-info">
+        <div class="cp-dir">Direction 06</div>
+        <div class="cp-name">Intemporel Classique</div>
+        <div class="cp-desc">Équilibre parfait blanc/ivoire. Hero texte + illustration droite. Catégories en cards avec icônes. Grille 4 col portrait 3:4, CTA hover contrasté. Approche boutique classique, très safe et professionnelle.</div>
+        <div class="cp-traits">
+          <span class="cp-trait">Équilibré</span>
+          <span class="cp-trait">Classique</span>
+          <span class="cp-trait">Catégories cards</span>
+          <span class="cp-trait">Safe</span>
+        </div>
+        <div class="cp-score">
+          <div class="cp-score-row"><span class="cp-score-label">Élégance</span><div class="cp-score-bar"><div class="cp-score-fill" style="width:85%"></div></div></div>
+          <div class="cp-score-row"><span class="cp-score-label">Lisibilité</span><div class="cp-score-bar"><div class="cp-score-fill" style="width:92%"></div></div></div>
+          <div class="cp-score-row"><span class="cp-score-label">Modernité</span><div class="cp-score-bar"><div class="cp-score-fill" style="width:72%"></div></div></div>
+          <div class="cp-score-row"><span class="cp-score-label">Chaleur</span><div class="cp-score-bar"><div class="cp-score-fill" style="width:75%"></div></div></div>
+          <div class="cp-score-row"><span class="cp-score-label">Conversion</span><div class="cp-score-bar"><div class="cp-score-fill" style="width:90%"></div></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== DIRECTION 1 — Éditorial Minimaliste ===================== -->
+<div class="screen d1 active" id="dir-1">
+  <div style="position:relative;">
+    <div class="dir-badge">D1 — Éditorial Minimaliste</div>
+    <!-- Topbar -->
+    <div class="d1 topbar">
+      <div class="d1 logo">Mon Sac</div>
+      <div class="d1 nav-links">
+        <a href="#">Nouveautés</a>
+        <a href="#">Sacs Mode</a>
+        <a href="#">Sacs Cuir</a>
+        <a href="#">Voyage</a>
+        <a href="#">Sport</a>
+      </div>
+      <div class="d1 nav-actions">
+        <span class="icon-btn">🔍</span>
+        <span class="icon-btn">♡</span>
+        <span class="icon-btn">🛍</span>
+      </div>
+    </div>
+    <!-- Hero -->
+    <div class="d1 hero">
+      <div class="d1 hero-img">👜</div>
+      <div class="d1 hero-content">
+        <span class="d1 hero-label">Collection Printemps 2026</span>
+        <h2 class="d1 hero-title">L'élégance<br><em style="font-style:italic;color:var(--gold)">qui vous ressemble</em></h2>
+        <p class="d1 hero-sub">Découvrez notre sélection de sacs pensés pour la femme moderne. Qualité artisanale, design intemporel.</p>
+        <button class="d1 hero-cta">Explorer la collection →</button>
+      </div>
+    </div>
+    <!-- Category chips -->
+    <div class="d1 category-bar">
+      <span class="d1 cat-chip sel">Tout voir</span>
+      <span class="d1 cat-chip gold">✦ Nouveautés</span>
+      <span class="d1 cat-chip">Sacs à main</span>
+      <span class="d1 cat-chip">Cuir pleine fleur</span>
+      <span class="d1 cat-chip">Voyage</span>
+      <span class="d1 cat-chip">Sport</span>
+      <span class="d1 cat-chip">Accessoires</span>
+      <span class="d1 cat-chip">Soldes</span>
+    </div>
+    <!-- Products -->
+    <div class="d1 products">
+      <div class="d1 prod-card">
+        <div class="d1 prod-img">👜<span class="d1 prod-badge tag-new">Nouveau</span></div>
+        <div class="d1 prod-brand">Collection Mode</div>
+        <div class="d1 prod-name">Tote Parisienne</div>
+        <div class="d1 prod-mat">Cuir de veau naturel</div>
+        <div class="d1 prod-price">285 €</div>
+      </div>
+      <div class="d1 prod-card">
+        <div class="d1 prod-img">👝</div>
+        <div class="d1 prod-brand">Artisanat Cuir</div>
+        <div class="d1 prod-name">Pochette Léonie</div>
+        <div class="d1 prod-mat">Cuir grainé cognac</div>
+        <div class="d1 prod-price">149 €</div>
+      </div>
+      <div class="d1 prod-card">
+        <div class="d1 prod-img">🎒<span class="d1 prod-badge tag-sale">−20%</span></div>
+        <div class="d1 prod-brand">Collection Sport</div>
+        <div class="d1 prod-name">Sac Atelier XL</div>
+        <div class="d1 prod-mat">Toile technique imperméable</div>
+        <div class="d1 prod-price"><span style="text-decoration:line-through;color:var(--grey-mid);font-weight:400;font-size:13px">195 €</span>  156 €</div>
+      </div>
+      <div class="d1 prod-card">
+        <div class="d1 prod-img">👛</div>
+        <div class="d1 prod-brand">Voyage Élégant</div>
+        <div class="d1 prod-name">Cabine Prestige</div>
+        <div class="d1 prod-mat">Cuir végétan noir</div>
+        <div class="d1 prod-price">420 €</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== DIRECTION 2 — Boutique Luxe ===================== -->
+<div class="screen d2" id="dir-2">
+  <div style="position:relative;">
+    <div class="dir-badge">D2 — Boutique Luxe</div>
+    <div class="d2 topbar">
+      <div class="d2 logo">Mon Sac</div>
+      <div class="d2 nav-links">
+        <a href="#">Maroquinerie</a>
+        <a href="#">Mode</a>
+        <a href="#">Voyage</a>
+        <a href="#">Sport</a>
+        <a href="#">Éditions Limitées</a>
+      </div>
+      <div class="d2 nav-actions">
+        <span>🔍</span><span>♡</span><span>🛍</span>
+      </div>
+    </div>
+    <div class="d2 hero">
+      <div class="d2 hero-decor">◈</div>
+      <div class="d2 hero-content">
+        <div class="d2 hero-eyebrow">Collection Exclusive 2026</div>
+        <h2 class="d2 hero-title">L'art de<br>porter <em>l'essentiel</em></h2>
+        <p class="d2 hero-sub">Des pièces créées pour durer. Un cuir qui s'assouplit avec le temps, une élégance qui ne se démode jamais.</p>
+        <button class="d2 hero-cta">Découvrir ↗</button>
+      </div>
+    </div>
+    <div class="d2 collection-header">
+      <span class="d2 collection-title">La Collection</span>
+      <span class="d2 collection-see">Voir tout →</span>
+    </div>
+    <div class="d2 products">
+      <div class="d2 prod-card">
+        <div class="d2 prod-img" style="background:linear-gradient(145deg,#2a2520,#1a1a1a);">
+          <span style="font-size:70px;opacity:0.8">👜</span>
+          <div class="d2 prod-overlay">
+            <div>
+              <div class="d2 prod-name">Tote Parisienne</div>
+              <div class="d2 prod-price">285 €</div>
+              <div class="d2 prod-material">Cuir de veau — Collection Mode</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="d2 prod-card">
+        <div class="d2 prod-img" style="background:linear-gradient(145deg,#1e1a15,#151210);">
+          <span style="font-size:70px;opacity:0.8">👝</span>
+          <div class="d2 prod-overlay">
+            <div>
+              <div class="d2 prod-name">Pochette Léonie</div>
+              <div class="d2 prod-price">149 €</div>
+              <div class="d2 prod-material">Cuir grainé — Nouvelle pièce</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="d2 prod-card">
+        <div class="d2 prod-img" style="background:linear-gradient(145deg,#1a1d1a,#101310);">
+          <span style="font-size:70px;opacity:0.8">🧳</span>
+          <div class="d2 prod-overlay">
+            <div>
+              <div class="d2 prod-name">Cabine Prestige</div>
+              <div class="d2 prod-price">420 €</div>
+              <div class="d2 prod-material">Cuir végétan — Collection Voyage</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== DIRECTION 3 — Architecture Moderne ===================== -->
+<div class="screen d3" id="dir-3">
+  <div style="position:relative;">
+    <div class="dir-badge">D3 — Architecture Moderne</div>
+    <div class="d3 topbar">
+      <div class="d3 logo">M<span class="d3 logo-accent">·</span>SAC</div>
+      <div class="d3 nav-links">
+        <a href="#" class="active">Catalogue</a>
+        <a href="#">Nouveautés</a>
+        <a href="#">Soldes</a>
+        <a href="#">À propos</a>
+      </div>
+      <div class="d3 search-bar"><span>🔍</span> Chercher un sac...</div>
+    </div>
+    <div class="d3 grid-hero">
+      <div class="d3 cell cell-1">
+        <span style="font-size:100px;opacity:0.6">👜</span>
+        <div class="d3 cell-content">
+          <div class="d3 cell-label">Collection phare</div>
+          <div class="d3 cell-name">Totes & Shopper</div>
+        </div>
+      </div>
+      <div class="d3 cell cell-2">
+        <span>👝</span>
+        <div class="d3 cell-content">
+          <div class="d3 cell-label">Tendance</div>
+          <div class="d3 cell-name">Pochettes</div>
+        </div>
+      </div>
+      <div class="d3 cell cell-3">
+        <span style="opacity:0.7;color:white">🎒</span>
+        <div class="d3 cell-content">
+          <div class="d3 cell-label" style="color:rgba(255,255,255,0.5)">Performance</div>
+          <div class="d3 cell-name" style="color:white">Sport & Active</div>
+        </div>
+      </div>
+      <div class="d3 cell cell-4">
+        <span>🧳</span>
+        <div class="d3 cell-content">
+          <div class="d3 cell-label">Explorer le monde</div>
+          <div class="d3 cell-name">Voyage</div>
+        </div>
+      </div>
+      <div class="d3 cell cell-5">
+        <span>👛</span>
+        <div class="d3 cell-content">
+          <div class="d3 cell-label">Essentiels</div>
+          <div class="d3 cell-name">Accessoires</div>
+        </div>
+      </div>
+    </div>
+    <div class="d3 filter-strip">
+      <span class="d3 filter-label">Filtrer :</span>
+      <span class="d3 filter-chip active">Tout</span>
+      <span class="d3 filter-chip">Cuir</span>
+      <span class="d3 filter-chip">Toile</span>
+      <span class="d3 filter-chip">Synthétique</span>
+      <span class="d3 filter-chip">• Noir</span>
+      <span class="d3 filter-chip">• Cognac</span>
+      <span class="d3 filter-chip gold-chip">✦ Nouveautés</span>
+      <span class="d3 filter-chip">< 100€</span>
+      <span class="d3 filter-chip">100–300€</span>
+      <span class="d3 filter-chip">> 300€</span>
+    </div>
+    <div class="d3 products">
+      <div class="d3 prod-card">
+        <div class="d3 prod-img">👜<div class="d3 prod-fav">♡</div></div>
+        <div class="d3 prod-info"><div class="d3 prod-name">Tote Parisienne</div><div class="d3 prod-cat">Sac à main · Cuir</div></div>
+        <div class="d3 prod-footer"><span class="d3 prod-price">285 €</span><span class="d3 add-btn">+ Panier</span></div>
+      </div>
+      <div class="d3 prod-card">
+        <div class="d3 prod-img">👝<div class="d3 prod-fav">♡</div></div>
+        <div class="d3 prod-info"><div class="d3 prod-name">Pochette Léonie</div><div class="d3 prod-cat">Pochette · Cuir grainé</div></div>
+        <div class="d3 prod-footer"><span class="d3 prod-price">149 €</span><span class="d3 add-btn">+ Panier</span></div>
+      </div>
+      <div class="d3 prod-card">
+        <div class="d3 prod-img">🎒<div class="d3 prod-fav">♡</div></div>
+        <div class="d3 prod-info"><div class="d3 prod-name">Sac Atelier XL</div><div class="d3 prod-cat">Sport · Toile technique</div></div>
+        <div class="d3 prod-footer"><span class="d3 prod-price">156 €</span><span class="d3 add-btn">+ Panier</span></div>
+      </div>
+      <div class="d3 prod-card">
+        <div class="d3 prod-img">🧳<div class="d3 prod-fav">♡</div></div>
+        <div class="d3 prod-info"><div class="d3 prod-name">Cabine Prestige</div><div class="d3 prod-cat">Voyage · Cuir végétan</div></div>
+        <div class="d3 prod-footer"><span class="d3 prod-price">420 €</span><span class="d3 add-btn">+ Panier</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== DIRECTION 4 — Artisanal Chaleureux ===================== -->
+<div class="screen d4" id="dir-4">
+  <div style="position:relative;">
+    <div class="dir-badge">D4 — Artisanal Chaleureux</div>
+    <div class="d4 banner">Livraison offerte dès 150€ · <span>Retours gratuits 14 jours</span> · Paiement sécurisé Stripe</div>
+    <div class="d4 topbar">
+      <div class="d4 logo">Mon <span>Sac</span></div>
+      <div class="d4 nav-links">
+        <a href="#">Maroquinerie</a>
+        <a href="#">Mode & Tendance</a>
+        <a href="#">Voyage</a>
+        <a href="#">Sport</a>
+      </div>
+      <div style="display:flex;gap:16px;font-size:20px;cursor:pointer;color:#8B7355">
+        <span>🔍</span><span>♡</span><span>🛍</span>
+      </div>
+    </div>
+    <div class="d4 hero">
+      <div class="d4 hero-img">
+        <div class="d4 hero-texture"></div>
+        <span style="font-size:120px;position:relative;z-index:1;filter:drop-shadow(0 8px 24px rgba(92,74,42,0.3))">👜</span>
+      </div>
+      <div class="d4 hero-content">
+        <p class="d4 hero-eyebrow">✦ Artisanat d'exception</p>
+        <h2 class="d4 hero-title">Chaque sac<br>raconte une histoire</h2>
+        <p class="d4 hero-sub">Sélectionnés pour leur qualité, conçus pour durer. Des maroquiniers passionnés, des matières soigneusement choisies.</p>
+        <button class="d4 hero-cta">Découvrir l'artisanat →</button>
+      </div>
+    </div>
+    <div class="d4 crafted-bar">
+      <div class="d4 craft-item"><span class="d4 craft-icon">🎨</span><div class="d4 craft-text"><strong>Cuir sélectionné</strong><span>Tanneries certifiées</span></div></div>
+      <div class="d4 craft-sep"></div>
+      <div class="d4 craft-item"><span class="d4 craft-icon">✂️</span><div class="d4 craft-text"><strong>Couture main</strong><span>Artisans qualifiés</span></div></div>
+      <div class="d4 craft-sep"></div>
+      <div class="d4 craft-item"><span class="d4 craft-icon">🌿</span><div class="d4 craft-text"><strong>Matières durables</strong><span>Cuirs végétans disponibles</span></div></div>
+      <div class="d4 craft-sep"></div>
+      <div class="d4 craft-item"><span class="d4 craft-icon">💛</span><div class="d4 craft-text"><strong>Garantie 2 ans</strong><span>Service client dédié</span></div></div>
+    </div>
+    <div class="d4 products">
+      <div class="d4 prod-card">
+        <div class="d4 prod-img"><span>👜</span></div>
+        <div class="d4 prod-label">Collection Mode · Nouvelle pièce</div>
+        <div class="d4 prod-name">Tote Parisienne</div>
+        <div class="d4 prod-desc">Cuir de veau pleine fleur, doublure en lin naturel. Format A4, zippé. Fabriqué à Paris.</div>
+        <div class="d4 prod-footer"><span class="d4 prod-price">285 €</span><span class="d4 prod-cta">Voir les détails →</span></div>
+      </div>
+      <div class="d4 prod-card">
+        <div class="d4 prod-img"><span>👝</span></div>
+        <div class="d4 prod-label">Maroquinerie · Best-seller</div>
+        <div class="d4 prod-name">Pochette Léonie</div>
+        <div class="d4 prod-desc">Cuir grainé cognac, fermoir magnétique doré. Bandoulière réglable amovible incluse.</div>
+        <div class="d4 prod-footer"><span class="d4 prod-price">149 €</span><span class="d4 prod-cta">Voir les détails →</span></div>
+      </div>
+      <div class="d4 prod-card">
+        <div class="d4 prod-img"><span>🧳</span></div>
+        <div class="d4 prod-label">Collection Voyage · Exclusif</div>
+        <div class="d4 prod-name">Cabine Prestige</div>
+        <div class="d4 prod-desc">Cuir végétan traité, format cabine homologué. Compartiment laptop, serrure TSA intégrée.</div>
+        <div class="d4 prod-footer"><span class="d4 prod-price">420 €</span><span class="d4 prod-cta">Voir les détails →</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== DIRECTION 5 — Fashion Forward ===================== -->
+<div class="screen d5" id="dir-5">
+  <div style="position:relative;">
+    <div class="dir-badge">D5 — Fashion Forward</div>
+    <div class="d5 topbar">
+      <div class="d5 logo">MON·SAC</div>
+      <div class="d5 nav-links">
+        <a href="#">Mode</a>
+        <a href="#">Cuir</a>
+        <a href="#">Voyage</a>
+        <a href="#">Sport</a>
+        <a href="#">New</a>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;">
+        <span style="font-size:18px;cursor:pointer">🔍</span>
+        <span style="font-size:18px;cursor:pointer">♡</span>
+        <div style="position:relative;cursor:pointer">
+          <span style="font-size:18px">🛍</span>
+          <span class="d5 cart-count" style="position:absolute;top:-6px;right:-8px">3</span>
+        </div>
+      </div>
+    </div>
+    <div class="d5 hero">
+      <div class="d5 hero-editorial">
+        <div class="d5 hero-bg-text">SAC</div>
+        <div class="d5 hero-img-container">
+          <div class="d5 hero-img-circle">👜</div>
+        </div>
+        <div class="d5 hero-text">
+          <div class="d5 hero-season">SS26 · Édition Limitée</div>
+          <div class="d5 hero-title">La pièce<br><strong>signature</strong></div>
+        </div>
+      </div>
+      <div class="d5 hero-sidebar">
+        <div class="d5 sidebar-title">Trouver votre sac</div>
+        <div class="d5 filter-section">
+          <div class="d5 filter-title">Catégorie</div>
+          <div class="d5 filter-options">
+            <span class="d5 f-opt active">Mode</span>
+            <span class="d5 f-opt">Cuir</span>
+            <span class="d5 f-opt">Voyage</span>
+            <span class="d5 f-opt">Sport</span>
+            <span class="d5 f-opt">Accessoires</span>
+          </div>
+        </div>
+        <div class="d5 filter-section">
+          <div class="d5 filter-title">Matière</div>
+          <div class="d5 filter-options">
+            <span class="d5 f-opt active">Cuir naturel</span>
+            <span class="d5 f-opt">Cuir grainé</span>
+            <span class="d5 f-opt">Toile</span>
+            <span class="d5 f-opt">Synthétique</span>
+          </div>
+        </div>
+        <div class="d5 filter-section">
+          <div class="d5 filter-title">Couleur</div>
+          <div class="d5 filter-options">
+            <span class="d5 f-opt">⬛ Noir</span>
+            <span class="d5 f-opt active">🟫 Cognac</span>
+            <span class="d5 f-opt">⬜ Naturel</span>
+            <span class="d5 f-opt">🤎 Camel</span>
+          </div>
+        </div>
+        <div class="d5 filter-section">
+          <div class="d5 filter-title">Budget</div>
+          <div class="d5 price-slider">
+            <div class="d5 price-track"><div class="d5 price-fill"></div></div>
+            <div class="d5 price-vals"><span>50 €</span><span>80 – 350 €</span><span>600 €</span></div>
+          </div>
+        </div>
+        <button class="d5 apply-btn">Voir 47 résultats</button>
+      </div>
+    </div>
+    <div style="padding:20px 24px 8px;display:flex;justify-content:space-between;align-items:center;">
+      <span style="font-size:13px;font-weight:500">47 sacs trouvés</span>
+      <select style="font-size:12px;padding:6px 12px;border:1px solid var(--border);border-radius:2px;font-family:var(--sans)">
+        <option>Trier : Pertinence</option>
+        <option>Prix croissant</option>
+        <option>Prix décroissant</option>
+        <option>Nouveautés</option>
+      </select>
+    </div>
+    <div class="d5 products">
+      <div class="d5 prod-card">
+        <div class="d5 prod-img">👜<div class="d5 prod-overlay"><span class="d5 overlay-btn">Ajouter au panier</span></div></div>
+        <div class="d5 prod-info"><div class="d5 prod-name">Tote Parisienne</div><div class="d5 prod-price">285 €</div></div>
+      </div>
+      <div class="d5 prod-card">
+        <div class="d5 prod-img">👝<div class="d5 prod-overlay"><span class="d5 overlay-btn">Ajouter au panier</span></div></div>
+        <div class="d5 prod-info"><div class="d5 prod-name">Pochette Léonie</div><div class="d5 prod-price">149 €</div></div>
+      </div>
+      <div class="d5 prod-card">
+        <div class="d5 prod-img">👛<div class="d5 prod-overlay"><span class="d5 overlay-btn">Ajouter au panier</span></div></div>
+        <div class="d5 prod-info"><div class="d5 prod-name">Mini Zip Amélie</div><div class="d5 prod-price">95 €</div></div>
+      </div>
+      <div class="d5 prod-card">
+        <div class="d5 prod-img">🎒<div class="d5 prod-overlay"><span class="d5 overlay-btn">Ajouter au panier</span></div></div>
+        <div class="d5 prod-info"><div class="d5 prod-name">Sac Atelier XL</div><div class="d5 prod-price">156 €</div></div>
+      </div>
+      <div class="d5 prod-card">
+        <div class="d5 prod-img">🧳<div class="d5 prod-overlay"><span class="d5 overlay-btn">Ajouter au panier</span></div></div>
+        <div class="d5 prod-info"><div class="d5 prod-name">Cabine Prestige</div><div class="d5 prod-price">420 €</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== DIRECTION 6 — Intemporel Classique ===================== -->
+<div class="screen d6" id="dir-6">
+  <div style="position:relative;">
+    <div class="dir-badge">D6 — Intemporel Classique</div>
+    <div class="d6 announcement">Collection Printemps · <span>Livraison offerte dès 150€</span> · Retours 14 jours</div>
+    <div class="d6 topbar">
+      <div class="d6 logo">Mon Sac</div>
+      <div class="d6 nav-links">
+        <a href="#">Mode</a>
+        <a href="#">Maroquinerie</a>
+        <a href="#">Voyage</a>
+        <a href="#">Sport</a>
+        <a href="#">Nouveautés</a>
+        <a href="#">Soldes</a>
+      </div>
+      <div class="d6 nav-actions">
+        <span>🔍</span><span>♡</span><span>🛍</span>
+      </div>
+    </div>
+    <div class="d6 hero">
+      <div class="d6 hero-left">
+        <div class="d6 hero-eyebrow">Nouvelle Collection</div>
+        <h2 class="d6 hero-title">Élégance<br>intemporelle</h2>
+        <p class="d6 hero-sub">Des sacs pensés pour accompagner chaque moment de votre vie. Qualité artisanale, style intemporel.</p>
+        <div class="d6 hero-actions">
+          <button class="d6 btn-primary">Découvrir</button>
+          <span class="d6 btn-secondary">Voir les nouveautés</span>
+        </div>
+      </div>
+      <div class="d6 hero-right">👜</div>
+    </div>
+    <div class="d6 categories">
+      <div class="d6 section-header">
+        <h3 class="d6 section-title">Nos Catégories</h3>
+        <div class="d6 section-line"></div>
+      </div>
+      <div class="d6 cat-grid">
+        <div class="d6 cat-card">
+          <span class="d6 cat-icon">👜</span>
+          <div class="d6 cat-name">Sacs Mode</div>
+          <div class="d6 cat-count">124 articles</div>
+        </div>
+        <div class="d6 cat-card" style="border-color:var(--gold)">
+          <span class="d6 cat-icon">🎒</span>
+          <div class="d6 cat-name">Maroquinerie Cuir</div>
+          <div class="d6 cat-count">87 articles</div>
+        </div>
+        <div class="d6 cat-card">
+          <span class="d6 cat-icon">🧳</span>
+          <div class="d6 cat-name">Voyage & Cabine</div>
+          <div class="d6 cat-count">52 articles</div>
+        </div>
+        <div class="d6 cat-card">
+          <span class="d6 cat-icon">👟</span>
+          <div class="d6 cat-name">Sport & Active</div>
+          <div class="d6 cat-count">63 articles</div>
+        </div>
+      </div>
+    </div>
+    <div class="d6 products">
+      <div class="d6 prod-card">
+        <div class="d6 prod-img">👜</div>
+        <div class="d6 prod-type">Collection Mode</div>
+        <div class="d6 prod-name">Tote Parisienne</div>
+        <div class="d6 prod-price">285 €</div>
+        <span class="d6 prod-cta">Ajouter au panier</span>
+      </div>
+      <div class="d6 prod-card">
+        <div class="d6 prod-img">👝</div>
+        <div class="d6 prod-type">Maroquinerie</div>
+        <div class="d6 prod-name">Pochette Léonie</div>
+        <div class="d6 prod-price">149 €</div>
+        <span class="d6 prod-cta">Ajouter au panier</span>
+      </div>
+      <div class="d6 prod-card">
+        <div class="d6 prod-img">🎒</div>
+        <div class="d6 prod-type">Sport & Active</div>
+        <div class="d6 prod-name">Sac Atelier XL</div>
+        <div class="d6 prod-price">156 €</div>
+        <span class="d6 prod-cta">Ajouter au panier</span>
+      </div>
+      <div class="d6 prod-card">
+        <div class="d6 prod-img">🧳</div>
+        <div class="d6 prod-type">Voyage Élégant</div>
+        <div class="d6 prod-name">Cabine Prestige</div>
+        <div class="d6 prod-price">420 €</div>
+        <span class="d6 prod-cta">Ajouter au panier</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== COMPARE BAR ===================== -->
+<div class="compare-bar">
+  <span>6 directions · Palette Élégance Naturelle · Cormorant Garamond + DM Sans</span>
+  <button class="compare-btn" onclick="toggleCompare()" id="compare-bar-btn">⊞ Comparer toutes les directions</button>
+</div>
+
+<script>
+  let compareMode = false;
+
+  function showDir(n) {
+    compareMode = false;
+    document.getElementById('compare-screen').classList.remove('active');
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById('dir-' + n).classList.add('active');
+    document.querySelectorAll('.nav-btn').forEach((b, i) => {
+      b.classList.remove('active');
+      if (i === n - 1) b.classList.add('active');
+    });
+    document.getElementById('cmp-btn').classList.remove('active');
+    document.getElementById('compare-bar-btn').textContent = '⊞ Comparer toutes les directions';
+    window.scrollTo(0,0);
+  }
+
+  function toggleCompare() {
+    compareMode = !compareMode;
+    if (compareMode) {
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+      document.getElementById('compare-screen').classList.add('active');
+      document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+      document.getElementById('cmp-btn').classList.add('active');
+      document.getElementById('compare-bar-btn').textContent = '✕ Quitter la comparaison';
+    } else {
+      showDir(1);
+    }
+    window.scrollTo(0,0);
+  }
+
+  // Keyboard shortcuts
+  document.addEventListener('keydown', e => {
+    const k = parseInt(e.key);
+    if (k >= 1 && k <= 6) showDir(k);
+    if (e.key === 'c' || e.key === 'C') toggleCompare();
+  });
+</script>
+</body>
+</html>

@@ -34,7 +34,6 @@ build/
 *.g.dart
 *.freezed.dart
 .packages
-pubspec.lock
 
 # ─── Secrets (CRITIQUE — ne jamais committer) ────────────────
 .env
@@ -47,6 +46,9 @@ pubspec.lock
 secrets/
 **/appsettings.Production.json
 **/appsettings.Staging.json
+
+# ─── Claude Code internal state ──────────────────────────────
+**/agent-memory/
 
 # ─── IDE ─────────────────────────────────────────────────────
 .idea/

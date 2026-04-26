@@ -5,7 +5,7 @@
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <!-- Allow known audit warnings during initialization; address in Story 1.2+ -->
     <WarningsNotAsErrors>NU1903</WarningsNotAsErrors>
-    <ArtifactsPath>$(MSBuildThisFileDirectory)artifacts</ArtifactsPath>
+    <ArtifactsPath Condition="'$(EFCoreToolsRunning)' != 'true'">$(MSBuildThisFileDirectory)artifacts</ArtifactsPath>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
   </PropertyGroup>
