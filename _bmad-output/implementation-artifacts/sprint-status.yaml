@@ -1,0 +1,121 @@
+# generated: 2026-04-13
+# last_updated: 2026-04-14 (story 1.1 review)
+# project: mon-ecommerce
+# project_key: NOKEY
+# tracking_system: file-system
+# story_location: _bmad-output/implementation-artifacts
+
+# STATUS DEFINITIONS:
+# ==================
+# Epic Status:
+#   - backlog: Epic not yet started
+#   - in-progress: Epic actively being worked on
+#   - done: All stories in epic completed
+#
+# Epic Status Transitions:
+#   - backlog → in-progress: Automatically when first story is created (via create-story)
+#   - in-progress → done: Manually when all stories reach 'done' status
+#
+# Story Status:
+#   - backlog: Story only exists in epic file
+#   - ready-for-dev: Story file created in stories folder
+#   - in-progress: Developer actively working on implementation
+#   - review: Ready for code review (via Dev's code-review workflow)
+#   - done: Story completed
+#
+# Retrospective Status:
+#   - optional: Can be completed but not required
+#   - done: Retrospective has been completed
+#
+# WORKFLOW NOTES:
+# ===============
+# - Epic transitions to 'in-progress' automatically when first story is created
+# - Stories can be worked in parallel if team capacity allows
+# - Developer typically creates next story after previous one is 'done' to incorporate learnings
+# - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
+
+generated: 2026-04-13
+last_updated: 2026-04-26 (1.4 done, 1.5 next)
+project: mon-ecommerce
+project_key: NOKEY
+tracking_system: file-system
+story_location: _bmad-output/implementation-artifacts
+
+development_status:
+
+  # ─── Epic 1: Foundation & Infrastructure ───────────────────────────────────
+  epic-1: in-progress
+  1-1-initialisation-des-3-projets: done
+  1-2-environnement-de-developpement-local: done
+  1-3-schema-domain-et-migrations-ef-core: done
+  1-4-infrastructure-authentification-jwt: done
+  1-5-couche-application-pipeline-mediatr-et-error-handling: backlog
+  1-6-integration-services-externes: backlog
+  1-7-infrastructure-domain-events: backlog
+  1-8-design-system-foundation: backlog
+  1-9-cicd-pipeline-et-deploiement: backlog
+  epic-1-retrospective: optional
+
+  # ─── Epic 2: Authentification & Compte Client ──────────────────────────────
+  epic-2: backlog
+  2-1-inscription-client: backlog
+  2-2-connexion-et-deconnexion: backlog
+  2-3-reinitialisation-du-mot-de-passe: backlog
+  2-4-profil-client-consultation-et-modification: backlog
+  2-5-historique-des-commandes: backlog
+  epic-2-retrospective: optional
+
+  # ─── Epic 3: Catalogue Produits & Découverte ───────────────────────────────
+  epic-3: backlog
+  3-1-api-catalogue-liste-et-filtres: backlog
+  3-2-recherche-full-text: backlog
+  3-3-composants-productcard-et-filterchipbar-angular-web: backlog
+  3-4-composants-productcard-et-filterchipbar-flutter-mobile: backlog
+  3-5-fiche-produit-et-productgallery: backlog
+  3-6-produits-similaires-et-seo: backlog
+  epic-3-retrospective: optional
+
+  # ─── Epic 4: Panier & Checkout ─────────────────────────────────────────────
+  epic-4: backlog
+  4-1-panier-anonyme-et-gestion-articles: backlog
+  4-2-composants-stickyaddtocart-et-cartdrawer: backlog
+  4-3-checkout-etape-1-adresse-de-livraison: backlog
+  4-4-checkout-etape-2-choix-de-livraison: backlog
+  4-5-checkout-etape-3-paiement-stripe: backlog
+  4-6-confirmation-commande-et-anti-overselling: backlog
+  epic-4-retrospective: optional
+
+  # ─── Epic 5: Commandes, Retours & Notifications ────────────────────────────
+  epic-5: backlog
+  5-1-demande-de-retour-client: backlog
+  5-2-notifications-email-changements-de-statut: backlog
+  5-3-remboursement-admin-et-confirmation-client: backlog
+  5-4-couverture-complete-emails-transactionnels: backlog
+  epic-5-retrospective: optional
+
+  # ─── Epic 6: Administration Catalogue ──────────────────────────────────────
+  epic-6: backlog
+  6-1-crud-fiches-produits: backlog
+  6-2-gestion-des-images-produit: backlog
+  6-3-import-csv-en-masse: backlog
+  6-4-gestion-des-stocks-et-alertes: backlog
+  6-5-categories-et-publication: backlog
+  epic-6-retrospective: optional
+
+  # ─── Epic 7: Administration Commandes & Dashboard ──────────────────────────
+  epic-7: backlog
+  7-1-liste-et-filtrage-des-commandes: backlog
+  7-2-mise-a-jour-statut-et-numero-de-suivi: backlog
+  7-3-traitement-des-demandes-de-retour: backlog
+  7-4-dashboard-kpis-temps-reel: backlog
+  7-5-analytics-produits-et-stocks-critiques: backlog
+  epic-7-retrospective: optional
+
+  # ─── Epic 8: Conformité, Accessibilité & Qualité ───────────────────────────
+  epic-8: backlog
+  8-1-pages-legales: backlog
+  8-2-banniere-rgpd-et-gestion-des-cookies: backlog
+  8-3-droit-a-loubli-et-suppression-des-donnees: backlog
+  8-4-accessibilite-wcag-21-aa-formulaires-et-navigation: backlog
+  8-5-accessibilite-wcag-21-aa-etats-vides-et-pagination: backlog
+  epic-8-retrospective: optional

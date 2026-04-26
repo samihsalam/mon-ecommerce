@@ -22,3 +22,17 @@ public class Result
         return new Result(false, errors);
     }
 }
+
+public class Result<T> : Result
+{
+    public T? Value { get; init; }
+
+    internal Result(bool succeeded, IEnumerable<string> errors, T? value = default)
+        : base(succeeded, errors)
+    {
+        Value = value;
+    }
+
+    public static Result<T> Success(T value) => new(true, [], value);
+    public new static Result<T> Failure(IEnumerable<string> errors) => new(false, errors);
+}
