@@ -1,9 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:sentry_flutter/sentry_flutter.dart';
 
 import 'app/theme/app_theme.dart';
 
-void main() {
-  runApp(const MyApp());
+// Supplied via `flutter build --dart-define=SENTRY_DSN=...`; empty string is a safe no-op default.
+const _sentryDsn = String.fromEnvironment('SENTRY_DSN', defaultValue: '');
+
+Future<void> main() async {
+  await SentryFlutter.init(
+    (options) {
+      options.dsn = _sentryDsn;
+      options.tracesSampleRate = 1.0;
+    },
+    appRunner: () => runApp(const MyApp()),
+  );
 }
 
 class MyApp extends StatelessWidget {

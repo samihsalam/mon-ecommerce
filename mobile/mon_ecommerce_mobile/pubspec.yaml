@@ -38,6 +38,9 @@ dependencies:
   # Cormorant Garamond + DM Sans (Story 1.8 design system) — fetched/cached at runtime, no manual font bundling needed.
   google_fonts: ^8.2.0
 
+  # Error monitoring (Story 1.9) — DSN supplied via --dart-define=SENTRY_DSN, no-ops if unset.
+  sentry_flutter: ^9.24.0
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
