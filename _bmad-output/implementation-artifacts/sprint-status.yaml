@@ -35,7 +35,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 
 generated: 2026-04-13
-last_updated: 2026-07-17 (1.9 in-progress)
+last_updated: 2026-07-17 (1.9 review)
 project: mon-ecommerce
 project_key: NOKEY
 tracking_system: file-system
@@ -53,7 +53,7 @@ development_status:
   1-6-integration-services-externes: done
   1-7-infrastructure-domain-events: done
   1-8-design-system-foundation: done
-  1-9-cicd-pipeline-et-deploiement: in-progress
+  1-9-cicd-pipeline-et-deploiement: review
   epic-1-retrospective: optional
 
   # ─── Epic 2: Authentification & Compte Client ──────────────────────────────

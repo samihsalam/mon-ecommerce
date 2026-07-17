@@ -1,6 +1,6 @@
 # Story 1.9: CI/CD Pipeline & Déploiement
 
-Status: ready-for-dev
+Status: review
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -59,7 +59,7 @@ so that every push is automatically validated and deployment is possible from th
   - [x] `dotnet build` + `dotnet test` — 0 errors, 15/15 tests pass (regression-checked after Sentry package addition)
   - [x] `ng build` (production config, exercising `fileReplacements`) + `ng test` — both pass, 7/7 Karma tests green
   - [x] `docker build` + `docker run` — verified per Task 2, including catching and fixing the null-DSN crash
-  - [ ] Push a throwaway branch and open a PR to confirm the 4 CI jobs actually run on GitHub Actions — **not done yet, needs explicit go-ahead since it's a visible push/PR action** (see Completion Notes)
+  - [x] Pushed branch `verify/ci-1-9`, opened PR #1 — first run failed (2 real bugs found and fixed, see Completion Notes); second run: all 4 jobs (`backend`, `frontend`, `mobile`, `secret-scan`) passed
 
 ## Dev Notes
 
@@ -199,15 +199,18 @@ Claude Sonnet 5
 - `ng build` (production config) succeeded, including SSR prerendering — confirms the `@sentry/angular` `ErrorHandler` provider in the shared `app.config.ts` doesn't break the server bundle.
 - `ng test` — 7/7 Karma tests pass (via Edge as the `ChromeHeadless` launcher, same as Stories 1.7/1.8 — no Chrome installed on this machine).
 - Flutter/Dart SDK still unavailable in this environment (same gap as Stories 1.1/1.8) — `flutter pub get`/`flutter build apk`/`flutter analyze` not run locally; `pubspec.lock` not regenerated for `sentry_flutter`.
-- GitHub Actions workflow itself has **not** been exercised by an actual push/PR — this requires pushing a branch and opening a PR, a visible action on the shared repo, so it was held for explicit user go-ahead rather than done unilaterally.
+- GitHub Actions workflow verified via a real push + PR (`verify/ci-1-9`, PR #1, with user go-ahead): **first run failed** — `backend` job failed with `MSB1011` ("more than one project or solution file") because `backend/MonEcommerce/` has both `MonEcommerce.sln` and `MonEcommerce.slnx`, and the workflow's bare `dotnet restore`/`build`/`test` commands (no file specified) can't disambiguate. Fixed by specifying `MonEcommerce.sln` explicitly in all 3 steps.
+- That same first run, once the sln ambiguity was bypassed locally via Docker reproduction, surfaced a **second, pre-existing latent bug from Story 1.7**: 4 test methods (`ShouldLogErrorAndNotThrowWhenEmailServiceFails` in each of the 4 email-handler test files) are declared `async Task` but only `await` inside a nested `Assert.DoesNotThrowAsync(async () => ...)` lambda, never at their own method level — triggering `CS1998`, which `Directory.Build.props`'s `TreatWarningsAsErrors=true` escalates to a build error. This was never caught during Story 1.7 because **no session this entire project has ever had a real .NET 9 SDK available locally** (this machine only has .NET 10) — all "0 Warnings 0 Errors" local verifications, including Story 1.7's own, were actually compiled with .NET 10's analyzer, which didn't flag it the same way. Caught here by reproducing the exact CI environment via `docker run mcr.microsoft.com/dotnet/sdk:9.0`. Fixed by removing `async` from the 4 test methods (correct fix: `Assert.DoesNotThrowAsync` is itself synchronous and doesn't need an awaiting outer method).
+- Second CI run (after both fixes): **all 4 jobs passed** (`backend`, `frontend`, `mobile`, `secret-scan`). Confirmed via GitHub's public Actions API (run id 29598724012, conclusion: `success`).
+- `railway.json`'s `healthcheckPath` was changed from the story's originally-planned `/` to a new `/health` endpoint, because production mode has nothing mapped at `/` at all (the `/`→`/scalar` redirect is dev-only) — this was caught by reasoning through the actual `Program.cs` pipeline, not assumed.
 
 ### Completion Notes List
 
-- All 7 tasks' code/config fully implemented; Task 8's final verification step (push a throwaway branch + PR to confirm the GitHub Actions workflow actually runs) is intentionally not yet done — awaiting user go-ahead since it's a visible push action.
-- Two real bugs were found and fixed during Docker verification (not just assumed correct from reading docs): the `global.json` SDK-band mismatch and the Sentry null-DSN crash. Both would have silently broken the very first real deployment attempt if not caught here.
-- `railway.json`'s `healthcheckPath` was changed from the story's originally-planned `/` to a new `/health` endpoint, because production mode has nothing mapped at `/` at all (the `/`→`/scalar` redirect is dev-only) — this was caught by reasoning through the actual `Program.cs` pipeline, not assumed.
+- All 8 tasks fully complete, including live CI verification (PR #1, 2 real bugs found and fixed, final run green on all 4 jobs).
+- Three real bugs were found and fixed via actual execution, not just assumed correct from reading docs: the `global.json` SDK feature-band mismatch (Docker), the Sentry null-DSN crash (Docker), and the sln/slnx ambiguity + latent Story-1.7 CS1998 test bug (live CI). All three would have silently broken the first real deployment/CI run if not caught here.
 - AC #4/#5/#6's external-account components (Sentry project, Railway project, Vercel project) remain manual follow-ups for the user — flagged per Dev Notes' "External accounts required" section, not silently claimed done.
-- Flutter-side Sentry wiring (Task 5) follows the same hand-written-but-tool-unverified pattern as Story 1.8's Flutter work, for the same pre-existing environment reason.
+- Flutter-side Sentry wiring (Task 5) follows the same hand-written-but-tool-unverified pattern as Story 1.8's Flutter work (Flutter/Dart SDK still unavailable locally), though the CI `mobile` job (which uses a real Flutter install via `subosito/flutter-action`) did pass, giving indirect confirmation the Dart code compiles correctly.
+- Verification branch `verify/ci-1-9` and PR #1 are left open on GitHub pending the user's decision on merge/close.
 
 ### File List
 
@@ -229,4 +232,8 @@ Claude Sonnet 5
 - `frontend/mon-ecommerce-web/src/app/app.config.ts` (Sentry ErrorHandler provider)
 - `mobile/mon_ecommerce_mobile/pubspec.yaml` (added `sentry_flutter` 9.24.0)
 - `mobile/mon_ecommerce_mobile/lib/main.dart` (SentryFlutter.init wrapping runApp)
+- `backend/MonEcommerce/tests/Application.UnitTests/Orders/EventHandlers/OrderPlacedEmailHandlerTests.cs` (fixed CS1998)
+- `backend/MonEcommerce/tests/Application.UnitTests/Orders/EventHandlers/OrderShippedEmailHandlerTests.cs` (fixed CS1998)
+- `backend/MonEcommerce/tests/Application.UnitTests/Returns/EventHandlers/RefundIssuedEmailHandlerTests.cs` (fixed CS1998)
+- `backend/MonEcommerce/tests/Application.UnitTests/Returns/EventHandlers/ReturnRequestedEmailHandlerTests.cs` (fixed CS1998)
 - `_bmad-output/implementation-artifacts/sprint-status.yaml` (1.9 status)
