@@ -35,6 +35,9 @@ dependencies:
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.8
 
+  # Cormorant Garamond + DM Sans (Story 1.8 design system) — fetched/cached at runtime, no manual font bundling needed.
+  google_fonts: ^8.2.0
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
