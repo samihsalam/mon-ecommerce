@@ -36,7 +36,7 @@ public class OrderShippedEmailHandlerTests
     }
 
     [Test]
-    public async Task ShouldLogErrorAndNotThrowWhenEmailServiceFails()
+    public void ShouldLogErrorAndNotThrowWhenEmailServiceFails()
     {
         _emailService
             .Setup(e => e.SendAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))

@@ -17,9 +17,9 @@ jobs:
       - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '9.0.x'
-      - run: dotnet restore
-      - run: dotnet build --no-restore
-      - run: dotnet test --no-build
+      - run: dotnet restore MonEcommerce.sln
+      - run: dotnet build MonEcommerce.sln --no-restore
+      - run: dotnet test MonEcommerce.sln --no-build
 
   frontend:
     runs-on: ubuntu-latest
