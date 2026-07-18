@@ -1,6 +1,6 @@
 # Story 1.9: CI/CD Pipeline & Déploiement
 
-Status: review
+Status: done
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -60,6 +60,13 @@ so that every push is automatically validated and deployment is possible from th
   - [x] `ng build` (production config, exercising `fileReplacements`) + `ng test` — both pass, 7/7 Karma tests green
   - [x] `docker build` + `docker run` — verified per Task 2, including catching and fixing the null-DSN crash
   - [x] Pushed branch `verify/ci-1-9`, opened PR #1 — first run failed (2 real bugs found and fixed, see Completion Notes); second run: all 4 jobs (`backend`, `frontend`, `mobile`, `secret-scan`) passed
+
+### Review Findings
+
+- [x] [Review][Patch] `UseForwardedHeaders` in `Program.cs` is currently a no-op behind Railway's reverse proxy — `ForwardedHeadersOptions`'s default `KnownProxies`/`KnownNetworks` restrict trust to loopback-only (1-hop), so headers from Railway's actual edge proxy get silently dropped, meaning `UseHttpsRedirection` still can't see the original HTTPS scheme and the whole fix from Task 2 doesn't functionally work as deployed [backend/MonEcommerce/src/Web/Program.cs] — fixed: `KnownNetworks`/`KnownProxies` cleared; re-verified via `docker build` + `docker run` + `curl /health` → 200
+- [x] [Review][Defer] `TracesSampleRate = 1.0` (100% Sentry trace sampling) has no per-environment tuning — acceptable for a new, low-traffic project; revisit once real production traffic exists and Sentry quota becomes a concern [backend/MonEcommerce/src/Web/Program.cs]
+- [x] [Review][Defer] `vercel.json`'s rewrites route all paths (including static JS/CSS/hashed assets) through the SSR serverless function, with no static-asset exclusion or `outputDirectory` specified — can't be verified without an actual live Vercel deployment (same external-dependency category as the Vercel account setup itself); validate/fix once the user connects a real Vercel project [frontend/mon-ecommerce-web/vercel.json]
+- [x] [Review][Defer] No CI job builds/verifies the Dockerfile itself — `docker build`/`docker run` were verified manually this session but aren't continuously checked on future pushes; add a `docker` job to `ci.yml` in a follow-up [.github/workflows/ci.yml]
 
 ## Dev Notes
 

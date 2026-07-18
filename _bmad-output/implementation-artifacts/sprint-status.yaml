@@ -35,7 +35,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 
 generated: 2026-04-13
-last_updated: 2026-07-17 (1.9 review)
+last_updated: 2026-07-17 (1.9 done, epic-1 done)
 project: mon-ecommerce
 project_key: NOKEY
 tracking_system: file-system
@@ -44,7 +44,7 @@ story_location: _bmad-output/implementation-artifacts
 development_status:
 
   # ─── Epic 1: Foundation & Infrastructure ───────────────────────────────────
-  epic-1: in-progress
+  epic-1: done
   1-1-initialisation-des-3-projets: done
   1-2-environnement-de-developpement-local: done
   1-3-schema-domain-et-migrations-ef-core: done
@@ -53,7 +53,7 @@ development_status:
   1-6-integration-services-externes: done
   1-7-infrastructure-domain-events: done
   1-8-design-system-foundation: done
-  1-9-cicd-pipeline-et-deploiement: review
+  1-9-cicd-pipeline-et-deploiement: done
   epic-1-retrospective: optional
 
   # ─── Epic 2: Authentification & Compte Client ──────────────────────────────

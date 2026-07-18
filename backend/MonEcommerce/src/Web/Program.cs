@@ -68,10 +68,15 @@ else
 }
 
 app.UseSerilogRequestLogging();
-app.UseForwardedHeaders(new ForwardedHeadersOptions
+var forwardedHeadersOptions = new ForwardedHeadersOptions
 {
     ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
-});
+};
+// Railway's edge proxy isn't a known/static address, so the default loopback-only
+// KnownProxies/KnownNetworks would silently drop its forwarded headers otherwise.
+forwardedHeadersOptions.KnownNetworks.Clear();
+forwardedHeadersOptions.KnownProxies.Clear();
+app.UseForwardedHeaders(forwardedHeadersOptions);
 app.UseHttpsRedirection();
 app.UseRateLimiter();
 app.UseAuthentication();

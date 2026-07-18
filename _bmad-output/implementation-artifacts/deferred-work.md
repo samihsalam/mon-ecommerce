@@ -27,3 +27,9 @@
 - `pubspec.lock` was never regenerated for the new `google_fonts` dependency (confirmed via grep — no entry exists) — blocked by the same "Flutter/Dart SDK unavailable" gap above; run `flutter pub get` once tooling is available
 - Google Fonts loaded directly from `fonts.googleapis.com`/`fonts.gstatic.com` CDN leaks visitor IPs to Google without consent — known GDPR exposure for this EU/French-facing site; revisit as part of Epic 8 (Conformité, Accessibilité & Qualité) which already owns RGPD/cookie-consent scope — self-hosting the two font families is the standard mitigation
 - No automated check keeps the 3 independent hand-maintained design-token copies in sync (Angular `@theme` block, Angular plain `:root` block, Flutter `AppTokens`) — revisit once Story 1.9 (CI/CD pipeline) exists to host a cross-language parity check
+
+## Deferred from: code review of story-1-9-cicd-pipeline-et-deploiement (2026-07-17)
+
+- `TracesSampleRate = 1.0` (100% Sentry trace sampling) has no per-environment tuning — acceptable for a new, low-traffic project; revisit once real production traffic exists and Sentry quota becomes a concern
+- `vercel.json`'s rewrites route all paths (including static JS/CSS/hashed assets) through the SSR serverless function, with no static-asset exclusion or `outputDirectory` specified — can't be verified without an actual live Vercel deployment; validate/fix once a real Vercel project is connected
+- No CI job builds/verifies the Dockerfile itself — verified manually this session but not continuously checked; add a `docker` job to `ci.yml` in a follow-up
