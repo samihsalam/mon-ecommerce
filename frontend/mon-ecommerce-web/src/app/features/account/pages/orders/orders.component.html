@@ -1,0 +1,36 @@
+<main class="mx-auto max-w-2xl px-4 py-16">
+  <h1 class="font-heading text-3xl text-text mb-8">Historique des commandes</h1>
+
+  @if (ordersStore.isLoading()) {
+    <p class="text-sm text-text" role="status">Chargement…</p>
+  } @else if (ordersStore.error()) {
+    <p class="text-sm text-error" role="alert">{{ ordersStore.error() }}</p>
+  } @else if (ordersStore.orders().length === 0) {
+    <div class="text-center py-16">
+      <p class="text-text mb-6">Aucune commande pour le moment</p>
+      <a routerLink="/" class="inline-block rounded-button bg-text text-white px-6 py-2 font-semibold">
+        Commencer à shopper
+      </a>
+    </div>
+  } @else {
+    <ul class="space-y-3">
+      @for (order of ordersStore.orders(); track order.id) {
+        <li>
+          <a
+            [routerLink]="['/compte/commandes', order.id]"
+            class="block rounded-card border border-border px-4 py-3 hover:border-accent transition"
+          >
+            <div class="flex justify-between items-center">
+              <span class="font-semibold text-text">{{ order.orderNumber }}</span>
+              <span class="text-sm text-text-secondary">{{ order.status }}</span>
+            </div>
+            <div class="flex justify-between items-center mt-1 text-sm text-text-secondary">
+              <span>{{ order.date | date: 'dd/MM/yyyy':'UTC' }}</span>
+              <span>{{ formatAmount(order.totalInCents) }}</span>
+            </div>
+          </a>
+        </li>
+      }
+    </ul>
+  }
+</main>

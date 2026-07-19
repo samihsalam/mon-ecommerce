@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../app/theme/design_tokens.dart';
 import '../providers/account_provider.dart';
@@ -83,6 +84,14 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: TextButton(
+                        onPressed: () => context.go('/compte/commandes'),
+                        child: const Text('Historique des commandes'),
+                      ),
+                    ),
+                    const SizedBox(height: AppTokens.space16),
                     TextFormField(
                       controller: _nameController,
                       decoration: const InputDecoration(labelText: 'Nom'),

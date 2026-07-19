@@ -33,4 +33,15 @@ export const routes: Routes = [
     canActivate: [authGuard],
     loadComponent: () => import('./features/account/pages/profile/profile.component').then((m) => m.ProfileComponent),
   },
+  {
+    path: 'compte/commandes',
+    canActivate: [authGuard],
+    loadComponent: () => import('./features/account/pages/orders/orders.component').then((m) => m.OrdersComponent),
+  },
+  {
+    path: 'compte/commandes/:orderId',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./features/account/pages/order-detail/order-detail.component').then((m) => m.OrderDetailComponent),
+  },
 ];

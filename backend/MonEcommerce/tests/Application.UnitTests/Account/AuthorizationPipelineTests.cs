@@ -40,6 +40,12 @@ public class AuthorizationPipelineTests
 
         public Task<Result<ProfileDto>> UpdateProfileAsync(string userId, string name, string email, string? currentPassword, CancellationToken cancellationToken = default)
             => Task.FromResult(Result<ProfileDto>.Success(new ProfileDto(name, email, [])));
+
+        public Task<PagedResult<OrderSummaryDto>> GetOrdersAsync(string userId, int page, int pageSize, CancellationToken cancellationToken = default)
+            => Task.FromResult(new PagedResult<OrderSummaryDto>([], 0, page, pageSize));
+
+        public Task<OrderDetailDto> GetOrderDetailAsync(string userId, Guid orderId, CancellationToken cancellationToken = default)
+            => throw new NotImplementedException();
     }
 
     private static IServiceProvider BuildServices(StubUser user)

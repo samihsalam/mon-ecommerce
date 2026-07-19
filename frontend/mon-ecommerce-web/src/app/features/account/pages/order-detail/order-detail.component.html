@@ -1,0 +1,41 @@
+<main class="mx-auto max-w-2xl px-4 py-16">
+  <a routerLink="/compte/commandes" class="text-sm text-text underline">← Retour à mes commandes</a>
+
+  @if (ordersStore.isLoading()) {
+    <p class="mt-8 text-sm text-text" role="status">Chargement…</p>
+  } @else if (ordersStore.error()) {
+    <p class="mt-8 text-sm text-error" role="alert">{{ ordersStore.error() }}</p>
+  } @else if (ordersStore.selectedOrder()) {
+    @let order = ordersStore.selectedOrder()!;
+    <h1 class="font-heading text-3xl text-text mt-8 mb-2">{{ order.orderNumber }}</h1>
+    <p class="text-sm text-text-secondary mb-6">{{ order.status }}</p>
+
+    <section class="mb-8">
+      <h2 class="font-heading text-xl text-text mb-4">Articles</h2>
+      <ul class="space-y-3">
+        @for (item of order.items; track item.productName) {
+          <li class="flex justify-between text-sm text-text">
+            <span>{{ item.productName }} × {{ item.quantity }}</span>
+            <span>{{ formatAmount(item.unitPriceInCents * item.quantity) }}</span>
+          </li>
+        }
+      </ul>
+      <p class="mt-4 font-semibold text-text text-right">Total : {{ formatAmount(order.totalInCents) }}</p>
+    </section>
+
+    <section class="mb-8">
+      <h2 class="font-heading text-xl text-text mb-4">Adresse de livraison</h2>
+      <p class="text-sm text-text">
+        {{ order.shippingAddress.street }}, {{ order.shippingAddress.postalCode }}
+        {{ order.shippingAddress.city }}, {{ order.shippingAddress.country }}
+      </p>
+    </section>
+
+    @if (order.trackingNumber) {
+      <section>
+        <h2 class="font-heading text-xl text-text mb-4">Suivi</h2>
+        <p class="text-sm text-text">{{ order.trackingNumber }}</p>
+      </section>
+    }
+  }
+</main>

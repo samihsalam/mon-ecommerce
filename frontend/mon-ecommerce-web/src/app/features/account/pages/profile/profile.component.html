@@ -1,5 +1,9 @@
 <main class="mx-auto max-w-md px-4 py-16">
-  <h1 class="font-heading text-3xl text-text mb-8">Mon profil</h1>
+  <h1 class="font-heading text-3xl text-text mb-4">Mon profil</h1>
+
+  <a routerLink="/compte/commandes" class="inline-block mb-8 text-sm text-text underline">
+    Historique des commandes
+  </a>
 
   @if (!initialized()) {
     @if (accountStore.error()) {

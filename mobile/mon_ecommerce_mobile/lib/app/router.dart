@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../features/account/screens/order_detail_screen.dart';
+import '../features/account/screens/orders_screen.dart';
 import '../features/account/screens/profile_screen.dart';
 import '../features/auth/providers/auth_provider.dart';
 import '../features/auth/screens/forgot_password_screen.dart';
@@ -14,11 +16,18 @@ final router = GoRouter(
   initialLocation: '/',
   // AuthNotifier's isAuthenticated is set asynchronously (Story 2.2's cold-start check) and
   // go_router's redirect isn't naturally reactive to Riverpod state changes without
-  // refreshListenable ChangeNotifier bridging. For a single protected route, reading secure
-  // storage directly here is simpler and avoids that plumbing — revisit if more protected
-  // routes are added later.
+  // refreshListenable ChangeNotifier bridging. Reading secure storage directly here is simpler
+  // and avoids that plumbing — revisit with proper refreshListenable wiring if this protected-
+  // path list keeps growing.
   redirect: (context, state) async {
-    if (state.matchedLocation != '/compte') return null;
+    // Exact match or a real path-segment boundary (trailing '/') — not a raw string prefix.
+    // `startsWith('/compte/commandes')` alone would also match a hypothetical future route like
+    // `/compte/commandes-publiques` that isn't meant to be protected.
+    final location = state.matchedLocation;
+    final isProtected = location == '/compte' || location == '/compte/commandes' || location.startsWith('/compte/commandes/');
+    if (!isProtected) {
+      return null;
+    }
 
     final container = ProviderScope.containerOf(context, listen: false);
 
@@ -50,6 +59,11 @@ final router = GoRouter(
       ),
     ),
     GoRoute(path: '/compte', builder: (context, state) => const ProfileScreen()),
+    GoRoute(path: '/compte/commandes', builder: (context, state) => const OrdersScreen()),
+    GoRoute(
+      path: '/compte/commandes/:orderId',
+      builder: (context, state) => OrderDetailScreen(orderId: state.pathParameters['orderId']!),
+    ),
   ],
 );
 
