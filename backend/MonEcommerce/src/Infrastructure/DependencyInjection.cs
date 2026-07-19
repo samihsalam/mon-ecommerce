@@ -93,6 +93,7 @@ public static class DependencyInjection
         builder.Services.AddTransient<IJwtService, JwtService>();
         builder.Services.AddTransient<IAuthService, AuthService>();
         builder.Services.AddTransient<IAccountService, AppAccountService>();
+        builder.Services.AddTransient<IProductCatalogueService, MonEcommerce.Infrastructure.Catalogue.ProductCatalogueService>();
 
         // Cloudinary
         var cloudinaryUrl = builder.Configuration["Cloudinary:Url"];
@@ -109,6 +110,14 @@ public static class DependencyInjection
             builder.Services.AddSingleton<IConnectionMultiplexer>(_ =>
                 ConnectionMultiplexer.Connect(redisConnection));
             builder.Services.AddTransient<ICacheService, RedisCacheService>();
+        }
+        else
+        {
+            // Without this fallback, any handler that constructor-injects ICacheService fails
+            // ValidateOnBuild in Development whenever Redis isn't configured (see Story 3.1's
+            // Dev Notes — same gap class as IEmailService's, but this one blocks the catalogue
+            // caching story unless fixed).
+            builder.Services.AddTransient<ICacheService, NullCacheService>();
         }
 
         // SendGrid
