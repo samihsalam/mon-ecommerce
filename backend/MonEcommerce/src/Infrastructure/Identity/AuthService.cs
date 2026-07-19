@@ -1,7 +1,10 @@
+using MediatR;
 using MonEcommerce.Application.Auth.Models;
+using MonEcommerce.Application.Common.Exceptions;
 using MonEcommerce.Application.Common.Interfaces;
 using MonEcommerce.Application.Common.Models;
 using MonEcommerce.Domain.Entities;
+using MonEcommerce.Domain.Events;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
@@ -12,21 +15,29 @@ public class AuthService : IAuthService
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly IJwtService _jwtService;
     private readonly IApplicationDbContext _context;
+    private readonly IPublisher _publisher;
 
-    public AuthService(UserManager<ApplicationUser> userManager, IJwtService jwtService, IApplicationDbContext context)
+    public AuthService(UserManager<ApplicationUser> userManager, IJwtService jwtService, IApplicationDbContext context, IPublisher publisher)
     {
         _userManager = userManager;
         _jwtService = jwtService;
         _context = context;
+        _publisher = publisher;
     }
 
-    public async Task<Result<AuthResponse>> RegisterAsync(string email, string password, CancellationToken cancellationToken = default)
+    public async Task<Result<AuthResponse>> RegisterAsync(string name, string email, string password, CancellationToken cancellationToken = default)
     {
-        var user = new ApplicationUser { UserName = email, Email = email };
+        var existing = await _userManager.FindByEmailAsync(email);
+        if (existing != null)
+            throw new ConflictException("Un compte existe déjà avec cet email.");
+
+        var user = new ApplicationUser { UserName = email, Email = email, Name = name };
         var result = await _userManager.CreateAsync(user, password);
 
         if (!result.Succeeded)
             return Result<AuthResponse>.Failure(result.Errors.Select(e => e.Description));
+
+        await _publisher.Publish(new UserRegisteredEvent(user.Id, name, email), cancellationToken);
 
         return await IssueTokensAsync(user, cancellationToken);
     }

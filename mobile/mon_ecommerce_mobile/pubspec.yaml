@@ -41,6 +41,12 @@ dependencies:
   # Error monitoring (Story 1.9) — DSN supplied via --dart-define=SENTRY_DSN, no-ops if unset.
   sentry_flutter: ^9.24.0
 
+  # App infra (Story 2.1) — state management, routing, HTTP client, secure token storage.
+  flutter_riverpod: ^3.3.2
+  go_router: ^17.3.0
+  dio: ^5.10.0
+  flutter_secure_storage: ^10.3.1
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

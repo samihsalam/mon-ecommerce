@@ -3,4 +3,6 @@
 export const environment = {
   production: true,
   sentryDsn: '',
+  // Replace with the real Railway backend URL once deployed (Story 1.9).
+  apiUrl: '',
 };
