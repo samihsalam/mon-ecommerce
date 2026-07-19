@@ -23,18 +23,26 @@ public class Auth : IEndpointGroup
         return result.Succeeded ? Results.Ok(result.Value) : Results.BadRequest(new { result.Errors });
     }
 
+    // result.Errors is currently always a safe, generic message ("Email ou mot de passe
+    // incorrect.") — if AuthService.LoginAsync/RefreshTokenAsync ever start returning more
+    // specific failure detail (e.g. lockout state), revisit whether it's still safe to
+    // expose to an unauthenticated caller before adding it.
     [EndpointSummary("Login")]
     public static async Task<IResult> Login([FromBody] LoginCommand command, ISender sender)
     {
         var result = await sender.Send(command);
-        return result.Succeeded ? Results.Ok(result.Value) : Results.Unauthorized();
+        return result.Succeeded
+            ? Results.Ok(result.Value)
+            : Results.Json(new { result.Errors }, statusCode: StatusCodes.Status401Unauthorized);
     }
 
     [EndpointSummary("Refresh access token")]
     public static async Task<IResult> Refresh([FromBody] RefreshTokenCommand command, ISender sender)
     {
         var result = await sender.Send(command);
-        return result.Succeeded ? Results.Ok(result.Value) : Results.Unauthorized();
+        return result.Succeeded
+            ? Results.Ok(result.Value)
+            : Results.Json(new { result.Errors }, statusCode: StatusCodes.Status401Unauthorized);
     }
 
     [EndpointSummary("Logout")]
