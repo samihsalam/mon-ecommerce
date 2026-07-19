@@ -16,14 +16,15 @@ export class RegisterComponent {
   private readonly router = inject(Router);
   protected readonly authStore = inject(AuthStore);
 
-  protected readonly form = this.fb.nonNullable.group(
-    {
-      name: ['', [Validators.required]],
-      email: ['', [Validators.required, Validators.email]],
-      password: ['', [Validators.required, Validators.minLength(8)]],
-    },
-    { updateOn: 'blur' },
-  );
+  // Not `updateOn: 'blur'`: that delays VALUE sync (not just validity), so pressing Enter to
+  // submit right after typing — without a blur event firing first — would read a stale value.
+  // The template already gates error display on `.touched`, which blur sets independently of
+  // `updateOn`, so onBlur-only error display works correctly without this option.
+  protected readonly form = this.fb.nonNullable.group({
+    name: ['', [Validators.required]],
+    email: ['', [Validators.required, Validators.email]],
+    password: ['', [Validators.required, Validators.minLength(8)]],
+  });
 
   protected async onSubmit(): Promise<void> {
     if (this.form.invalid) {

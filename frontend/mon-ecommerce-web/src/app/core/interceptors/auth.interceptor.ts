@@ -2,7 +2,7 @@ import { inject, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { HttpInterceptorFn } from '@angular/common/http';
 
-const ACCESS_TOKEN_KEY = 'accessToken';
+import { ACCESS_TOKEN_KEY } from '../constants/storage-keys';
 
 // Attaches the stored access token to outgoing requests. 401-refresh-and-retry
 // is explicitly Story 2.2's scope, not this one's.

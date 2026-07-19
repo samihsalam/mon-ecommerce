@@ -43,6 +43,14 @@ class AuthNotifier extends Notifier<AuthState> {
           : "Une erreur est survenue lors de l'inscription. Veuillez réessayer.";
       state = state.copyWith(isLoading: false, error: message);
       return false;
+    } catch (e) {
+      // Covers non-Dio failures too (e.g. secureStorageProvider.saveTokens throwing
+      // a PlatformException) — without this, isLoading would stay stuck true.
+      state = state.copyWith(
+        isLoading: false,
+        error: "Une erreur est survenue lors de l'inscription. Veuillez réessayer.",
+      );
+      return false;
     }
   }
 }

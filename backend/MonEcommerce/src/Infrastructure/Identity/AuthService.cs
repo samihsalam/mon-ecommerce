@@ -32,14 +32,28 @@ public class AuthService : IAuthService
             throw new ConflictException("Un compte existe déjà avec cet email.");
 
         var user = new ApplicationUser { UserName = email, Email = email, Name = name };
-        var result = await _userManager.CreateAsync(user, password);
+
+        IdentityResult result;
+        try
+        {
+            result = await _userManager.CreateAsync(user, password);
+        }
+        catch (DbUpdateException)
+        {
+            // Rare race: another request registered the same email between our pre-check above and this call.
+            throw new ConflictException("Un compte existe déjà avec cet email.");
+        }
 
         if (!result.Succeeded)
             return Result<AuthResponse>.Failure(result.Errors.Select(e => e.Description));
 
+        // Issue tokens (and persist the refresh token) before publishing the welcome-email event,
+        // so a failure here can't leave a "welcome" email sent for a registration that never completed.
+        var tokens = await IssueTokensAsync(user, cancellationToken);
+
         await _publisher.Publish(new UserRegisteredEvent(user.Id, name, email), cancellationToken);
 
-        return await IssueTokensAsync(user, cancellationToken);
+        return tokens;
     }
 
     public async Task<Result<AuthResponse>> LoginAsync(string email, string password, CancellationToken cancellationToken = default)

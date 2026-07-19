@@ -13,6 +13,8 @@ class RegisterScreen extends ConsumerStatefulWidget {
 }
 
 class _RegisterScreenState extends ConsumerState<RegisterScreen> {
+  static final _emailPattern = RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$');
+
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();
@@ -68,7 +70,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                 keyboardType: TextInputType.emailAddress,
                 validator: (value) {
                   if (value == null || value.isEmpty) return 'Veuillez saisir un email.';
-                  if (!value.contains('@')) return 'Veuillez saisir un email valide.';
+                  if (!_emailPattern.hasMatch(value)) return 'Veuillez saisir un email valide.';
                   return null;
                 },
               ),

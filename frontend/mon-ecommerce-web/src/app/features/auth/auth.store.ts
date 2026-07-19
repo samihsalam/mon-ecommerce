@@ -5,6 +5,7 @@ import { signalStore, withState, withMethods, patchState } from '@ngrx/signals';
 import { firstValueFrom } from 'rxjs';
 
 import { environment } from '../../../environments/environment';
+import { ACCESS_TOKEN_KEY, REFRESH_TOKEN_KEY } from '../../core/constants/storage-keys';
 
 interface AuthResponse {
   accessToken: string;
@@ -21,9 +22,6 @@ const initialState: AuthState = {
   isLoading: false,
   error: null,
 };
-
-const ACCESS_TOKEN_KEY = 'accessToken';
-const REFRESH_TOKEN_KEY = 'refreshToken';
 
 export const AuthStore = signalStore(
   { providedIn: 'root' },

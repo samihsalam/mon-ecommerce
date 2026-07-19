@@ -2,6 +2,7 @@ using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.RateLimiting;
 using MonEcommerce.Infrastructure.Data;
+using MonEcommerce.Infrastructure.Logging;
 using MonEcommerce.Web.Infrastructure;
 using Scalar.AspNetCore;
 using Serilog;
@@ -21,7 +22,8 @@ builder.WebHost.UseSentry(options =>
 builder.Host.UseSerilog((context, services, config) => config
     .ReadFrom.Configuration(context.Configuration)
     .ReadFrom.Services(services)
-    .Enrich.FromLogContext());
+    .Enrich.FromLogContext()
+    .Destructure.With<SensitiveDataDestructuringPolicy>());
 
 builder.AddKeyVaultIfConfigured();
 builder.AddApplicationServices();

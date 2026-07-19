@@ -1,6 +1,6 @@
 # Story 2.1: Inscription Client
 
-Status: review
+Status: done
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -81,6 +81,27 @@ so that I can access customer-only features (checkout, order history, returns).
   - [x] Backend: real .NET 9 SDK via Docker — 0 warnings/errors, 21/21 tests
   - [x] Angular: `ng build` (production) + `ng test` — both pass, 11/11
   - [x] Flutter: unverified, flagged above and in Completion Notes
+- [x] Task 14: Post-code-review re-verification (after applying all 9 patch items + the decision item)
+  - [x] Backend: real .NET 9 SDK via Docker — `dotnet build MonEcommerce.sln`: 0 warnings/errors. Caught and fixed a genuine `CS8767` nullability mismatch in `SensitiveDataDestructuringPolicy.TryDestructure`'s `out` parameter against `IDestructuringPolicy`'s actual signature, and a missing `using Serilog.Core;` in its test file. `dotnet test` (Application.UnitTests): 25/25 (23 prior + 2 new `AuthServiceRegisterTests`)
+  - [x] Angular: `ng build` (production, SSR) — both routes prerender cleanly; `ng test` via Edge-as-ChromeHeadless — 11/11
+  - [x] Flutter: still unverified (no SDK in this environment) — email-regex and broadened-catch changes are hand-written, not tool-checked
+
+### Review Findings
+
+- [x] [Review][Decision] `RegisterCommand.Password` is logged in plaintext via `LoggingBehaviour.cs`'s `{@Request}` Serilog destructuring, which runs for every MediatR request — **pre-existing since Story 1.4** (not introduced by this story), but AC #4 ("password never stored in plain text or returned in any API response") is arguably violated in spirit by this live logging gap. Fixing it properly means changing shared cross-cutting infrastructure (`LoggingBehaviour.cs`) used by every command, not just `RegisterCommand` — a bigger, riskier change than this story's stated scope. Needs a decision: fix now (touches shared logging infra) or defer with elevated priority given the severity (plaintext passwords in logs, not a cosmetic issue)? — **Resolved: fix now.** Added `SensitiveDataDestructuringPolicy` (`src/Infrastructure/Logging/SensitiveDataDestructuringPolicy.cs`), a general Serilog `IDestructuringPolicy` that redacts any `Password`-named property before `{@Request}` destructuring — covers `RegisterCommand`, `LoginCommand`, and any future command with a `Password` field. Wired into `Program.cs`'s `UseSerilog(...)` chain via `.Destructure.With<SensitiveDataDestructuringPolicy>()`. Covered by `SensitiveDataDestructuringPolicyTests.cs` (2 tests).
+- [x] [Review][Patch] TOCTOU race on duplicate-email registration — confirmed with concrete evidence (`RequireUniqueEmail` not set, no unique index on `NormalizedEmail`, only on `NormalizedUserName`): two concurrent registrations for the same email can both pass the `FindByEmailAsync` pre-check, and the losing `CreateAsync` call can throw a raw `DbUpdateException` (unique constraint violation) that falls through to a generic 500 instead of the intended 409 [backend/MonEcommerce/src/Infrastructure/Identity/AuthService.cs] — **Fixed:** wrapped `CreateAsync` in `try/catch (DbUpdateException)`, rethrown as `ConflictException`. Covered by `AuthServiceRegisterTests.ShouldThrowConflictExceptionWhenCreateAsyncRacesIntoADuplicateEmail`.
+- [x] [Review][Patch] No route defined for `/` in Angular — `register.component.ts` redirects to `/` on success, but `app.routes.ts` only defines `path: 'inscription'`, so the "happy path" navigates to an undefined route (blank router-outlet) [frontend/mon-ecommerce-web/src/app/app.routes.ts] — **Fixed:** added a placeholder `HomeComponent` (`features/home/home.component.ts`) and a `path: ''` route entry.
+- [x] [Review][Patch] `updateOn: 'blur'` on the Angular form can cause Enter-key submission to read stale field values — pressing Enter while a field is focused doesn't reliably fire `blur` first, so `form.getRawValue()` can reflect the pre-edit value. The template's error display already gates on `.touched` (which is set on blur independent of `updateOn`), so removing `updateOn: 'blur'` fixes the staleness bug while preserving the onBlur-error UX [frontend/mon-ecommerce-web/src/app/features/auth/pages/register/register.component.ts] — **Fixed:** removed `updateOn: 'blur'` from the form group config.
+- [x] [Review][Patch] `RegisterCommandValidator`'s `Name` rule has no `MaximumLength` — accepts unbounded-length input [backend/MonEcommerce/src/Application/Auth/Commands/RegisterCommandValidator.cs] — **Fixed:** added `.MaximumLength(100)`.
+- [x] [Review][Patch] Flutter's email validator only checks `value.contains('@')`, accepting input the backend's `EmailAddress()` rule and Angular's `Validators.email` would reject (e.g. `"@"`, `"a@"`) — violates AC #5's "works identically on Angular web and Flutter mobile" [mobile/mon_ecommerce_mobile/lib/features/auth/screens/register_screen.dart] — **Fixed:** replaced with a `RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$')` check.
+- [x] [Review][Patch] `'accessToken'` storage key is hardcoded independently in both `auth.interceptor.ts` and `auth.store.ts` — a rename/typo in one silently desyncs auth for every request [frontend/mon-ecommerce-web/src/app/core/interceptors/auth.interceptor.ts, frontend/mon-ecommerce-web/src/app/features/auth/auth.store.ts] — **Fixed:** added `core/constants/storage-keys.ts` (`ACCESS_TOKEN_KEY`, `REFRESH_TOKEN_KEY`), both files now import from it.
+- [x] [Review][Patch] Flutter `AuthNotifier.register` only catches `DioException` — if `SecureStorage.saveTokens` itself throws (platform channel unavailable), the exception propagates uncaught, leaving `state.isLoading` stuck `true` with no user-visible recovery [mobile/mon_ecommerce_mobile/lib/features/auth/providers/auth_provider.dart] — **Fixed:** added a broader `catch (e)` after the `on DioException` clause.
+- [x] [Review][Patch] Welcome email is published (and, since MediatR's default publisher awaits handlers, fully sent) *before* `IssueTokensAsync`'s `SaveChangesAsync` confirms the refresh token was persisted — if that later save fails, the user gets an error response despite already having received a welcome email for a registration that never completed [backend/MonEcommerce/src/Infrastructure/Identity/AuthService.cs] — **Fixed:** reordered so `IssueTokensAsync` runs before `_publisher.Publish(...)`.
+- [x] [Review][Patch] No test exercises `AuthService.RegisterAsync`'s actual duplicate-email → `ConflictException` path or `ProblemDetailsExceptionHandler`'s new 409 mapping end-to-end — only the validator and the email handler are tested in isolation [backend/MonEcommerce/tests/] — **Fixed:** added `AuthServiceRegisterTests.cs` (2 tests: pre-check duplicate, and the `DbUpdateException` race path).
+- [x] [Review][Defer] Email-enumeration via the 409 response ("Un compte existe déjà avec cet email.") — this is what AC #2 explicitly requires ("a 409 Conflict ProblemDetails response is returned with a clear message"); the enumeration tradeoff is spec-mandated, not a coding oversight. Revisit only if the product later decides to trade UX clarity for enumeration-resistance.
+- [x] [Review][Defer] Flutter's `AutovalidateMode.onUserInteraction` (validates on every keystroke after first interaction) is a meaningfully different trigger than Angular's onBlur-only validation — the story's Dev Notes call this "the closest equivalent" but don't flag the timing difference explicitly. Not fixing (would require disproportionate custom `FocusNode` wiring in Flutter for a minor UX timing difference) — documenting the known platform difference here instead.
+- [x] [Review][Defer] Flutter `auth_provider.dart`'s `response.data!` force-unwraps the Dio response body with no null check — low risk (a 200 response from this endpoint is never null in practice) but exactly the class of bug the story's own "never verified by tooling" disclosure warns about
+- [x] [Review][Defer] `auth.store.ts` only tracks `isLoading`/`error`, no `isAuthenticated`/`user` state — reasonable to defer to Story 2.2 (Connexion), which needs to model session state more broadly than just the registration action
 
 ## Dev Notes
 
@@ -213,8 +234,31 @@ Claude Sonnet 5
 - Scope boundary respected throughout: no 401-refresh-and-retry logic in either client's interceptor (that's Story 2.2), no login/password-reset/profile/order-history screens built (Epic 2's other stories).
 - Two real SSR-specific bugs caught before they shipped: the Angular auth interceptor and auth store both write to `localStorage`, which doesn't exist during server-side prerendering — both guarded with `isPlatformBrowser`. Verified via an actual `ng build` (which runs prerendering) succeeding.
 - Redirect targets are `/` (not `/catalogue`) in both clients, since the catalogue doesn't exist until Epic 3 — documented in the story's own Dev Notes, implemented as specified.
+- **Code review round**: 3-layer adversarial review (Blind Hunter, Edge Case Hunter, Acceptance Auditor) found 1 decision-needed item (password logged in plaintext — user chose "fix now") and 9 patch items; all 10 are now fixed (see Review Findings above) and re-verified against real tooling (Docker .NET 9 SDK, `ng build`/`ng test` via Edge). The rebuild after fixes caught a genuine `CS8767` compiler error in the new `SensitiveDataDestructuringPolicy` (its `out` parameter's nullability didn't match `IDestructuringPolicy`'s actual interface signature) and a missing `using Serilog.Core;` in its test — both fixed. 4 further findings were reviewed and explicitly deferred with rationale (see Review Findings).
 
 ### File List
+
+**Backend — code review fixes:**
+- `backend/MonEcommerce/src/Infrastructure/Logging/SensitiveDataDestructuringPolicy.cs` (new — redacts `Password` properties from Serilog `{@Request}` logging)
+- `backend/MonEcommerce/src/Web/Program.cs` (wired `.Destructure.With<SensitiveDataDestructuringPolicy>()`)
+- `backend/MonEcommerce/src/Infrastructure/Infrastructure.csproj` (added `Serilog` package reference)
+- `backend/MonEcommerce/Directory.Packages.props` (added `Serilog` version)
+- `backend/MonEcommerce/src/Infrastructure/Identity/AuthService.cs` (TOCTOU fix via `DbUpdateException` catch; reordered token issuance before event publish)
+- `backend/MonEcommerce/src/Application/Auth/Commands/RegisterCommandValidator.cs` (`Name` `MaximumLength(100)`)
+- `backend/MonEcommerce/tests/Application.UnitTests/Common/Behaviours/SensitiveDataDestructuringPolicyTests.cs` (new)
+- `backend/MonEcommerce/tests/Application.UnitTests/Auth/Services/AuthServiceRegisterTests.cs` (new)
+
+**Angular — code review fixes:**
+- `frontend/mon-ecommerce-web/src/app/core/constants/storage-keys.ts` (new — shared `ACCESS_TOKEN_KEY`/`REFRESH_TOKEN_KEY`)
+- `frontend/mon-ecommerce-web/src/app/core/interceptors/auth.interceptor.ts` (imports shared constant)
+- `frontend/mon-ecommerce-web/src/app/features/auth/auth.store.ts` (imports shared constants)
+- `frontend/mon-ecommerce-web/src/app/features/home/home.component.ts` (new — fixes missing `/` route)
+- `frontend/mon-ecommerce-web/src/app/app.routes.ts` (added `path: ''` route)
+- `frontend/mon-ecommerce-web/src/app/features/auth/pages/register/register.component.ts` (removed `updateOn: 'blur'`)
+
+**Flutter — code review fixes:**
+- `mobile/mon_ecommerce_mobile/lib/features/auth/screens/register_screen.dart` (tightened email regex)
+- `mobile/mon_ecommerce_mobile/lib/features/auth/providers/auth_provider.dart` (broadened catch to non-`DioException` failures)
 
 **Backend:**
 - `backend/MonEcommerce/src/Infrastructure/Identity/ApplicationUser.cs` (added `Name`)

@@ -15,6 +15,7 @@
     <PackageReference Include="CloudinaryDotNet" />
     <PackageReference Include="StackExchange.Redis" />
     <PackageReference Include="SendGrid" />
+    <PackageReference Include="Serilog" />
     <PackageReference Include="Stripe.net" />
   </ItemGroup>
 
