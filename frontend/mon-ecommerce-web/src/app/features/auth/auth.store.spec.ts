@@ -84,4 +84,23 @@ describe('AuthStore', () => {
     expect(localStorage.getItem(ACCESS_TOKEN_KEY)).toBeNull();
     expect(store.isAuthenticated()).toBe(false);
   });
+
+  it('should sync isAuthenticated when another tab clears the access token', () => {
+    localStorage.setItem(ACCESS_TOKEN_KEY, 'existing-token');
+    const store = TestBed.inject(AuthStore);
+    expect(store.isAuthenticated()).toBe(true);
+
+    window.dispatchEvent(new StorageEvent('storage', { key: ACCESS_TOKEN_KEY, newValue: null }));
+
+    expect(store.isAuthenticated()).toBe(false);
+  });
+
+  it('should ignore storage events for unrelated keys', () => {
+    localStorage.setItem(ACCESS_TOKEN_KEY, 'existing-token');
+    const store = TestBed.inject(AuthStore);
+
+    window.dispatchEvent(new StorageEvent('storage', { key: 'some-other-key', newValue: 'x' }));
+
+    expect(store.isAuthenticated()).toBe(true);
+  });
 });

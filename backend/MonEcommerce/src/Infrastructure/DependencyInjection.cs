@@ -6,6 +6,7 @@ using MonEcommerce.Infrastructure.Data.Interceptors;
 using MonEcommerce.Infrastructure.ExternalServices;
 using MonEcommerce.Infrastructure.Identity;
 using AppIdentityService = MonEcommerce.Infrastructure.Identity.IdentityService;
+using AppAccountService = MonEcommerce.Infrastructure.Identity.AccountService;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -91,6 +92,7 @@ public static class DependencyInjection
         builder.Services.AddTransient<IIdentityService, AppIdentityService>();
         builder.Services.AddTransient<IJwtService, JwtService>();
         builder.Services.AddTransient<IAuthService, AuthService>();
+        builder.Services.AddTransient<IAccountService, AppAccountService>();
 
         // Cloudinary
         var cloudinaryUrl = builder.Configuration["Cloudinary:Url"];

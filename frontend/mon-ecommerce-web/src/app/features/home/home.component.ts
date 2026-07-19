@@ -12,13 +12,12 @@ import { AuthStore } from '../auth/auth.store';
     <main class="mx-auto max-w-md px-4 py-16 text-center">
       <h1 class="font-heading text-3xl text-text mb-8">MonEcommerce</h1>
       @if (hydrated() && authStore.isAuthenticated()) {
-        <button
-          type="button"
-          (click)="onLogout()"
-          class="inline-block rounded-button bg-text text-white px-6 py-2 font-semibold"
-        >
-          Se déconnecter
-        </button>
+        <div class="flex flex-col gap-4 items-center">
+          <a routerLink="/compte" class="inline-block rounded-button bg-text text-white px-6 py-2 font-semibold">
+            Mon compte
+          </a>
+          <button type="button" (click)="onLogout()" class="text-sm text-text underline">Se déconnecter</button>
+        </div>
       } @else {
         <div class="flex flex-col gap-4 items-center">
           <a routerLink="/inscription" class="inline-block rounded-button bg-text text-white px-6 py-2 font-semibold">

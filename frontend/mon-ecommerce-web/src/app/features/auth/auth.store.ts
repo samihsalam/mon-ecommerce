@@ -37,6 +37,18 @@ export const AuthStore = signalStore(
       patchState(store, { isAuthenticated: true });
     }
 
+    // Without this, logging out in one tab leaves isAuthenticated stale (still `true`) in
+    // every other open tab — authGuard would then wrongly grant access to a protected route
+    // in that other tab (the subsequent API call still 401s, so nothing actually leaks, but
+    // the guard's decision would be wrong at that instant).
+    if (isPlatformBrowser(platformId)) {
+      window.addEventListener('storage', (event) => {
+        if (event.key === ACCESS_TOKEN_KEY) {
+          patchState(store, { isAuthenticated: !!event.newValue });
+        }
+      });
+    }
+
     // Dedupe concurrent refresh attempts: if several requests 401 at once, only the first
     // should call /auth/refresh — the backend rotates (revokes the old token), so a second
     // concurrent call using the now-revoked token would fail even though the session is fine.

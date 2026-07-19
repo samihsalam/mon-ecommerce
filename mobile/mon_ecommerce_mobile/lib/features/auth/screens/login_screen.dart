@@ -37,7 +37,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         );
 
     if (success && mounted) {
-      context.go('/');
+      final returnUrl = GoRouterState.of(context).uri.queryParameters['returnUrl'];
+      context.go(returnUrl ?? '/');
     }
   }
 

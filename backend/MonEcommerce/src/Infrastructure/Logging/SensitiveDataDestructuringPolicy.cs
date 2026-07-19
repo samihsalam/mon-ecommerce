@@ -15,6 +15,7 @@ public class SensitiveDataDestructuringPolicy : IDestructuringPolicy
     {
         "Password",
         "NewPassword",
+        "CurrentPassword",
         "Token",
     };
 

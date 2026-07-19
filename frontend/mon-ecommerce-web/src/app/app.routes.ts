@@ -1,5 +1,7 @@
 import { Routes } from '@angular/router';
 
+import { authGuard } from './core/guards/auth.guard';
+
 export const routes: Routes = [
   {
     path: '',
@@ -25,5 +27,10 @@ export const routes: Routes = [
     path: 'reinitialiser-mot-de-passe',
     loadComponent: () =>
       import('./features/auth/pages/reset-password/reset-password.component').then((m) => m.ResetPasswordComponent),
+  },
+  {
+    path: 'compte',
+    canActivate: [authGuard],
+    loadComponent: () => import('./features/account/pages/profile/profile.component').then((m) => m.ProfileComponent),
   },
 ];

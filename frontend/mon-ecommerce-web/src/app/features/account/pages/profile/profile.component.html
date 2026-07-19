@@ -1,0 +1,80 @@
+<main class="mx-auto max-w-md px-4 py-16">
+  <h1 class="font-heading text-3xl text-text mb-8">Mon profil</h1>
+
+  @if (!initialized()) {
+    @if (accountStore.error()) {
+      <p class="text-sm text-error" role="alert">{{ accountStore.error() }}</p>
+    } @else {
+      <p class="text-sm text-text" role="status">Chargement de votre profil…</p>
+    }
+  } @else {
+  <form [formGroup]="form" (ngSubmit)="onSubmit()" novalidate>
+    <div class="mb-4">
+      <label for="name" class="block mb-1 text-sm font-medium text-text">Nom</label>
+      <input
+        id="name"
+        type="text"
+        formControlName="name"
+        class="w-full rounded-card border border-border px-3 py-2"
+        [attr.aria-describedby]="form.controls.name.invalid && form.controls.name.touched ? 'name-error' : null"
+      />
+      @if (form.controls.name.invalid && form.controls.name.touched) {
+        <p id="name-error" class="mt-1 text-sm text-error">Le nom est requis.</p>
+      }
+    </div>
+
+    <div class="mb-4">
+      <label for="email" class="block mb-1 text-sm font-medium text-text">Email</label>
+      <input
+        id="email"
+        type="email"
+        formControlName="email"
+        class="w-full rounded-card border border-border px-3 py-2"
+        [attr.aria-describedby]="form.controls.email.invalid && form.controls.email.touched ? 'email-error' : null"
+      />
+      @if (form.controls.email.invalid && form.controls.email.touched) {
+        <p id="email-error" class="mt-1 text-sm text-error">Veuillez saisir un email valide.</p>
+      }
+    </div>
+
+    @if (isEmailChanged) {
+      <div class="mb-6">
+        <label for="currentPassword" class="block mb-1 text-sm font-medium text-text">
+          Mot de passe actuel (requis pour changer d'email)
+        </label>
+        <input
+          id="currentPassword"
+          type="password"
+          formControlName="currentPassword"
+          class="w-full rounded-card border border-border px-3 py-2"
+        />
+      </div>
+    }
+
+    @if (accountStore.error()) {
+      <p class="mb-4 text-sm text-error" role="alert">{{ accountStore.error() }}</p>
+    }
+
+    <button
+      type="submit"
+      [disabled]="accountStore.isLoading()"
+      class="w-full rounded-button bg-text text-white py-2 font-semibold hover:bg-accent hover:text-text transition disabled:opacity-50"
+    >
+      {{ accountStore.isLoading() ? 'Enregistrement en cours…' : 'Enregistrer' }}
+    </button>
+  </form>
+
+  @if (accountStore.profile()?.addresses?.length) {
+    <section class="mt-12">
+      <h2 class="font-heading text-xl text-text mb-4">Adresses enregistrées</h2>
+      <ul class="space-y-3">
+        @for (address of accountStore.profile()?.addresses; track address.id) {
+          <li class="rounded-card border border-border px-3 py-2 text-sm text-text">
+            {{ address.street }}, {{ address.postalCode }} {{ address.city }}, {{ address.country }}
+          </li>
+        }
+      </ul>
+    </section>
+  }
+  }
+</main>
