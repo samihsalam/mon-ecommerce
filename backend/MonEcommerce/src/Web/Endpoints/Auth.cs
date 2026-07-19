@@ -14,6 +14,8 @@ public class Auth : IEndpointGroup
         groupBuilder.MapPost(Login, "login").AllowAnonymous().RequireRateLimiting("auth");
         groupBuilder.MapPost(Refresh, "refresh").AllowAnonymous().RequireRateLimiting("auth");
         groupBuilder.MapPost(Logout, "logout").RequireAuthorization();
+        groupBuilder.MapPost(ForgotPassword, "forgot-password").AllowAnonymous().RequireRateLimiting("auth");
+        groupBuilder.MapPost(ResetPassword, "reset-password").AllowAnonymous().RequireRateLimiting("auth");
     }
 
     [EndpointSummary("Register a new account")]
@@ -50,5 +52,23 @@ public class Auth : IEndpointGroup
     {
         await sender.Send(command);
         return Results.Ok();
+    }
+
+    // Always 200 regardless of whether the email is registered — ForgotPasswordAsync itself
+    // never returns failure, by design (no email enumeration; see AuthService.cs).
+    [EndpointSummary("Request a password reset email")]
+    public static async Task<IResult> ForgotPassword([FromBody] ForgotPasswordCommand command, ISender sender)
+    {
+        await sender.Send(command);
+        return Results.Ok();
+    }
+
+    [EndpointSummary("Reset password with a token")]
+    public static async Task<IResult> ResetPassword([FromBody] ResetPasswordCommand command, ISender sender)
+    {
+        var result = await sender.Send(command);
+        return result.Succeeded
+            ? Results.Ok()
+            : Results.Json(new { result.Errors }, statusCode: StatusCodes.Status400BadRequest);
     }
 }

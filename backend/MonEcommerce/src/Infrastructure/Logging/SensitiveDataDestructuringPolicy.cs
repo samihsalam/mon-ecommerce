@@ -5,16 +5,17 @@ using Serilog.Events;
 namespace MonEcommerce.Infrastructure.Logging;
 
 /// <summary>
-/// Redacts properties named "Password" (case-insensitive) before Serilog's <c>{@Request}</c>
+/// Redacts sensitive properties (case-insensitive) before Serilog's <c>{@Request}</c>
 /// destructuring (used by <c>LoggingBehaviour&lt;TRequest&gt;</c>) would otherwise log them in
-/// plain text. Applies to any logged object, not just Auth commands — both RegisterCommand and
-/// LoginCommand carry a Password field today.
+/// plain text. Applies to any logged object, not just Auth commands.
 /// </summary>
 public class SensitiveDataDestructuringPolicy : IDestructuringPolicy
 {
     private static readonly HashSet<string> SensitivePropertyNames = new(StringComparer.OrdinalIgnoreCase)
     {
         "Password",
+        "NewPassword",
+        "Token",
     };
 
     public bool TryDestructure(object value, ILogEventPropertyValueFactory propertyValueFactory, out LogEventPropertyValue result)

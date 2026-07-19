@@ -14,7 +14,14 @@ import { AuthStore } from '../../features/auth/auth.store';
 // refresh-and-retry a logout call — doing so would just flip isAuthenticated true again
 // right before logout flips it back false, and could even redirect to /connexion mid-logout
 // if the refresh itself then failed.
-const AUTH_ENDPOINTS = ['/api/v1/auth/login', '/api/v1/auth/register', '/api/v1/auth/refresh', '/api/v1/auth/logout'];
+const AUTH_ENDPOINTS = [
+  '/api/v1/auth/login',
+  '/api/v1/auth/register',
+  '/api/v1/auth/refresh',
+  '/api/v1/auth/logout',
+  '/api/v1/auth/forgot-password',
+  '/api/v1/auth/reset-password',
+];
 
 // Attaches the stored access token to outgoing requests, and transparently refreshes
 // and retries on a 401. 401-refresh-and-retry is Story 2.2's scope; token-attach alone

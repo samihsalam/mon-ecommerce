@@ -1,6 +1,7 @@
 using MediatR;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Moq;
 using MonEcommerce.Application.Common.Interfaces;
 using MonEcommerce.Domain.Entities;
@@ -16,6 +17,7 @@ public class AuthServiceLogoutTests
     private Mock<IJwtService> _jwtService = null!;
     private ApplicationDbContext _context = null!;
     private Mock<IPublisher> _publisher = null!;
+    private Mock<IConfiguration> _configuration = null!;
     private AuthService _authService = null!;
 
     [SetUp]
@@ -31,7 +33,8 @@ public class AuthServiceLogoutTests
         _context = new ApplicationDbContext(options);
 
         _publisher = new Mock<IPublisher>();
-        _authService = new AuthService(_userManager.Object, _jwtService.Object, _context, _publisher.Object);
+        _configuration = new Mock<IConfiguration>();
+        _authService = new AuthService(_userManager.Object, _jwtService.Object, _context, _publisher.Object, _configuration.Object);
     }
 
     [TearDown]

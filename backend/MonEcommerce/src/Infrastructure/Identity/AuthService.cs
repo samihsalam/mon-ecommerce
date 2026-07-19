@@ -1,3 +1,4 @@
+using System.Net;
 using MediatR;
 using MonEcommerce.Application.Auth.Models;
 using MonEcommerce.Application.Common.Exceptions;
@@ -7,6 +8,7 @@ using MonEcommerce.Domain.Entities;
 using MonEcommerce.Domain.Events;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 
 namespace MonEcommerce.Infrastructure.Identity;
 
@@ -16,13 +18,15 @@ public class AuthService : IAuthService
     private readonly IJwtService _jwtService;
     private readonly IApplicationDbContext _context;
     private readonly IPublisher _publisher;
+    private readonly IConfiguration _configuration;
 
-    public AuthService(UserManager<ApplicationUser> userManager, IJwtService jwtService, IApplicationDbContext context, IPublisher publisher)
+    public AuthService(UserManager<ApplicationUser> userManager, IJwtService jwtService, IApplicationDbContext context, IPublisher publisher, IConfiguration configuration)
     {
         _userManager = userManager;
         _jwtService = jwtService;
         _context = context;
         _publisher = publisher;
+        _configuration = configuration;
     }
 
     public async Task<Result<AuthResponse>> RegisterAsync(string name, string email, string password, CancellationToken cancellationToken = default)
@@ -92,6 +96,69 @@ public class AuthService : IAuthService
             token.RevokedAt = DateTimeOffset.UtcNow;
             await _context.SaveChangesAsync(cancellationToken);
         }
+    }
+
+    public async Task<Result> ForgotPasswordAsync(string email, CancellationToken cancellationToken = default)
+    {
+        var user = await _userManager.FindByEmailAsync(email);
+        if (user == null)
+        {
+            // No enumeration: always report success whether or not the email is registered.
+            // The "found" branch below awaits a real SendGrid network call before returning
+            // (see the comment near the Publish call) — without this delay, an unregistered
+            // email would get a measurably faster response than a registered one, which is
+            // itself an enumeration signal even though the response body is identical.
+            await Task.Delay(TimeSpan.FromMilliseconds(400), cancellationToken);
+            return Result.Success();
+        }
+
+        var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+        var baseUrl = _configuration["Frontend:BaseUrl"]!.TrimEnd('/');
+        var link = $"{baseUrl}/reinitialiser-mot-de-passe?email={WebUtility.UrlEncode(user.Email)}&token={WebUtility.UrlEncode(token)}";
+
+        await _publisher.Publish(new PasswordResetRequestedEvent(user.Id, user.Name, user.Email!, link), cancellationToken);
+
+        return Result.Success();
+    }
+
+    public async Task<Result> ResetPasswordAsync(string email, string token, string newPassword, CancellationToken cancellationToken = default)
+    {
+        const string genericFailure = "Ce lien de réinitialisation est invalide ou a expiré.";
+
+        var user = await _userManager.FindByEmailAsync(email);
+        if (user == null)
+        {
+            // Same generic message as an invalid/expired token: don't reveal whether the email is registered.
+            return Result.Failure([genericFailure]);
+        }
+
+        var result = await _userManager.ResetPasswordAsync(user, token, newPassword);
+        if (!result.Succeeded)
+        {
+            return Result.Failure([genericFailure]);
+        }
+
+        // Known, narrow race: a refresh token issued by a concurrent login/refresh on another
+        // device (inserted after this SELECT but before SaveChanges below) would be missed and
+        // survive the reset. A single atomic ExecuteUpdateAsync would close this, but EF Core's
+        // InMemory provider (used by this test suite) doesn't support ExecuteUpdate/Delete —
+        // only real SQL providers do. Revisit with a provider-aware approach if this narrow
+        // window ever proves exploitable in practice; SQL Server (production) does support it.
+        var activeTokens = await _context.RefreshTokens
+            .Where(rt => rt.UserId == user.Id && rt.RevokedAt == null)
+            .ToListAsync(cancellationToken);
+
+        foreach (var refreshToken in activeTokens)
+        {
+            refreshToken.RevokedAt = DateTimeOffset.UtcNow;
+        }
+
+        if (activeTokens.Count > 0)
+        {
+            await _context.SaveChangesAsync(cancellationToken);
+        }
+
+        return Result.Success();
     }
 
     private async Task<Result<AuthResponse>> IssueTokensAsync(ApplicationUser user, CancellationToken cancellationToken)

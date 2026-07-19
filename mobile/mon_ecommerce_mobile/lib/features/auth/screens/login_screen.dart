@@ -72,6 +72,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 obscureText: true,
                 validator: (value) => (value == null || value.isEmpty) ? 'Le mot de passe est requis.' : null,
               ),
+              Align(
+                alignment: Alignment.centerRight,
+                child: TextButton(
+                  onPressed: () => context.go('/mot-de-passe-oublie'),
+                  child: const Text('Mot de passe oublié ?'),
+                ),
+              ),
               if (authState.error != null) ...[
                 const SizedBox(height: AppTokens.space16),
                 Text(

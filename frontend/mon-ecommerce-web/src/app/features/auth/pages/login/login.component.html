@@ -30,6 +30,10 @@
       }
     </div>
 
+    <div class="mb-6 text-right">
+      <a routerLink="/mot-de-passe-oublie" class="text-sm text-text underline">Mot de passe oublié ?</a>
+    </div>
+
     @if (authStore.error()) {
       <p class="mb-4 text-sm text-error" role="alert">{{ authStore.error() }}</p>
     }

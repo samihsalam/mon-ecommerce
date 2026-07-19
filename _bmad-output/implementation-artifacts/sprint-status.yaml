@@ -35,7 +35,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 
 generated: 2026-04-13
-last_updated: 2026-07-19 (2.2 done)
+last_updated: 2026-07-19 (2.3 done)
 project: mon-ecommerce
 project_key: NOKEY
 tracking_system: file-system
@@ -60,7 +60,7 @@ development_status:
   epic-2: in-progress
   2-1-inscription-client: done
   2-2-connexion-et-deconnexion: done
-  2-3-reinitialisation-du-mot-de-passe: backlog
+  2-3-reinitialisation-du-mot-de-passe: done
   2-4-profil-client-consultation-et-modification: backlog
   2-5-historique-des-commandes: backlog
   epic-2-retrospective: optional

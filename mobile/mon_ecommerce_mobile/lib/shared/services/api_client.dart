@@ -12,7 +12,14 @@ const String _baseUrl = String.fromEnvironment('API_BASE_URL', defaultValue: 'ht
 // excluded too: AuthNotifier.logout() already treats any failure there as best-effort and
 // clears local state regardless, so there's no need to refresh-and-retry a logout call —
 // doing so would just flip isAuthenticated true again right before logout flips it back false.
-const _authPaths = ['/api/v1/auth/login', '/api/v1/auth/register', '/api/v1/auth/refresh', '/api/v1/auth/logout'];
+const _authPaths = [
+  '/api/v1/auth/login',
+  '/api/v1/auth/register',
+  '/api/v1/auth/refresh',
+  '/api/v1/auth/logout',
+  '/api/v1/auth/forgot-password',
+  '/api/v1/auth/reset-password',
+];
 
 // Marks a request as already having gone through one refresh-and-retry cycle, so a second
 // 401 on the retried request (e.g. the backend 401s that resource for an unrelated reason)

@@ -120,6 +120,50 @@ class AuthNotifier extends Notifier<AuthState> {
     }
   }
 
+  Future<bool> forgotPassword(String email) async {
+    state = state.copyWith(isLoading: true, error: null);
+
+    try {
+      await ref.read(apiClientProvider).post<void>('/api/v1/auth/forgot-password', data: {'email': email});
+      state = state.copyWith(isLoading: false);
+      return true;
+    } catch (e) {
+      // The backend always returns 200 regardless of whether the email is registered
+      // (no enumeration) — this realistically only fails on a network-level error.
+      state = state.copyWith(isLoading: false, error: 'Une erreur est survenue. Veuillez réessayer.');
+      return false;
+    }
+  }
+
+  Future<bool> resetPassword(String email, String token, String newPassword) async {
+    state = state.copyWith(isLoading: true, error: null);
+
+    try {
+      final dio = ref.read(apiClientProvider);
+      await dio.post<void>(
+        '/api/v1/auth/reset-password',
+        data: {'email': email, 'token': token, 'newPassword': newPassword},
+      );
+
+      state = state.copyWith(isLoading: false);
+      return true;
+    } on DioException catch (e) {
+      // 400: AuthService.ResetPasswordAsync's own business-failure message (unknown email /
+      // invalid or expired token). 422: FluentValidation rejected the request (e.g. an empty
+      // email/token from a malformed link) — the screen-level guard should prevent this in
+      // normal use, but treat it the same defensively.
+      final statusCode = e.response?.statusCode;
+      final message = statusCode == 400 || statusCode == 422
+          ? 'Ce lien de réinitialisation est invalide ou a expiré.'
+          : 'Une erreur est survenue. Veuillez réessayer.';
+      state = state.copyWith(isLoading: false, error: message);
+      return false;
+    } catch (e) {
+      state = state.copyWith(isLoading: false, error: 'Une erreur est survenue. Veuillez réessayer.');
+      return false;
+    }
+  }
+
   Future<void> logout() async {
     final storage = ref.read(secureStorageProvider);
     final refreshToken = await storage.refreshToken;

@@ -113,6 +113,48 @@ export const AuthStore = signalStore(
         patchState(store, { isAuthenticated: false });
       },
 
+      async forgotPassword(email: string): Promise<boolean> {
+        patchState(store, { isLoading: true, error: null });
+
+        try {
+          await firstValueFrom(http.post(`${environment.apiUrl}/api/v1/auth/forgot-password`, { email }));
+          patchState(store, { isLoading: false });
+          return true;
+        } catch {
+          // The backend always returns 200 regardless of whether the email is registered
+          // (no enumeration) — this realistically only fails on a network-level error.
+          patchState(store, {
+            isLoading: false,
+            error: "Une erreur est survenue. Veuillez réessayer.",
+          });
+          return false;
+        }
+      },
+
+      async resetPassword(email: string, token: string, newPassword: string): Promise<boolean> {
+        patchState(store, { isLoading: true, error: null });
+
+        try {
+          await firstValueFrom(
+            http.post(`${environment.apiUrl}/api/v1/auth/reset-password`, { email, token, newPassword }),
+          );
+          patchState(store, { isLoading: false });
+          return true;
+        } catch (err) {
+          // 400: AuthService.ResetPasswordAsync's own business-failure message (unknown
+          // email / invalid or expired token). 422: FluentValidation rejected the request
+          // (e.g. an empty email/token from a malformed link) — the client-side guard above
+          // should prevent this in normal use, but treat it the same defensively.
+          const message =
+            err instanceof HttpErrorResponse && (err.status === 400 || err.status === 422)
+              ? 'Ce lien de réinitialisation est invalide ou a expiré.'
+              : 'Une erreur est survenue. Veuillez réessayer.';
+
+          patchState(store, { isLoading: false, error: message });
+          return false;
+        }
+      },
+
       async refresh(): Promise<boolean> {
         if (refreshInFlight) {
           return refreshInFlight;
