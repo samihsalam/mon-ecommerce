@@ -10,6 +10,7 @@ import '../features/auth/screens/forgot_password_screen.dart';
 import '../features/auth/screens/login_screen.dart';
 import '../features/auth/screens/register_screen.dart';
 import '../features/auth/screens/reset_password_screen.dart';
+import '../features/catalogue/screens/catalogue_screen.dart';
 import '../features/catalogue/screens/search_screen.dart';
 import '../shared/services/secure_storage.dart';
 
@@ -47,6 +48,10 @@ final router = GoRouter(
   routes: [
     GoRoute(path: '/', builder: (context, state) => const _HomeScreen()),
     GoRoute(path: '/recherche', builder: (context, state) => const SearchScreen()),
+    GoRoute(
+      path: '/catalogue',
+      builder: (context, state) => CatalogueScreen(categoryId: state.uri.queryParameters['categoryId']),
+    ),
     GoRoute(path: '/inscription', builder: (context, state) => const RegisterScreen()),
     GoRoute(path: '/connexion', builder: (context, state) => const LoginScreen()),
     GoRoute(path: '/mot-de-passe-oublie', builder: (context, state) => const ForgotPasswordScreen()),
@@ -81,6 +86,11 @@ class _HomeScreen extends ConsumerWidget {
       appBar: AppBar(
         title: const Text('MonEcommerce'),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.grid_view),
+            tooltip: 'Catalogue',
+            onPressed: () => context.go('/catalogue'),
+          ),
           IconButton(
             icon: const Icon(Icons.search),
             tooltip: 'Rechercher',
