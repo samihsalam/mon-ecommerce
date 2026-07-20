@@ -1,0 +1,45 @@
+<main class="mx-auto max-w-5xl px-4 py-16">
+  <div class="max-w-xl mb-8">
+    <app-search-bar />
+  </div>
+
+  @if (currentTerm().length < 2) {
+    <p class="text-sm text-text-secondary">Saisissez au moins 2 caractères pour lancer une recherche.</p>
+  } @else if (catalogueStore.isSearching()) {
+    <p class="text-sm text-text" role="status">Recherche en cours…</p>
+  } @else if (catalogueStore.searchError()) {
+    <p class="text-sm text-error" role="alert">{{ catalogueStore.searchError() }}</p>
+  } @else if (catalogueStore.results().length === 0) {
+    <div class="text-center py-16">
+      <p class="text-text mb-6">Aucun résultat pour « {{ currentTerm() }} »</p>
+      @if (catalogueStore.categories().length > 0) {
+        <p class="text-sm text-text-secondary mb-3">Essayez une de ces catégories :</p>
+        <ul class="flex flex-wrap justify-center gap-2">
+          @for (category of catalogueStore.categories(); track category.id) {
+            <li>
+              <a
+                [routerLink]="['/']"
+                [queryParams]="{ categoryId: category.id }"
+                class="inline-block rounded-button border border-border px-4 py-2 text-sm text-text hover:border-accent transition"
+              >
+                {{ category.name }}
+              </a>
+            </li>
+          }
+        </ul>
+      }
+    </div>
+  } @else {
+    <p class="text-sm text-text-secondary mb-4">
+      {{ catalogueStore.totalCount() }} résultat(s) pour « {{ currentTerm() }} »
+    </p>
+    <ul class="grid grid-cols-2 sm:grid-cols-3 gap-4">
+      @for (product of catalogueStore.results(); track product.id) {
+        <li class="rounded-card border border-border p-3">
+          <p class="font-semibold text-text">{{ product.name }}</p>
+          <p class="text-sm text-text-secondary">{{ formatAmount(product.priceInCents) }}</p>
+        </li>
+      }
+    </ul>
+  }
+</main>

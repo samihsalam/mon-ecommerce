@@ -1,0 +1,48 @@
+<div class="relative">
+  <label for="search-input" class="sr-only">Rechercher un produit</label>
+  <input
+    id="search-input"
+    type="search"
+    class="w-full rounded-button border border-border px-4 py-2 text-text focus:outline-none focus:ring-2 focus:ring-accent"
+    placeholder="Rechercher un produit…"
+    [value]="term()"
+    (input)="onInput($any($event.target).value)"
+    (keydown.enter)="onEnter()"
+    (keydown.escape)="onEscape()"
+    autocomplete="off"
+    role="combobox"
+    aria-autocomplete="list"
+    aria-label="Rechercher un produit"
+    [attr.aria-expanded]="isOpen()"
+  />
+
+  @if (isOpen() && (catalogueStore.suggestions().categories.length > 0 || catalogueStore.suggestions().products.length > 0)) {
+    <ul
+      class="absolute z-10 mt-1 w-full rounded-card border border-border bg-white shadow-lg overflow-hidden"
+      role="listbox"
+    >
+      @for (category of catalogueStore.suggestions().categories; track category) {
+        <li role="option">
+          <button
+            type="button"
+            class="block w-full text-left px-4 py-2 hover:bg-background text-text-secondary text-sm"
+            (click)="selectSuggestion(category)"
+          >
+            {{ category }} <span class="text-xs">(catégorie)</span>
+          </button>
+        </li>
+      }
+      @for (product of catalogueStore.suggestions().products; track product) {
+        <li role="option">
+          <button
+            type="button"
+            class="block w-full text-left px-4 py-2 hover:bg-background text-text text-sm"
+            (click)="selectSuggestion(product)"
+          >
+            {{ product }}
+          </button>
+        </li>
+      }
+    </ul>
+  }
+</div>

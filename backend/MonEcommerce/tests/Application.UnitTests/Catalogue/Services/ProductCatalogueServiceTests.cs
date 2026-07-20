@@ -67,7 +67,7 @@ public class ProductCatalogueServiceTests
     {
         var service = CreateService();
 
-        var result = await service.GetProductsAsync(new ProductFilter(null, null, null, null, null, 1, 20));
+        var result = await service.GetProductsAsync(new ProductFilter(null, null, null, null, null, null, 1, 20));
 
         Assert.That(result.Items, Is.Empty);
         Assert.That(result.TotalCount, Is.EqualTo(0));
@@ -82,7 +82,7 @@ public class ProductCatalogueServiceTests
         SeedProduct(category, "Draft Chair", 10000, isPublished: false);
         await _context.SaveChangesAsync(CancellationToken.None);
 
-        var result = await CreateService().GetProductsAsync(new ProductFilter(null, null, null, null, null, 1, 20));
+        var result = await CreateService().GetProductsAsync(new ProductFilter(null, null, null, null, null, null, 1, 20));
 
         Assert.That(result.Items, Has.Count.EqualTo(1));
         Assert.That(result.Items[0].Name, Is.EqualTo("Published Chair"));
@@ -100,19 +100,19 @@ public class ProductCatalogueServiceTests
 
         var service = CreateService();
 
-        var byCategory = await service.GetProductsAsync(new ProductFilter(chairs.Id, null, null, null, null, 1, 20));
+        var byCategory = await service.GetProductsAsync(new ProductFilter(chairs.Id, null, null, null, null, null, 1, 20));
         Assert.That(byCategory.Items, Has.Count.EqualTo(2));
 
-        var byMaterial = await service.GetProductsAsync(new ProductFilter(null, "Bois", null, null, null, 1, 20));
+        var byMaterial = await service.GetProductsAsync(new ProductFilter(null, "Bois", null, null, null, null, 1, 20));
         Assert.That(byMaterial.Items, Has.Count.EqualTo(2));
 
-        var byColor = await service.GetProductsAsync(new ProductFilter(null, null, "Rouge", null, null, 1, 20));
+        var byColor = await service.GetProductsAsync(new ProductFilter(null, null, "Rouge", null, null, null, 1, 20));
         Assert.That(byColor.Items, Has.Count.EqualTo(2));
 
-        var byPriceRange = await service.GetProductsAsync(new ProductFilter(null, null, null, 10000, 20000, 1, 20));
+        var byPriceRange = await service.GetProductsAsync(new ProductFilter(null, null, null, 10000, 20000, null, 1, 20));
         Assert.That(byPriceRange.Items, Has.Count.EqualTo(2));
 
-        var combined = await service.GetProductsAsync(new ProductFilter(chairs.Id, "Bois", "Rouge", null, null, 1, 20));
+        var combined = await service.GetProductsAsync(new ProductFilter(chairs.Id, "Bois", "Rouge", null, null, null, 1, 20));
         Assert.That(combined.Items, Has.Count.EqualTo(1));
         Assert.That(combined.Items[0].Name, Is.EqualTo("Wooden Red Chair"));
     }
@@ -129,10 +129,10 @@ public class ProductCatalogueServiceTests
 
         var service = CreateService();
 
-        var negativePage = await service.GetProductsAsync(new ProductFilter(null, null, null, null, null, -1, 20));
+        var negativePage = await service.GetProductsAsync(new ProductFilter(null, null, null, null, null, null, -1, 20));
         Assert.That(negativePage.PageNumber, Is.EqualTo(1));
 
-        var oversizedPageSize = await service.GetProductsAsync(new ProductFilter(null, null, null, null, null, 1, 1000));
+        var oversizedPageSize = await service.GetProductsAsync(new ProductFilter(null, null, null, null, null, null, 1, 1000));
         Assert.That(oversizedPageSize.PageSize, Is.EqualTo(100));
     }
 
@@ -142,7 +142,7 @@ public class ProductCatalogueServiceTests
         // Regression test: (pageNumber - 1) * pageSize previously overflowed 32-bit int
         // arithmetic for extreme pageNumber values, wrapping to a negative Skip() that SQL
         // Server would reject at runtime. Just proving this doesn't throw is the point.
-        var result = await CreateService().GetProductsAsync(new ProductFilter(null, null, null, null, null, int.MaxValue, 100));
+        var result = await CreateService().GetProductsAsync(new ProductFilter(null, null, null, null, null, null, int.MaxValue, 100));
 
         Assert.That(result.Items, Is.Empty);
         Assert.That(result.PageNumber, Is.LessThanOrEqualTo(1_000_000));
@@ -171,8 +171,8 @@ public class ProductCatalogueServiceTests
 
         var service = CreateService(cacheMock.Object);
 
-        var resultA = await service.GetProductsAsync(new ProductFilter(null, "a:col=b", "c", null, null, 1, 20));
-        var resultB = await service.GetProductsAsync(new ProductFilter(null, "a", "b:col=c", null, null, 1, 20));
+        var resultA = await service.GetProductsAsync(new ProductFilter(null, "a:col=b", "c", null, null, null, 1, 20));
+        var resultB = await service.GetProductsAsync(new ProductFilter(null, "a", "b:col=c", null, null, null, 1, 20));
 
         Assert.That(resultA.Items, Has.Count.EqualTo(1));
         Assert.That(resultA.Items[0].Name, Is.EqualTo("Product A"));
@@ -190,7 +190,7 @@ public class ProductCatalogueServiceTests
         }
         await _context.SaveChangesAsync(CancellationToken.None);
 
-        var result = await CreateService().GetProductsAsync(new ProductFilter(null, null, null, null, null, 1, 20));
+        var result = await CreateService().GetProductsAsync(new ProductFilter(null, null, null, null, null, null, 1, 20));
 
         Assert.That(result.TotalCount, Is.EqualTo(25));
         Assert.That(result.TotalPages, Is.EqualTo(2));
@@ -210,7 +210,7 @@ public class ProductCatalogueServiceTests
             .Setup(c => c.GetAsync<PagedProductsResult<ProductSummaryDto>>(It.IsAny<string>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync((PagedProductsResult<ProductSummaryDto>?)null);
 
-        await CreateService(cacheMock.Object).GetProductsAsync(new ProductFilter(null, null, null, null, null, 1, 20));
+        await CreateService(cacheMock.Object).GetProductsAsync(new ProductFilter(null, null, null, null, null, null, 1, 20));
 
         cacheMock.Verify(
             c => c.SetAsync(It.IsAny<string>(), It.IsAny<PagedProductsResult<ProductSummaryDto>>(), It.IsAny<TimeSpan>(), It.IsAny<CancellationToken>()),
@@ -232,12 +232,159 @@ public class ProductCatalogueServiceTests
             .Setup(c => c.GetAsync<PagedProductsResult<ProductSummaryDto>>(It.IsAny<string>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(cannedResult);
 
-        var result = await CreateService(cacheMock.Object).GetProductsAsync(new ProductFilter(null, null, null, null, null, 1, 20));
+        var result = await CreateService(cacheMock.Object).GetProductsAsync(new ProductFilter(null, null, null, null, null, null, 1, 20));
 
         Assert.That(result, Is.SameAs(cannedResult));
         cacheMock.Verify(
             c => c.SetAsync(It.IsAny<string>(), It.IsAny<PagedProductsResult<ProductSummaryDto>>(), It.IsAny<TimeSpan>(), It.IsAny<CancellationToken>()),
             Times.Never);
+    }
+
+    [Test]
+    public async Task GetProductsAsync_ShouldMatchOnNameOrDescriptionCaseInsensitively()
+    {
+        var category = SeedCategory();
+        var sofa = SeedProduct(category, "Canapé en Cuir", 50000);
+        var chair = SeedProduct(category, "Chaise en Bois", 10000);
+        chair.Description = "Une chaise avec des accents en CUIR véritable";
+        SeedProduct(category, "Table Basse", 15000);
+        await _context.SaveChangesAsync(CancellationToken.None);
+
+        var result = await CreateService().GetProductsAsync(new ProductFilter(null, null, null, null, null, "cuir", 1, 20));
+
+        Assert.That(result.Items, Has.Count.EqualTo(2));
+        Assert.That(result.Items.Select(i => i.Name), Is.EquivalentTo(new[] { sofa.Name, chair.Name }));
+    }
+
+    [Test]
+    public async Task GetProductsAsync_ShouldRankExactAndPrefixNameMatchesAboveDescriptionOnlyMatches()
+    {
+        var category = SeedCategory();
+        var descriptionOnly = SeedProduct(category, "Table Basse", 15000);
+        descriptionOnly.Description = "Fabriquée en chêne massif";
+        var prefixMatch = SeedProduct(category, "Chêne Massif Buffet", 30000);
+        var exactMatch = SeedProduct(category, "chêne", 5000);
+        await _context.SaveChangesAsync(CancellationToken.None);
+
+        var result = await CreateService().GetProductsAsync(new ProductFilter(null, null, null, null, null, "chêne", 1, 20));
+
+        Assert.That(result.Items.Select(i => i.Name), Is.EqualTo(new[] { exactMatch.Name, prefixMatch.Name, descriptionOnly.Name }));
+    }
+
+    [Test]
+    public async Task GetProductsAsync_ShouldReturnEmptyResultWhenSearchTermMatchesNothing()
+    {
+        var category = SeedCategory();
+        SeedProduct(category, "Canapé", 50000);
+        await _context.SaveChangesAsync(CancellationToken.None);
+
+        var result = await CreateService().GetProductsAsync(new ProductFilter(null, null, null, null, null, "zzz-no-match", 1, 20));
+
+        Assert.That(result.Items, Is.Empty);
+        Assert.That(result.TotalCount, Is.EqualTo(0));
+    }
+
+    [Test]
+    public async Task GetProductsAsync_ShouldCombineSearchWithOtherFilters()
+    {
+        var chairs = SeedCategory("Chaises");
+        var tables = SeedCategory("Tables");
+        SeedProduct(chairs, "Chaise en Cuir", 10000);
+        SeedProduct(tables, "Table en Cuir", 20000);
+        await _context.SaveChangesAsync(CancellationToken.None);
+
+        var result = await CreateService().GetProductsAsync(new ProductFilter(chairs.Id, null, null, null, null, "cuir", 1, 20));
+
+        Assert.That(result.Items, Has.Count.EqualTo(1));
+        Assert.That(result.Items[0].Name, Is.EqualTo("Chaise en Cuir"));
+    }
+
+    [Test]
+    public async Task GetSearchSuggestionsAsync_ShouldReturnMatchingCategoriesAndProductNames()
+    {
+        var chairs = SeedCategory("Chaises en cuir");
+        SeedCategory("Tables");
+        SeedProduct(chairs, "Fauteuil Cuir", 10000);
+        SeedProduct(chairs, "Canapé Cuir", 50000);
+        await _context.SaveChangesAsync(CancellationToken.None);
+
+        var result = await CreateService().GetSearchSuggestionsAsync("cuir");
+
+        Assert.That(result.Categories, Is.EqualTo(new[] { "Chaises en cuir" }));
+        Assert.That(result.Products, Is.EquivalentTo(new[] { "Fauteuil Cuir", "Canapé Cuir" }));
+    }
+
+    [Test]
+    public async Task GetSearchSuggestionsAsync_ShouldCapCombinedSuggestionsAtFive()
+    {
+        var category = SeedCategory("cuiristerie");
+        for (var i = 0; i < 6; i++)
+        {
+            SeedProduct(category, $"Produit Cuir {i}", 1000);
+        }
+        await _context.SaveChangesAsync(CancellationToken.None);
+
+        var result = await CreateService().GetSearchSuggestionsAsync("cuir");
+
+        Assert.That(result.Categories.Count + result.Products.Count, Is.EqualTo(5));
+    }
+
+    [Test]
+    public async Task GetSearchSuggestionsAsync_ShouldExcludeUnpublishedProducts()
+    {
+        var category = SeedCategory("Divers");
+        SeedProduct(category, "Cuir Publié", 1000, isPublished: true);
+        SeedProduct(category, "Cuir Brouillon", 1000, isPublished: false);
+        await _context.SaveChangesAsync(CancellationToken.None);
+
+        var result = await CreateService().GetSearchSuggestionsAsync("cuir");
+
+        Assert.That(result.Products, Is.EqualTo(new[] { "Cuir Publié" }));
+    }
+
+    [Test]
+    public async Task GetProductsAsync_ShouldShareTheSameCacheEntryForCaseAndWhitespaceVariantsOfTheSameSearchTerm()
+    {
+        // Regression: BuildCacheKey previously hashed filter.Search AS-IS (raw casing/whitespace),
+        // while the actual query normalizes it (Trim().ToLowerInvariant()) — "Cuir", "cuir", and
+        // " cuir " produce identical results but were fragmenting into separate cache entries.
+        var category = SeedCategory();
+        SeedProduct(category, "Canapé Cuir", 50000);
+        await _context.SaveChangesAsync(CancellationToken.None);
+
+        var cacheMock = new Mock<ICacheService>();
+        var store = new Dictionary<string, object?>();
+        cacheMock
+            .Setup(c => c.GetAsync<int?>(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((string key, CancellationToken _) => (int?)store.GetValueOrDefault(key));
+        cacheMock
+            .Setup(c => c.GetAsync<PagedProductsResult<ProductSummaryDto>>(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((string key, CancellationToken _) => (PagedProductsResult<ProductSummaryDto>?)store.GetValueOrDefault(key));
+        cacheMock
+            .Setup(c => c.SetAsync(It.IsAny<string>(), It.IsAny<PagedProductsResult<ProductSummaryDto>>(), It.IsAny<TimeSpan>(), It.IsAny<CancellationToken>()))
+            .Callback<string, PagedProductsResult<ProductSummaryDto>, TimeSpan, CancellationToken>((key, value, _, _) => store[key] = value)
+            .Returns(Task.CompletedTask);
+
+        var service = CreateService(cacheMock.Object);
+
+        await service.GetProductsAsync(new ProductFilter(null, null, null, null, null, "Cuir", 1, 20));
+        await service.GetProductsAsync(new ProductFilter(null, null, null, null, null, " cuir ", 1, 20));
+
+        cacheMock.Verify(
+            c => c.SetAsync(It.IsAny<string>(), It.IsAny<PagedProductsResult<ProductSummaryDto>>(), It.IsAny<TimeSpan>(), It.IsAny<CancellationToken>()),
+            Times.Once);
+    }
+
+    [Test]
+    public async Task GetCategoriesAsync_ShouldReturnAllCategoriesOrderedByName()
+    {
+        SeedCategory("Tables");
+        SeedCategory("Chaises");
+        await _context.SaveChangesAsync(CancellationToken.None);
+
+        var result = await CreateService().GetCategoriesAsync();
+
+        Assert.That(result.Select(c => c.Name), Is.EqualTo(new[] { "Chaises", "Tables" }));
     }
 
     [Test]

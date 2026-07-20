@@ -29,6 +29,13 @@ export const routes: Routes = [
       import('./features/auth/pages/reset-password/reset-password.component').then((m) => m.ResetPasswordComponent),
   },
   {
+    path: 'recherche',
+    loadComponent: () =>
+      import('./features/catalogue/pages/search-results/search-results.component').then(
+        (m) => m.SearchResultsComponent,
+      ),
+  },
+  {
     path: 'compte',
     canActivate: [authGuard],
     loadComponent: () => import('./features/account/pages/profile/profile.component').then((m) => m.ProfileComponent),

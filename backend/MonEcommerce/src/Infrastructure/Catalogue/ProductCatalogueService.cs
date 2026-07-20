@@ -19,6 +19,8 @@ public class ProductCatalogueService : IProductCatalogueService
     // 1,000,000 pages is comfortably beyond any realistic catalogue size at any pageSize.
     private const int MaxPageNumber = 1_000_000;
 
+    private const int MaxSuggestions = 5;
+
     private static readonly TimeSpan EntryTtl = TimeSpan.FromMinutes(5);
     private static readonly TimeSpan VersionTtl = TimeSpan.FromDays(1);
 
@@ -72,14 +74,32 @@ public class ProductCatalogueService : IProductCatalogueService
             query = query.Where(p => p.PriceInCents <= filter.PriceMax);
         }
 
+        var hasSearch = !string.IsNullOrWhiteSpace(filter.Search);
+        if (hasSearch)
+        {
+            var term = filter.Search!.Trim().ToLowerInvariant();
+            query = query.Where(p => p.Name.ToLower().Contains(term) || p.Description.ToLower().Contains(term));
+        }
+
         var totalCount = await query.CountAsync(cancellationToken);
 
-        var products = await query
+        var withIncludes = query
             .Include(p => p.Category)
             .Include(p => p.Images)
-            .Include(p => p.Stock)
-            .OrderBy(p => p.Name)
-            .ThenBy(p => p.Id)
+            .Include(p => p.Stock);
+
+        // No literal PostgreSQL to_tsvector/to_tsquery (or SQL Server CONTAINSTABLE, which needs
+        // an unverifiable-in-this-environment Full-Text Index + raw SQL) — a translatable,
+        // boolean-ordered relevance heuristic instead: exact name match, then name-starts-with,
+        // then name-contains, ranks above description-only matches, which fall through to the
+        // alphabetical tiebreaker. EF Core translates bool-valued OrderBy keys to `CASE WHEN`
+        // on SQL Server, and the InMemory provider evaluates them as plain bool comparisons —
+        // both providers order identically, so this is fully covered by ProductCatalogueServiceTests.
+        var orderedQuery = hasSearch
+            ? OrderByRelevance(withIncludes, filter.Search!.Trim().ToLowerInvariant())
+            : withIncludes.OrderBy(p => p.Name).ThenBy(p => p.Id);
+
+        var products = await orderedQuery
             .Skip((pageNumber - 1) * pageSize)
             .Take(pageSize)
             .ToListAsync(cancellationToken);
@@ -92,6 +112,55 @@ public class ProductCatalogueService : IProductCatalogueService
         await _cache.SetAsync(cacheKey, result, EntryTtl, cancellationToken);
 
         return result;
+    }
+
+    public async Task<SuggestionsResult> GetSearchSuggestionsAsync(string term, CancellationToken cancellationToken = default)
+    {
+        var normalized = term.Trim().ToLowerInvariant();
+
+        var categories = await _context.Categories.AsNoTracking()
+            .Where(c => c.Name.ToLower().Contains(normalized))
+            .OrderBy(c => c.Name)
+            .ThenBy(c => c.Id)
+            .Select(c => c.Name)
+            .Take(MaxSuggestions)
+            .ToListAsync(cancellationToken);
+
+        // "Up to 5 suggestions (categories + product names)" — categories fill first, products
+        // fill whatever's left, so the combined total never exceeds MaxSuggestions.
+        var remaining = MaxSuggestions - categories.Count;
+        var products = remaining == 0
+            ? []
+            : await _context.Products.AsNoTracking()
+                .Where(p => p.IsPublished && p.Name.ToLower().Contains(normalized))
+                .OrderBy(p => p.Name)
+                .ThenBy(p => p.Id)
+                .Select(p => p.Name)
+                .Take(remaining)
+                .ToListAsync(cancellationToken);
+
+        return new SuggestionsResult(categories, products);
+    }
+
+    public async Task<List<CategorySummaryDto>> GetCategoriesAsync(CancellationToken cancellationToken = default)
+    {
+        var version = await GetCatalogueVersionAsync(cancellationToken);
+        var cacheKey = $"catalogue:v{version}:categories";
+
+        var cached = await _cache.GetAsync<List<CategorySummaryDto>>(cacheKey, cancellationToken);
+        if (cached != null)
+        {
+            return cached;
+        }
+
+        var categories = await _context.Categories.AsNoTracking()
+            .OrderBy(c => c.Name)
+            .Select(c => new CategorySummaryDto(c.Id, c.Name, c.Slug))
+            .ToListAsync(cancellationToken);
+
+        await _cache.SetAsync(cacheKey, categories, EntryTtl, cancellationToken);
+
+        return categories;
     }
 
     public async Task InvalidateCatalogueCacheAsync(CancellationToken cancellationToken = default)
@@ -119,10 +188,25 @@ public class ProductCatalogueService : IProductCatalogueService
     // string, regardless of what characters they contain.
     private static string BuildCacheKey(ProductFilter filter, int pageNumber, int pageSize, int version)
     {
-        var canonical = JsonSerializer.Serialize(filter with { PageNumber = pageNumber, PageSize = pageSize });
+        // Search is normalized (trimmed + lower-cased) before hashing, same as the value actually
+        // used to build the WHERE clause below — otherwise "Cuir", "cuir", " cuir ", and null/""/
+        // "  " (all functionally identical queries) each hash to a distinct cache key, needlessly
+        // fragmenting the cache for exactly the traffic pattern a search endpoint sees most.
+        var normalizedFilter = filter with { PageNumber = pageNumber, PageSize = pageSize, Search = NormalizeSearch(filter.Search) };
+        var canonical = JsonSerializer.Serialize(normalizedFilter);
         var hash = Convert.ToHexStringLower(SHA256.HashData(Encoding.UTF8.GetBytes(canonical)));
         return $"catalogue:v{version}:products:{hash}";
     }
+
+    private static string? NormalizeSearch(string? search)
+        => string.IsNullOrWhiteSpace(search) ? null : search.Trim().ToLowerInvariant();
+
+    private static IOrderedQueryable<Product> OrderByRelevance(IQueryable<Product> query, string term) => query
+        .OrderByDescending(p => p.Name.ToLower() == term)
+        .ThenByDescending(p => p.Name.ToLower().StartsWith(term))
+        .ThenByDescending(p => p.Name.ToLower().Contains(term))
+        .ThenBy(p => p.Name)
+        .ThenBy(p => p.Id);
 
     private static ProductSummaryDto MapToSummary(Product product) => new(
         product.Id,

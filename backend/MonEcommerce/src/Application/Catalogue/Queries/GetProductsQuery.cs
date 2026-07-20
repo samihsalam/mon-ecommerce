@@ -9,5 +9,6 @@ public record GetProductsQuery(
     string? Color,
     int? PriceMin,
     int? PriceMax,
+    string? Search = null,
     int PageNumber = 1,
     int PageSize = 20) : IRequest<PagedProductsResult<ProductSummaryDto>>;

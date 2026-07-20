@@ -20,6 +20,7 @@ public class GetProductsQueryHandler : IRequestHandler<GetProductsQuery, PagedPr
             request.Color,
             request.PriceMin,
             request.PriceMax,
+            request.Search,
             request.PageNumber,
             request.PageSize);
 
