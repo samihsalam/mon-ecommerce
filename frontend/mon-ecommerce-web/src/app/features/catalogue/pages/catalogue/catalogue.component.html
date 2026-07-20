@@ -1,0 +1,54 @@
+<main class="mx-auto max-w-6xl px-4 py-16">
+  <h1 class="font-heading text-3xl text-text mb-8">Catalogue</h1>
+
+  <app-filter-chip-bar
+    class="block mb-6"
+    [categories]="catalogueStore.categories()"
+    [activeCategoryId]="catalogueStore.activeCategoryId()"
+    (categorySelected)="onCategorySelected($event)"
+    (clearAll)="onClearAll()"
+  />
+
+  <!--
+    Gated on !searchError() too, not just !isSearching() — browse()'s catch block sets
+    isSearching=false without clearing a previous successful call's totalCount, so without this
+    the aria-live region would announce a stale/wrong count (e.g. "42 sacs trouvés") in the same
+    moment the visible error banner says the request failed, misleading screen-reader users.
+  -->
+  <p class="text-sm text-text-secondary mb-4" aria-live="polite">
+    @if (!catalogueStore.isSearching() && !catalogueStore.searchError()) {
+      {{ resultsLabel() }}
+    }
+  </p>
+
+  @if (catalogueStore.searchError()) {
+    <p class="text-sm text-error" role="alert">{{ catalogueStore.searchError() }}</p>
+  } @else {
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+      @if (catalogueStore.isSearching()) {
+        @for (_ of skeletonCount; track $index) {
+          <app-product-card-skeleton />
+        }
+      } @else if (catalogueStore.results().length === 0) {
+        <p class="col-span-full text-center text-text-secondary py-16">Aucun produit dans cette catégorie.</p>
+      } @else {
+        @for (product of catalogueStore.results(); track product.id) {
+          <app-product-card [product]="product" />
+        }
+      }
+    </div>
+
+    @if (catalogueStore.pageNumber() < catalogueStore.totalPages()) {
+      <div class="mt-8 flex justify-center">
+        <button
+          type="button"
+          class="rounded-button border border-border px-6 py-2 text-sm text-text transition hover:border-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 disabled:opacity-50"
+          [disabled]="catalogueStore.isLoadingMore()"
+          (click)="loadMore()"
+        >
+          {{ catalogueStore.isLoadingMore() ? 'Chargement…' : 'Charger plus' }}
+        </button>
+      </div>
+    }
+  }
+</main>

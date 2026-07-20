@@ -1,0 +1,25 @@
+<div class="flex flex-wrap items-center gap-2" role="group" aria-label="Filtrer par catégorie">
+  @for (category of categories; track category.id) {
+    <button
+      type="button"
+      class="rounded-button border border-border px-4 py-2 text-sm transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
+      [class.bg-text]="activeCategoryId === category.id"
+      [class.text-white]="activeCategoryId === category.id"
+      [class.border-text]="activeCategoryId === category.id"
+      [attr.aria-pressed]="activeCategoryId === category.id"
+      (click)="onChipClick(category.id)"
+    >
+      {{ category.name }}
+    </button>
+  }
+
+  @if (activeCategoryId) {
+    <button
+      type="button"
+      class="text-sm text-text-secondary underline hover:text-text focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 rounded-button px-2 py-1"
+      (click)="onClearAll()"
+    >
+      Tout effacer
+    </button>
+  }
+</div>

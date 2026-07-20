@@ -43,10 +43,12 @@ interface CatalogueState {
   pageSize: number;
   totalPages: number;
   isSearching: boolean;
+  isLoadingMore: boolean;
   searchError: string | null;
   suggestions: SearchSuggestions;
   isLoadingSuggestions: boolean;
   categories: CategorySummary[];
+  activeCategoryId: string | null;
 }
 
 const initialState: CatalogueState = {
@@ -56,10 +58,12 @@ const initialState: CatalogueState = {
   pageSize: 20,
   totalPages: 0,
   isSearching: false,
+  isLoadingMore: false,
   searchError: null,
   suggestions: { categories: [], products: [] },
   isLoadingSuggestions: false,
   categories: [],
+  activeCategoryId: null,
 };
 
 export const CatalogueStore = signalStore(
@@ -105,6 +109,57 @@ export const CatalogueStore = signalStore(
             isSearching: false,
             results: [],
             searchError: 'Impossible de charger les résultats. Veuillez réessayer.',
+          });
+        }
+      },
+
+      async browse(categoryId?: string | null, pageNumber = 1): Promise<void> {
+        // Shares searchRequestId with search() rather than using a separate counter — both write
+        // to the same `results`/`totalCount`/`isSearching` state, so a browse() superseded by a
+        // later search() (or vice versa) must be discarded too, not just a browse() superseded by
+        // another browse().
+        const requestId = ++searchRequestId;
+        // pageNumber > 1 means "load more" (triggered by CatalogueComponent's pager button, not
+        // a fresh filter change) — append instead of replace, and don't reset activeCategoryId or
+        // blank the existing grid behind a full-page isSearching skeleton state.
+        const isLoadMore = pageNumber > 1;
+        patchState(store, {
+          isSearching: !isLoadMore,
+          isLoadingMore: isLoadMore,
+          searchError: null,
+          ...(isLoadMore ? {} : { activeCategoryId: categoryId ?? null }),
+        });
+
+        try {
+          const result = await firstValueFrom(
+            http.get<PagedResult<ProductSummary>>(`${environment.apiUrl}/api/v1/products`, {
+              params: categoryId
+                ? { categoryId, pageNumber, pageSize: store.pageSize() }
+                : { pageNumber, pageSize: store.pageSize() },
+            }),
+          );
+          if (requestId !== searchRequestId) {
+            return;
+          }
+          patchState(store, {
+            isSearching: false,
+            isLoadingMore: false,
+            results: isLoadMore ? [...store.results(), ...result.items] : result.items,
+            totalCount: result.totalCount,
+            pageNumber: result.pageNumber,
+            totalPages: result.totalPages,
+          });
+        } catch {
+          if (requestId !== searchRequestId) {
+            return;
+          }
+          patchState(store, {
+            isSearching: false,
+            isLoadingMore: false,
+            // A failed "load more" leaves the already-rendered results in place — only a fresh
+            // browse (page 1) blanks the grid, since there's nothing stale to preserve there.
+            ...(isLoadMore ? {} : { results: [], totalCount: 0 }),
+            searchError: 'Impossible de charger le catalogue. Veuillez réessayer.',
           });
         }
       },

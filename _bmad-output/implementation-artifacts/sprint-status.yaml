@@ -35,7 +35,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 
 generated: 2026-04-13
-last_updated: 2026-07-20 (3.2 done)
+last_updated: 2026-07-20 (3.3 done)
 project: mon-ecommerce
 project_key: NOKEY
 tracking_system: file-system
@@ -69,7 +69,7 @@ development_status:
   epic-3: in-progress
   3-1-api-catalogue-liste-et-filtres: done
   3-2-recherche-full-text: done
-  3-3-composants-productcard-et-filterchipbar-angular-web: backlog
+  3-3-composants-productcard-et-filterchipbar-angular-web: done
   3-4-composants-productcard-et-filterchipbar-flutter-mobile: backlog
   3-5-fiche-produit-et-productgallery: backlog
   3-6-produits-similaires-et-seo: backlog
