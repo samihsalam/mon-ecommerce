@@ -16,6 +16,7 @@ public class Products : IEndpointGroup
         // /suggestions or /categories routes above (and ASP.NET Core prefers literal segments
         // over parameterized ones regardless).
         groupBuilder.MapGet("/{id:guid}", GetProductById).AllowAnonymous();
+        groupBuilder.MapGet("/{id:guid}/similar", GetSimilarProducts).AllowAnonymous();
     }
 
     [EndpointSummary("Browse the product catalogue with optional filters, including keyword search")]
@@ -55,6 +56,13 @@ public class Products : IEndpointGroup
     public static async Task<IResult> GetProductById(ISender sender, Guid id)
     {
         var result = await sender.Send(new GetProductByIdQuery(id));
+        return Results.Ok(result);
+    }
+
+    [EndpointSummary("Up to 4 published products from the same category, for the \"Vous aimerez aussi\" section")]
+    public static async Task<IResult> GetSimilarProducts(ISender sender, Guid id)
+    {
+        var result = await sender.Send(new GetSimilarProductsQuery(id));
         return Results.Ok(result);
     }
 }

@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Moq;
 using MonEcommerce.Application.Catalogue.Models;
 using MonEcommerce.Application.Common.Exceptions;
@@ -27,8 +28,18 @@ public class ProductCatalogueServiceTests
     [TearDown]
     public void TearDown() => _context.Dispose();
 
+    // Mocked rather than a real ConfigurationBuilder — avoids depending on whatever configuration
+    // NuGet packages this test project may or may not transitively reference; IConfiguration's
+    // indexer is all GetSitemapEntriesAsync actually reads.
+    private static IConfiguration CreateTestConfiguration()
+    {
+        var mock = new Mock<IConfiguration>();
+        mock.Setup(c => c["Frontend:BaseUrl"]).Returns("https://monecommerce.fr");
+        return mock.Object;
+    }
+
     private ProductCatalogueService CreateService(ICacheService? cache = null)
-        => new(_context, cache ?? new NullCacheService());
+        => new(_context, cache ?? new NullCacheService(), CreateTestConfiguration());
 
     private Category SeedCategory(string name = "Chaises")
     {
@@ -481,6 +492,103 @@ public class ProductCatalogueServiceTests
         cacheMock.Verify(
             c => c.SetAsync(It.IsAny<string>(), It.IsAny<ProductDetailDto>(), It.IsAny<TimeSpan>(), It.IsAny<CancellationToken>()),
             Times.Once);
+    }
+
+    [Test]
+    public async Task GetSimilarProductsAsync_ShouldReturnUpToFourPublishedProductsFromTheSameCategoryExcludingSelf()
+    {
+        var chairs = SeedCategory("Chaises");
+        var tables = SeedCategory("Tables");
+        var source = SeedProduct(chairs, "Chaise A", 1000);
+        SeedProduct(chairs, "Chaise B", 1000);
+        SeedProduct(chairs, "Chaise C", 1000);
+        SeedProduct(chairs, "Chaise D", 1000);
+        SeedProduct(chairs, "Chaise E", 1000);
+        SeedProduct(tables, "Table A", 1000);
+        await _context.SaveChangesAsync(CancellationToken.None);
+
+        var result = await CreateService().GetSimilarProductsAsync(source.Id);
+
+        Assert.That(result, Has.Count.EqualTo(4));
+        Assert.That(result.Select(r => r.Id), Does.Not.Contain(source.Id));
+        Assert.That(result.All(r => r.Name.StartsWith("Chaise")), Is.True);
+    }
+
+    [Test]
+    public async Task GetSimilarProductsAsync_ShouldReturnFewerThanFourWhenFewerSiblingsExist()
+    {
+        var category = SeedCategory();
+        var source = SeedProduct(category, "Source", 1000);
+        SeedProduct(category, "Sibling A", 1000);
+        SeedProduct(category, "Sibling B", 1000);
+        await _context.SaveChangesAsync(CancellationToken.None);
+
+        var result = await CreateService().GetSimilarProductsAsync(source.Id);
+
+        Assert.That(result, Has.Count.EqualTo(2));
+    }
+
+    [Test]
+    public async Task GetSimilarProductsAsync_ShouldExcludeUnpublishedCandidates()
+    {
+        var category = SeedCategory();
+        var source = SeedProduct(category, "Published Source", 1000);
+        SeedProduct(category, "Unpublished Sibling", 1000, isPublished: false);
+        await _context.SaveChangesAsync(CancellationToken.None);
+
+        var result = await CreateService().GetSimilarProductsAsync(source.Id);
+
+        Assert.That(result, Is.Empty);
+    }
+
+    [Test]
+    public async Task GetSimilarProductsAsync_ShouldReturnEmptyForANonexistentOrUnpublishedSourceProduct()
+    {
+        var category = SeedCategory();
+        var unpublishedSource = SeedProduct(category, "Draft", 1000, isPublished: false);
+        SeedProduct(category, "Sibling", 1000);
+        await _context.SaveChangesAsync(CancellationToken.None);
+
+        var forMissingId = await CreateService().GetSimilarProductsAsync(Guid.NewGuid());
+        var forUnpublishedSource = await CreateService().GetSimilarProductsAsync(unpublishedSource.Id);
+
+        Assert.That(forMissingId, Is.Empty);
+        Assert.That(forUnpublishedSource, Is.Empty);
+    }
+
+    [Test]
+    public async Task GetSitemapEntriesAsync_ShouldListOnlyPublishedProductsWithCorrectUrlAndLastModified()
+    {
+        // SeedCategory's Slug is a plain ToLowerInvariant() of the name (not run through
+        // SlugHelper) — "Sacs" is used here so the category segment needs no slugification of its
+        // own, keeping this test focused on the PRODUCT name's slugification (the accented "Tote
+        // Élégante" is the part that actually exercises SlugHelper.Slugify).
+        var category = SeedCategory("Sacs");
+        var published = SeedProduct(category, "Tote Élégante", 1000);
+        published.LastModified = new DateTimeOffset(2026, 3, 15, 0, 0, 0, TimeSpan.Zero);
+        SeedProduct(category, "Draft Bag", 1000, isPublished: false);
+        await _context.SaveChangesAsync(CancellationToken.None);
+
+        var result = await CreateService().GetSitemapEntriesAsync();
+
+        Assert.That(result, Has.Count.EqualTo(1));
+        Assert.That(result[0].Url, Is.EqualTo($"https://monecommerce.fr/catalogue/sacs/tote-elegante-{published.Id}"));
+        Assert.That(result[0].LastModified, Is.EqualTo(published.LastModified));
+    }
+
+    [TestCase(null)]
+    [TestCase("")]
+    [TestCase("   ")]
+    public void GetSitemapEntriesAsync_ShouldThrowClearlyWhenFrontendBaseUrlIsMissingOrEmpty(string? baseUrl)
+    {
+        // Regression: a bare `_configuration["Frontend:BaseUrl"]!` previously let a missing config
+        // key throw a bare NullReferenceException out of this public, unauthenticated,
+        // crawler-facing endpoint — this asserts the clearer, deliberate failure instead.
+        var configMock = new Mock<IConfiguration>();
+        configMock.Setup(c => c["Frontend:BaseUrl"]).Returns(baseUrl);
+        var service = new ProductCatalogueService(_context, new NullCacheService(), configMock.Object);
+
+        Assert.ThrowsAsync<InvalidOperationException>(async () => await service.GetSitemapEntriesAsync());
     }
 
     [Test]

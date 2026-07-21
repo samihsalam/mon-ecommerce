@@ -2,8 +2,10 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using MonEcommerce.Application.Catalogue.Models;
 using MonEcommerce.Application.Common.Interfaces;
+using MonEcommerce.Application.Common.Utilities;
 using MonEcommerce.Domain.Entities;
 using AppNotFoundException = MonEcommerce.Application.Common.Exceptions.NotFoundException;
 
@@ -22,16 +24,20 @@ public class ProductCatalogueService : IProductCatalogueService
 
     private const int MaxSuggestions = 5;
 
+    private const int MaxSimilarProducts = 4;
+
     private static readonly TimeSpan EntryTtl = TimeSpan.FromMinutes(5);
     private static readonly TimeSpan VersionTtl = TimeSpan.FromDays(1);
 
     private readonly IApplicationDbContext _context;
     private readonly ICacheService _cache;
+    private readonly IConfiguration _configuration;
 
-    public ProductCatalogueService(IApplicationDbContext context, ICacheService cache)
+    public ProductCatalogueService(IApplicationDbContext context, ICacheService cache, IConfiguration configuration)
     {
         _context = context;
         _cache = cache;
+        _configuration = configuration;
     }
 
     public async Task<PagedProductsResult<ProductSummaryDto>> GetProductsAsync(ProductFilter filter, CancellationToken cancellationToken = default)
@@ -188,6 +194,91 @@ public class ProductCatalogueService : IProductCatalogueService
         await _cache.SetAsync(cacheKey, categories, EntryTtl, cancellationToken);
 
         return categories;
+    }
+
+    public async Task<List<ProductSummaryDto>> GetSimilarProductsAsync(Guid productId, CancellationToken cancellationToken = default)
+    {
+        var version = await GetCatalogueVersionAsync(cancellationToken);
+        var cacheKey = $"catalogue:v{version}:similar:{productId}";
+
+        var cached = await _cache.GetAsync<List<ProductSummaryDto>>(cacheKey, cancellationToken);
+        if (cached != null)
+        {
+            return cached;
+        }
+
+        var categoryId = await _context.Products.AsNoTracking()
+            .Where(p => p.Id == productId && p.IsPublished)
+            .Select(p => (Guid?)p.CategoryId)
+            .FirstOrDefaultAsync(cancellationToken);
+
+        // A missing/unpublished source product just means "nothing to show here" — not a
+        // 404-worthy request the way GetProductByIdAsync treats it (this is a secondary section
+        // on the page, not the page's own primary resource).
+        if (categoryId == null)
+        {
+            return [];
+        }
+
+        var similarProducts = await _context.Products.AsNoTracking()
+            .Where(p => p.IsPublished && p.CategoryId == categoryId && p.Id != productId)
+            .Include(p => p.Category)
+            .Include(p => p.Images)
+            .Include(p => p.Stock)
+            .OrderBy(p => p.Name)
+            .ThenBy(p => p.Id)
+            .Take(MaxSimilarProducts)
+            .ToListAsync(cancellationToken);
+
+        var result = similarProducts.Select(MapToSummary).ToList();
+
+        await _cache.SetAsync(cacheKey, result, EntryTtl, cancellationToken);
+
+        return result;
+    }
+
+    public async Task<List<SitemapEntryDto>> GetSitemapEntriesAsync(CancellationToken cancellationToken = default)
+    {
+        // A bare `!` here would let a missing/misconfigured Frontend:BaseUrl throw a bare
+        // NullReferenceException out of a public, unauthenticated, crawler-facing endpoint (a raw
+        // 500 with no useful diagnostic) — or, if the key exists but is an empty string, silently
+        // produce scheme-less/host-less <loc> URLs that violate the sitemap protocol's
+        // fully-qualified-URL requirement without failing at all. Failing loudly and specifically
+        // here is more useful to whoever operates this in production than either of those.
+        var baseUrl = _configuration["Frontend:BaseUrl"];
+        if (string.IsNullOrWhiteSpace(baseUrl))
+        {
+            throw new InvalidOperationException(
+                "Frontend:BaseUrl configuration is required to build sitemap URLs but is missing or empty.");
+        }
+        baseUrl = baseUrl.TrimEnd('/');
+
+        var version = await GetCatalogueVersionAsync(cancellationToken);
+        var cacheKey = $"catalogue:v{version}:sitemap";
+
+        var cached = await _cache.GetAsync<List<SitemapEntryDto>>(cacheKey, cancellationToken);
+        if (cached != null)
+        {
+            return cached;
+        }
+
+        var products = await _context.Products.AsNoTracking()
+            .Where(p => p.IsPublished)
+            .Include(p => p.Category)
+            .ToListAsync(cancellationToken);
+
+        var result = products
+            .Select(p => new SitemapEntryDto(
+                $"{baseUrl}/catalogue/{p.Category.Slug}/{SlugHelper.Slugify(p.Name)}-{p.Id}",
+                p.LastModified))
+            .ToList();
+
+        // Same versioned cache scheme as every other catalogue read — GetSitemapEntriesAsync was
+        // previously the one uncached read path, meaning every crawler hit forced a full
+        // Where(IsPublished).Include(Category) table scan with no TTL protection at all.
+        await _cache.SetAsync(cacheKey, result, EntryTtl, cancellationToken);
+
+        return result;
     }
 
     public async Task InvalidateCatalogueCacheAsync(CancellationToken cancellationToken = default)

@@ -5,4 +5,7 @@ export const environment = {
   sentryDsn: '',
   // Replace with the real Railway backend URL once deployed (Story 1.9).
   apiUrl: '',
+  // Replace with the real deployed frontend origin once deployed (Story 3.6) — mirrors the
+  // backend's Frontend:BaseUrl.
+  siteUrl: '',
 };

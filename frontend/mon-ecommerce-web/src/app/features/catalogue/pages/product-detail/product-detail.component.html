@@ -53,7 +53,26 @@
         <p class="mt-6 text-sm" [class.text-error]="!product.inStock" [class.text-success]="product.inStock">
           {{ product.inStock ? 'En stock' : 'Rupture de stock' }}
         </p>
+
+        <button
+          type="button"
+          class="mt-6 rounded-button border border-border px-4 py-2 text-sm text-text hover:border-accent transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
+          (click)="onShare(product)"
+        >
+          Partager
+        </button>
       </div>
     </div>
+
+    @if (productDetailStore.similarProducts().length > 0) {
+      <section class="mt-16">
+        <h2 class="font-heading text-2xl text-text mb-6">Vous aimerez aussi</h2>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+          @for (similar of productDetailStore.similarProducts(); track similar.id) {
+            <app-product-card [product]="similar" />
+          }
+        </div>
+      </section>
+    }
   }
 </main>

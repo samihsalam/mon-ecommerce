@@ -16,6 +16,13 @@ public interface IProductCatalogueService
 
     Task<List<CategorySummaryDto>> GetCategoriesAsync(CancellationToken cancellationToken = default);
 
+    // Returns an empty list (not NotFoundException) when productId doesn't exist or isn't
+    // published — unlike GetProductByIdAsync, a missing/unpublished source product just means
+    // "no similar products to show," not a 404-worthy request.
+    Task<List<ProductSummaryDto>> GetSimilarProductsAsync(Guid productId, CancellationToken cancellationToken = default);
+
+    Task<List<SitemapEntryDto>> GetSitemapEntriesAsync(CancellationToken cancellationToken = default);
+
     // Not called by anything yet — no product create/update/delete endpoint exists (Epic 6).
     // Ready for those future command handlers to call directly via DI.
     Task InvalidateCatalogueCacheAsync(CancellationToken cancellationToken = default);
