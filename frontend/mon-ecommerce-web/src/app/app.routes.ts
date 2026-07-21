@@ -34,6 +34,13 @@ export const routes: Routes = [
       import('./features/catalogue/pages/catalogue/catalogue.component').then((m) => m.CatalogueComponent),
   },
   {
+    path: 'catalogue/:categorySlug/:productSlug',
+    loadComponent: () =>
+      import('./features/catalogue/pages/product-detail/product-detail.component').then(
+        (m) => m.ProductDetailComponent,
+      ),
+  },
+  {
     path: 'recherche',
     loadComponent: () =>
       import('./features/catalogue/pages/search-results/search-results.component').then(

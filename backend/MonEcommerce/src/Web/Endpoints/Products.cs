@@ -12,6 +12,10 @@ public class Products : IEndpointGroup
         groupBuilder.MapGet(GetProducts).AllowAnonymous();
         groupBuilder.MapGet("/suggestions", GetSuggestions).AllowAnonymous();
         groupBuilder.MapGet("/categories", GetCategories).AllowAnonymous();
+        // The {id:guid} constraint means this can never ambiguously capture the literal
+        // /suggestions or /categories routes above (and ASP.NET Core prefers literal segments
+        // over parameterized ones regardless).
+        groupBuilder.MapGet("/{id:guid}", GetProductById).AllowAnonymous();
     }
 
     [EndpointSummary("Browse the product catalogue with optional filters, including keyword search")]
@@ -44,6 +48,13 @@ public class Products : IEndpointGroup
     public static async Task<IResult> GetCategories(ISender sender)
     {
         var result = await sender.Send(new GetCategoriesQuery());
+        return Results.Ok(result);
+    }
+
+    [EndpointSummary("Full product detail (description, dimensions, stock, images) for the product detail page")]
+    public static async Task<IResult> GetProductById(ISender sender, Guid id)
+    {
+        var result = await sender.Send(new GetProductByIdQuery(id));
         return Results.Ok(result);
     }
 }

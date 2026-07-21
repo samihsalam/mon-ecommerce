@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using MonEcommerce.Application.Catalogue.Models;
 using MonEcommerce.Application.Common.Interfaces;
 using MonEcommerce.Domain.Entities;
+using AppNotFoundException = MonEcommerce.Application.Common.Exceptions.NotFoundException;
 
 namespace MonEcommerce.Infrastructure.Catalogue;
 
@@ -114,6 +115,32 @@ public class ProductCatalogueService : IProductCatalogueService
         return result;
     }
 
+    public async Task<ProductDetailDto> GetProductByIdAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        var version = await GetCatalogueVersionAsync(cancellationToken);
+        var cacheKey = $"catalogue:v{version}:product:{id}";
+
+        var cached = await _cache.GetAsync<ProductDetailDto>(cacheKey, cancellationToken);
+        if (cached != null)
+        {
+            return cached;
+        }
+
+        var product = await _context.Products.AsNoTracking()
+            .Where(p => p.IsPublished)
+            .Include(p => p.Category)
+            .Include(p => p.Images)
+            .Include(p => p.Stock)
+            .FirstOrDefaultAsync(p => p.Id == id, cancellationToken)
+            ?? throw new AppNotFoundException(nameof(Product), id);
+
+        var result = MapToDetail(product);
+
+        await _cache.SetAsync(cacheKey, result, EntryTtl, cancellationToken);
+
+        return result;
+    }
+
     public async Task<SuggestionsResult> GetSearchSuggestionsAsync(string term, CancellationToken cancellationToken = default)
     {
         var normalized = term.Trim().ToLowerInvariant();
@@ -208,6 +235,21 @@ public class ProductCatalogueService : IProductCatalogueService
         .ThenBy(p => p.Name)
         .ThenBy(p => p.Id);
 
+    private static ProductDetailDto MapToDetail(Product product) => new(
+        product.Id,
+        product.Name,
+        product.Description,
+        product.PriceInCents,
+        product.Material,
+        product.Color,
+        product.Dimensions,
+        product.Stock?.Quantity ?? 0,
+        (product.Stock?.Quantity ?? 0) > 0,
+        product.CategoryId,
+        product.Category.Name,
+        product.Category.Slug,
+        product.Images.OrderBy(i => i.DisplayOrder).Select(i => i.Url).ToList());
+
     private static ProductSummaryDto MapToSummary(Product product) => new(
         product.Id,
         product.Name,
@@ -217,5 +259,6 @@ public class ProductCatalogueService : IProductCatalogueService
         product.Images.OrderBy(i => i.DisplayOrder).FirstOrDefault()?.Url,
         product.CategoryId,
         product.Category.Name,
+        product.Category.Slug,
         (product.Stock?.Quantity ?? 0) > 0);
 }

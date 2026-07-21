@@ -1,0 +1,59 @@
+<main class="mx-auto max-w-5xl px-4 py-16">
+  @if (invalidSlug()) {
+    <p class="text-sm text-error" role="alert">Produit introuvable.</p>
+  } @else if (productDetailStore.isLoading()) {
+    <p class="text-sm text-text" role="status">Chargement…</p>
+  } @else if (productDetailStore.error()) {
+    <p class="text-sm text-error" role="alert">{{ productDetailStore.error() }}</p>
+  } @else if (productDetailStore.product()) {
+    @let product = productDetailStore.product()!;
+
+    <a
+      [routerLink]="['/catalogue']"
+      [queryParams]="{ categoryId: product.categoryId }"
+      class="text-sm text-text-secondary hover:text-text underline"
+    >
+      ← {{ product.categoryName }}
+    </a>
+
+    <div class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-8">
+      <app-product-gallery [images]="product.imageUrls" [productName]="product.name" />
+
+      <div>
+        <h1 class="font-heading text-3xl text-text mb-2">{{ product.name }}</h1>
+        <p class="text-xl text-text mb-4">{{ formatPrice(product.priceInCents) }}</p>
+
+        <span class="inline-block rounded-button border border-border px-3 py-1 text-xs text-text-secondary mb-6">
+          Retour facile 14j
+        </span>
+
+        <p class="text-text mb-6 whitespace-pre-line">{{ product.description }}</p>
+
+        <dl class="space-y-2 text-sm">
+          @if (product.material) {
+            <div class="flex gap-2">
+              <dt class="text-text-secondary">Matière</dt>
+              <dd class="text-text">{{ product.material }}</dd>
+            </div>
+          }
+          @if (product.color) {
+            <div class="flex gap-2">
+              <dt class="text-text-secondary">Couleur</dt>
+              <dd class="text-text">{{ product.color }}</dd>
+            </div>
+          }
+          @if (product.dimensions) {
+            <div class="flex gap-2">
+              <dt class="text-text-secondary">Dimensions</dt>
+              <dd class="text-text">{{ product.dimensions }}</dd>
+            </div>
+          }
+        </dl>
+
+        <p class="mt-6 text-sm" [class.text-error]="!product.inStock" [class.text-success]="product.inStock">
+          {{ product.inStock ? 'En stock' : 'Rupture de stock' }}
+        </p>
+      </div>
+    </div>
+  }
+</main>

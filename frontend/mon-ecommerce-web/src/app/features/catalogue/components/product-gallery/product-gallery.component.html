@@ -1,0 +1,97 @@
+@if (images.length === 0) {
+  <div class="aspect-[3/4] w-full max-w-md flex items-center justify-center rounded-card bg-bg-secondary text-text-secondary text-sm">
+    Aucune image disponible
+  </div>
+} @else {
+<div
+  class="relative focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 rounded-card"
+  role="region"
+  aria-roledescription="carousel"
+  [attr.aria-label]="productName + ' — galerie photos'"
+  tabindex="0"
+  (keydown.arrowleft)="previous()"
+  (keydown.arrowright)="next()"
+>
+  <!-- Desktop: thumbnail column left, main image fills the right -->
+  <div class="hidden md:flex md:gap-4">
+    <div class="flex flex-col gap-2 w-20 shrink-0">
+      @for (image of images; track image; let i = $index) {
+        <button
+          type="button"
+          class="aspect-[3/4] w-full overflow-hidden rounded-card border-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
+          [class.border-accent]="i === activeIndex()"
+          [class.border-transparent]="i !== activeIndex()"
+          [attr.aria-current]="i === activeIndex() ? 'true' : null"
+          [attr.aria-label]="'Voir ' + altFor(i)"
+          (click)="setActive(i)"
+        >
+          <img
+            [src]="image"
+            [alt]="altFor(i)"
+            loading="lazy"
+            class="h-full w-full object-cover"
+            (load)="onImageLoad(i)"
+            (error)="onImageError(i)"
+          />
+        </button>
+      }
+    </div>
+    <div class="relative flex-1 aspect-[3/4] overflow-hidden rounded-card bg-bg-secondary">
+      @if (mainImageStatus() === 'loading') {
+        <div class="absolute inset-0 animate-pulse bg-bg-secondary"></div>
+      }
+      @if (mainImageStatus() === 'error') {
+        <div class="absolute inset-0 flex items-center justify-center text-text-secondary text-sm">
+          Image indisponible
+        </div>
+      } @else {
+        <img
+          [src]="images[activeIndex()]"
+          [alt]="altFor(activeIndex())"
+          class="h-full w-full object-cover"
+          (load)="onMainImageLoad()"
+          (error)="onMainImageError()"
+        />
+      }
+    </div>
+  </div>
+
+  <!-- Mobile: horizontal swipe strip with dot indicators -->
+  <div class="md:hidden">
+    <div
+      #scrollContainer
+      class="flex overflow-x-auto snap-x snap-mandatory rounded-card"
+      (scroll)="onMobileScroll()"
+    >
+      @for (image of images; track image; let i = $index) {
+        <div class="relative min-w-full shrink-0 snap-center aspect-[3/4] bg-bg-secondary">
+          @if (imageStatus()[i] === 'loading') {
+            <div class="absolute inset-0 animate-pulse bg-bg-secondary"></div>
+          }
+          @if (imageStatus()[i] === 'error') {
+            <div class="absolute inset-0 flex items-center justify-center text-text-secondary text-sm">
+              Image indisponible
+            </div>
+          } @else {
+            <img
+              [src]="image"
+              [alt]="altFor(i)"
+              loading="lazy"
+              class="h-full w-full object-cover"
+              (load)="onImageLoad(i)"
+              (error)="onImageError(i)"
+            />
+          }
+        </div>
+      }
+    </div>
+    @if (images.length > 1) {
+      <div class="flex justify-center gap-2 mt-3" role="presentation">
+        @for (image of images; track image; let i = $index) {
+          <span class="h-2 w-2 rounded-full" [class.bg-text]="i === activeIndex()" [class.bg-border]="i !== activeIndex()"></span>
+        }
+      </div>
+    }
+  </div>
+</div>
+}

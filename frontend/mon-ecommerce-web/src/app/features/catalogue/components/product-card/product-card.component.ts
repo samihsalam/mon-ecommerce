@@ -2,6 +2,7 @@ import { Component, Input } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
 import type { ProductSummary } from '../../catalogue.store';
+import { buildProductUrl } from '../../product-url.util';
 
 @Component({
   selector: 'app-product-card',
@@ -24,5 +25,9 @@ export class ProductCardComponent {
 
   protected ariaLabel(): string {
     return `${this.product.name}, ${this.formattedPrice()}`;
+  }
+
+  protected productUrl(): string[] {
+    return buildProductUrl(this.product.categorySlug, this.product.id, this.product.name);
   }
 }

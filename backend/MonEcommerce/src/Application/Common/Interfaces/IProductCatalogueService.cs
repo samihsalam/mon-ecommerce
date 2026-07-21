@@ -6,6 +6,11 @@ public interface IProductCatalogueService
 {
     Task<PagedProductsResult<ProductSummaryDto>> GetProductsAsync(ProductFilter filter, CancellationToken cancellationToken = default);
 
+    // Throws NotFoundException (mapped to 404 by ProblemDetailsExceptionHandler) when the id
+    // doesn't exist OR the product isn't published — same "published only" interpretation as
+    // GetProductsAsync, so an unpublished product's detail page can't be reached by guessing its id.
+    Task<ProductDetailDto> GetProductByIdAsync(Guid id, CancellationToken cancellationToken = default);
+
     // term is expected to already be validated (2+ chars) by GetSearchSuggestionsQueryValidator.
     Task<SuggestionsResult> GetSearchSuggestionsAsync(string term, CancellationToken cancellationToken = default);
 

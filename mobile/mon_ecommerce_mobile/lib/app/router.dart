@@ -11,6 +11,7 @@ import '../features/auth/screens/login_screen.dart';
 import '../features/auth/screens/register_screen.dart';
 import '../features/auth/screens/reset_password_screen.dart';
 import '../features/catalogue/screens/catalogue_screen.dart';
+import '../features/catalogue/screens/product_detail_screen.dart';
 import '../features/catalogue/screens/search_screen.dart';
 import '../shared/services/secure_storage.dart';
 
@@ -51,6 +52,10 @@ final router = GoRouter(
     GoRoute(
       path: '/catalogue',
       builder: (context, state) => CatalogueScreen(categoryId: state.uri.queryParameters['categoryId']),
+    ),
+    GoRoute(
+      path: '/produits/:id',
+      builder: (context, state) => ProductDetailScreen(productId: state.pathParameters['id']!),
     ),
     GoRoute(path: '/inscription', builder: (context, state) => const RegisterScreen()),
     GoRoute(path: '/connexion', builder: (context, state) => const LoginScreen()),

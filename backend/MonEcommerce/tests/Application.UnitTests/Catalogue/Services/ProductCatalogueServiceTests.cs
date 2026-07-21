@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Moq;
 using MonEcommerce.Application.Catalogue.Models;
+using MonEcommerce.Application.Common.Exceptions;
 using MonEcommerce.Application.Common.Interfaces;
 using MonEcommerce.Domain.Entities;
 using MonEcommerce.Infrastructure.Catalogue;
@@ -223,7 +224,7 @@ public class ProductCatalogueServiceTests
         // A canned result the (empty) database alone could never produce — proves the cached
         // value was actually returned, not silently recomputed from the DB.
         var cannedResult = new PagedProductsResult<ProductSummaryDto>(
-            [new ProductSummaryDto(Guid.NewGuid(), "Cached Product", 99999, null, null, null, Guid.NewGuid(), "Cached Category", true)],
+            [new ProductSummaryDto(Guid.NewGuid(), "Cached Product", 99999, null, null, null, Guid.NewGuid(), "Cached Category", "cached-category", true)],
             1, 1, 20, 1);
 
         var cacheMock = new Mock<ICacheService>();
@@ -385,6 +386,101 @@ public class ProductCatalogueServiceTests
         var result = await CreateService().GetCategoriesAsync();
 
         Assert.That(result.Select(c => c.Name), Is.EqualTo(new[] { "Chaises", "Tables" }));
+    }
+
+    [Test]
+    public async Task GetProductByIdAsync_ShouldReturnTheFullDetailShapeWithImagesOrderedByDisplayOrder()
+    {
+        var category = SeedCategory("Sacs");
+        var product = SeedProduct(category, "Tote Parisienne", 28500, material: "Cuir", color: "Cognac", stockQuantity: 3);
+        product.Dimensions = "30x20x10cm";
+        _context.ProductImages.Add(new ProductImage { Id = Guid.NewGuid(), ProductId = product.Id, Url = "second.webp", DisplayOrder = 2 });
+        _context.ProductImages.Add(new ProductImage { Id = Guid.NewGuid(), ProductId = product.Id, Url = "first.webp", DisplayOrder = 1 });
+        await _context.SaveChangesAsync(CancellationToken.None);
+
+        var result = await CreateService().GetProductByIdAsync(product.Id);
+
+        Assert.That(result.Id, Is.EqualTo(product.Id));
+        Assert.That(result.Name, Is.EqualTo("Tote Parisienne"));
+        Assert.That(result.Description, Is.EqualTo("Description"));
+        Assert.That(result.PriceInCents, Is.EqualTo(28500));
+        Assert.That(result.Material, Is.EqualTo("Cuir"));
+        Assert.That(result.Dimensions, Is.EqualTo("30x20x10cm"));
+        Assert.That(result.StockQuantity, Is.EqualTo(3));
+        Assert.That(result.InStock, Is.True);
+        Assert.That(result.CategoryId, Is.EqualTo(category.Id));
+        Assert.That(result.CategoryName, Is.EqualTo("Sacs"));
+        Assert.That(result.CategorySlug, Is.EqualTo("sacs"));
+        Assert.That(result.ImageUrls, Is.EqualTo(new[] { "first.webp", "second.webp" }));
+    }
+
+    [Test]
+    public void GetProductByIdAsync_ShouldThrowNotFoundExceptionForANonexistentId()
+    {
+        Assert.ThrowsAsync<NotFoundException>(async () => await CreateService().GetProductByIdAsync(Guid.NewGuid()));
+    }
+
+    [Test]
+    public async Task GetProductByIdAsync_ShouldThrowNotFoundExceptionForAnUnpublishedProduct()
+    {
+        var category = SeedCategory();
+        var product = SeedProduct(category, "Draft Product", 1000, isPublished: false);
+        await _context.SaveChangesAsync(CancellationToken.None);
+
+        Assert.ThrowsAsync<NotFoundException>(async () => await CreateService().GetProductByIdAsync(product.Id));
+    }
+
+    [Test]
+    public async Task GetProductByIdAsync_ShouldReturnZeroStockAndNotInStockWhenNoStockRowExists()
+    {
+        var category = SeedCategory();
+        var product = new Product
+        {
+            Id = Guid.NewGuid(),
+            Name = "No Stock Row",
+            Description = "Description",
+            PriceInCents = 1000,
+            IsPublished = true,
+            CategoryId = category.Id,
+            Category = category,
+        };
+        _context.Products.Add(product);
+        await _context.SaveChangesAsync(CancellationToken.None);
+
+        var result = await CreateService().GetProductByIdAsync(product.Id);
+
+        Assert.That(result.StockQuantity, Is.EqualTo(0));
+        Assert.That(result.InStock, Is.False);
+    }
+
+    [Test]
+    public async Task GetProductByIdAsync_ShouldPopulateAndReuseTheCache()
+    {
+        var category = SeedCategory();
+        var product = SeedProduct(category, "Cached Product", 1000);
+        await _context.SaveChangesAsync(CancellationToken.None);
+
+        var cacheMock = new Mock<ICacheService>();
+        var store = new Dictionary<string, object?>();
+        cacheMock
+            .Setup(c => c.GetAsync<int?>(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((string key, CancellationToken _) => (int?)store.GetValueOrDefault(key));
+        cacheMock
+            .Setup(c => c.GetAsync<ProductDetailDto>(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((string key, CancellationToken _) => (ProductDetailDto?)store.GetValueOrDefault(key));
+        cacheMock
+            .Setup(c => c.SetAsync(It.IsAny<string>(), It.IsAny<ProductDetailDto>(), It.IsAny<TimeSpan>(), It.IsAny<CancellationToken>()))
+            .Callback<string, ProductDetailDto, TimeSpan, CancellationToken>((key, value, _, _) => store[key] = value)
+            .Returns(Task.CompletedTask);
+
+        var service = CreateService(cacheMock.Object);
+
+        await service.GetProductByIdAsync(product.Id);
+        await service.GetProductByIdAsync(product.Id);
+
+        cacheMock.Verify(
+            c => c.SetAsync(It.IsAny<string>(), It.IsAny<ProductDetailDto>(), It.IsAny<TimeSpan>(), It.IsAny<CancellationToken>()),
+            Times.Once);
     }
 
     [Test]
