@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using MonEcommerce.Application.Common.Exceptions;
 using AppNotFoundException = MonEcommerce.Application.Common.Exceptions.NotFoundException;
 
@@ -8,7 +9,9 @@ namespace MonEcommerce.Web.Infrastructure;
 /// <summary>
 /// Converts well-known application exceptions into RFC 9110-compliant <see cref="ProblemDetails"/> responses,
 /// mapping <see cref="ValidationException"/> → 400, <see cref="NotFoundException"/> → 404,
-/// <see cref="UnauthorizedAccessException"/> → 401, and <see cref="ForbiddenAccessException"/> → 403.
+/// <see cref="UnauthorizedAccessException"/> → 401, <see cref="ForbiddenAccessException"/> → 403, and
+/// <see cref="DbUpdateConcurrencyException"/> → 409 (e.g. two concurrent requests deleting/updating the
+/// same row — Story 4.1's cart found this reachable via a double-click "remove item" race).
 /// Unrecognised exceptions are not handled and fall through to the default middleware.
 /// </summary>
 public class ProblemDetailsExceptionHandler : IExceptionHandler
@@ -47,6 +50,13 @@ public class ProblemDetailsExceptionHandler : IExceptionHandler
                 Type = "https://tools.ietf.org/html/rfc9110#section-15.5.10",
                 Title = "Conflict",
                 Detail = ce.Message
+            }),
+            DbUpdateConcurrencyException => (StatusCodes.Status409Conflict, new ProblemDetails
+            {
+                Status = StatusCodes.Status409Conflict,
+                Type = "https://tools.ietf.org/html/rfc9110#section-15.5.10",
+                Title = "Conflict",
+                Detail = "This resource was already modified or removed by another request."
             }),
             _ => (-1, null)
         };

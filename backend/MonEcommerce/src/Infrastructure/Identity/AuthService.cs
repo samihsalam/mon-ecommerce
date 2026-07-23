@@ -179,6 +179,6 @@ public class AuthService : IAuthService
 
         await _context.SaveChangesAsync(cancellationToken);
 
-        return Result<AuthResponse>.Success(new AuthResponse(accessToken, refreshTokenValue, expiresAt));
+        return Result<AuthResponse>.Success(new AuthResponse(accessToken, refreshTokenValue, expiresAt, user.Id));
     }
 }

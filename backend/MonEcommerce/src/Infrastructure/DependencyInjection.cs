@@ -94,6 +94,7 @@ public static class DependencyInjection
         builder.Services.AddTransient<IAuthService, AuthService>();
         builder.Services.AddTransient<IAccountService, AppAccountService>();
         builder.Services.AddTransient<IProductCatalogueService, MonEcommerce.Infrastructure.Catalogue.ProductCatalogueService>();
+        builder.Services.AddTransient<ICartService, MonEcommerce.Infrastructure.Carts.CartService>();
 
         // Cloudinary
         var cloudinaryUrl = builder.Configuration["Cloudinary:Url"];

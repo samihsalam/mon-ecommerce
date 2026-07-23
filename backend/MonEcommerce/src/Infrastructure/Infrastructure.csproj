@@ -8,6 +8,15 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.EntityFrameworkCore" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" />
+    <!-- Design-time only, needed so the "dotnet ef migrations add" project flag pointed at
+         Infrastructure (this repo's documented command, CLAUDE.md) can find the DbContext here.
+         Previously only referenced by Web.csproj, which meant the CLI's own documented invocation
+         actually failed with error MSB4057 (target GetEFProjectMetadata does not exist); found
+         while generating Story 4.1's cart-index migration. -->
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" />
     <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" />

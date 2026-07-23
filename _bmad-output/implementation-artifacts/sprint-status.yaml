@@ -76,8 +76,8 @@ development_status:
   epic-3-retrospective: optional
 
   # ─── Epic 4: Panier & Checkout ─────────────────────────────────────────────
-  epic-4: backlog
-  4-1-panier-anonyme-et-gestion-articles: backlog
+  epic-4: in-progress
+  4-1-panier-anonyme-et-gestion-articles: done
   4-2-composants-stickyaddtocart-et-cartdrawer: backlog
   4-3-checkout-etape-1-adresse-de-livraison: backlog
   4-4-checkout-etape-2-choix-de-livraison: backlog
