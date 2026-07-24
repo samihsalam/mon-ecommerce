@@ -98,8 +98,15 @@ public class AccountService : IAccountService
 
     private async Task<List<AddressDto>> LoadAddressesAsync(string userId, CancellationToken cancellationToken)
     {
+        // Most-recently-added first, Id as a tiebreaker — same convention as GetOrdersAsync
+        // below. Without this, callers reading addresses[0] (e.g. checkout's pre-fill) had no
+        // guarantee of a stable or meaningful order across requests (a review finding — there
+        // was no ORDER BY at all before this, and Address had no Created column to order by
+        // until it was moved from BaseEntity to BaseAuditableEntity for exactly this).
         return await _context.Addresses
             .Where(a => a.UserId == userId)
+            .OrderByDescending(a => a.Created)
+            .ThenByDescending(a => a.Id)
             .Select(a => new AddressDto(a.Id, a.Street, a.City, a.PostalCode, a.Country))
             .ToListAsync(cancellationToken);
     }

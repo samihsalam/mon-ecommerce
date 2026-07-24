@@ -1,0 +1,46 @@
+<nav aria-label="Étapes de la commande">
+  <ol class="flex items-center">
+    @for (label of labels; track label; let i = $index) {
+      <li class="flex items-center" [class.flex-1]="i < labels.length - 1">
+        <div class="flex flex-col items-center gap-1 lg:flex-row lg:gap-2">
+          <span
+            class="flex h-3 w-3 shrink-0 items-center justify-center rounded-full lg:h-8 lg:w-8 lg:text-sm lg:font-semibold"
+            [class.bg-accent]="stateFor(i) === 'completed'"
+            [class.text-white]="stateFor(i) === 'completed' || stateFor(i) === 'active'"
+            [class.bg-text]="stateFor(i) === 'active'"
+            [class.bg-border]="stateFor(i) === 'upcoming'"
+            [class.text-text-secondary]="stateFor(i) === 'upcoming'"
+            [attr.aria-current]="stateFor(i) === 'active' ? 'step' : null"
+          >
+            @if (stateFor(i) === 'completed') {
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="hidden lg:block" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+              </svg>
+            } @else {
+              <span class="hidden lg:inline">{{ i + 1 }}</span>
+            }
+          </span>
+          <span
+            class="hidden text-xs lg:inline lg:text-sm"
+            [class.text-text]="stateFor(i) === 'active'"
+            [class.text-text-secondary]="stateFor(i) !== 'active'"
+          >
+            {{ label }}
+          </span>
+        </div>
+
+        @if (i < labels.length - 1) {
+          <div class="mx-2 h-px flex-1" [class.bg-accent]="stateFor(i) === 'completed'" [class.bg-border]="stateFor(i) !== 'completed'"></div>
+        }
+      </li>
+    }
+  </ol>
+
+  <!-- Literal rendering of AC #4's exact copy pattern ("Étape 1/4 — Adresse"), shown at every
+       breakpoint alongside the visual indicator above (which also shows per-step labels on
+       desktop) — redundant on desktop by design, since the AC's wording is the ground truth to
+       satisfy regardless of viewport. -->
+  <p class="mt-3 text-center text-sm text-text-secondary">
+    Étape {{ clampedStep }}/{{ labels.length }} — {{ labels[clampedStep - 1] }}
+  </p>
+</nav>

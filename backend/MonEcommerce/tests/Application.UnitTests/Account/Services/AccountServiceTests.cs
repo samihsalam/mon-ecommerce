@@ -88,6 +88,42 @@ public class AccountServiceTests
     }
 
     [Test]
+    public async Task GetProfileAsync_ShouldReturnAddressesMostRecentlyCreatedFirst()
+    {
+        // Regression coverage for a review finding: LoadAddressesAsync previously had no
+        // ORDER BY at all, so callers reading addresses[0] (e.g. the checkout pre-fill) had no
+        // guarantee of a stable or meaningful order.
+        var user = await CreateUserAsync("alice@example.com", "password123");
+        _context.Addresses.Add(new Address
+        {
+            Id = Guid.NewGuid(),
+            UserId = user.Id,
+            Street = "1 Rue de Paris",
+            City = "Paris",
+            PostalCode = "75001",
+            Country = "France",
+            Created = DateTimeOffset.UtcNow.AddDays(-1),
+        });
+        _context.Addresses.Add(new Address
+        {
+            Id = Guid.NewGuid(),
+            UserId = user.Id,
+            Street = "5 Avenue Foch",
+            City = "Lyon",
+            PostalCode = "69001",
+            Country = "France",
+            Created = DateTimeOffset.UtcNow,
+        });
+        await _context.SaveChangesAsync(CancellationToken.None);
+
+        var profile = await _accountService.GetProfileAsync(user.Id);
+
+        Assert.That(profile.Addresses, Has.Count.EqualTo(2));
+        Assert.That(profile.Addresses[0].City, Is.EqualTo("Lyon"));
+        Assert.That(profile.Addresses[1].City, Is.EqualTo("Paris"));
+    }
+
+    [Test]
     public async Task UpdateProfileAsync_ShouldUpdateNameWithoutRequiringPasswordWhenEmailUnchanged()
     {
         var user = await CreateUserAsync("alice@example.com", "password123");

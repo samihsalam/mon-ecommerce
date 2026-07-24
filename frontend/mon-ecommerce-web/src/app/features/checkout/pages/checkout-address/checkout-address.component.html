@@ -1,0 +1,80 @@
+<main class="mx-auto max-w-md px-4 py-16">
+  <app-order-step-indicator [currentStep]="1" class="mb-8" />
+
+  <h1 class="font-heading text-3xl text-text mb-8">Adresse de livraison</h1>
+
+  @if (!initialized()) {
+    <p class="text-sm text-text" role="status">Chargement…</p>
+  } @else {
+    @if (accountStore.error()) {
+      <p class="mb-4 text-sm text-error" role="alert">
+        Impossible de récupérer votre adresse enregistrée. Vous pouvez tout de même en saisir une nouvelle ci-dessous.
+      </p>
+    }
+
+    <form [formGroup]="form" (ngSubmit)="onSubmit()" novalidate>
+      <div class="mb-4">
+        <label for="street" class="block mb-1 text-sm font-medium text-text">Rue</label>
+        <input
+          id="street"
+          type="text"
+          formControlName="street"
+          class="w-full rounded-card border border-border px-3 py-2"
+          [attr.aria-describedby]="form.controls.street.invalid && form.controls.street.touched ? 'street-error' : null"
+        />
+        @if (form.controls.street.invalid && form.controls.street.touched) {
+          <p id="street-error" class="mt-1 text-sm text-error">La rue est requise.</p>
+        }
+      </div>
+
+      <div class="mb-4">
+        <label for="city" class="block mb-1 text-sm font-medium text-text">Ville</label>
+        <input
+          id="city"
+          type="text"
+          formControlName="city"
+          class="w-full rounded-card border border-border px-3 py-2"
+          [attr.aria-describedby]="form.controls.city.invalid && form.controls.city.touched ? 'city-error' : null"
+        />
+        @if (form.controls.city.invalid && form.controls.city.touched) {
+          <p id="city-error" class="mt-1 text-sm text-error">La ville est requise.</p>
+        }
+      </div>
+
+      <div class="mb-4">
+        <label for="postalCode" class="block mb-1 text-sm font-medium text-text">Code postal</label>
+        <input
+          id="postalCode"
+          type="text"
+          formControlName="postalCode"
+          class="w-full rounded-card border border-border px-3 py-2"
+          [attr.aria-describedby]="form.controls.postalCode.invalid && form.controls.postalCode.touched ? 'postalCode-error' : null"
+        />
+        @if (form.controls.postalCode.invalid && form.controls.postalCode.touched) {
+          <p id="postalCode-error" class="mt-1 text-sm text-error">Le code postal est requis.</p>
+        }
+      </div>
+
+      <div class="mb-6">
+        <label for="country" class="block mb-1 text-sm font-medium text-text">Pays</label>
+        <input
+          id="country"
+          type="text"
+          formControlName="country"
+          class="w-full rounded-card border border-border px-3 py-2"
+          [attr.aria-describedby]="form.controls.country.invalid && form.controls.country.touched ? 'country-error' : null"
+        />
+        @if (form.controls.country.invalid && form.controls.country.touched) {
+          <p id="country-error" class="mt-1 text-sm text-error">Le pays est requis.</p>
+        }
+      </div>
+
+      <button
+        type="submit"
+        class="w-full rounded-button bg-text text-white py-2 font-semibold hover:bg-accent hover:text-text transition"
+      >
+        Continuer
+      </button>
+    </form>
+  }
+</main>

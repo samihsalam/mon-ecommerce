@@ -1,6 +1,6 @@
 namespace MonEcommerce.Domain.Entities;
 
-public class Address : BaseEntity
+public class Address : BaseAuditableEntity
 {
     public string UserId { get; set; } = string.Empty;
     public string Street { get; set; } = string.Empty;

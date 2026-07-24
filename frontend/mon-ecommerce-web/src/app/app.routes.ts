@@ -63,4 +63,12 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./features/account/pages/order-detail/order-detail.component').then((m) => m.OrderDetailComponent),
   },
+  {
+    path: 'checkout/adresse',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./features/checkout/pages/checkout-address/checkout-address.component').then(
+        (m) => m.CheckoutAddressComponent,
+      ),
+  },
 ];
