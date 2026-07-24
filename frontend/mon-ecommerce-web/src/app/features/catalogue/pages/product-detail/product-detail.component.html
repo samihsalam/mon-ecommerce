@@ -54,6 +54,8 @@
           {{ product.inStock ? 'En stock' : 'Rupture de stock' }}
         </p>
 
+        <app-sticky-add-to-cart [product]="product" />
+
         <button
           type="button"
           class="mt-6 rounded-button border border-border px-4 py-2 text-sm text-text hover:border-accent transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"

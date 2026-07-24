@@ -1,0 +1,114 @@
+@if (cartStore.isOpen()) {
+  <!-- Backdrop -->
+  <div class="fixed inset-0 z-40 bg-black/40" (click)="close()"></div>
+
+  <!-- Panel: bottom sheet on mobile, right-side 400px panel on desktop -->
+  <div
+    #dialog
+    role="dialog"
+    aria-modal="true"
+    aria-label="Panier"
+    tabindex="-1"
+    cdkTrapFocus
+    (keydown.escape)="close()"
+    class="cart-drawer-slide-in fixed inset-x-0 bottom-0 z-50 max-h-[85vh] rounded-t-card bg-bg shadow-lg flex flex-col outline-none lg:inset-y-0 lg:left-auto lg:right-0 lg:bottom-0 lg:h-full lg:w-[400px] lg:max-h-none lg:rounded-none"
+  >
+    <div class="flex items-center justify-between border-b border-border px-4 py-4">
+      <h2 class="font-heading text-lg text-text">Panier ({{ cartStore.itemCount() }})</h2>
+      <button
+        type="button"
+        class="rounded-button p-2 text-text hover:text-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
+        aria-label="Fermer le panier"
+        (click)="close()"
+      >
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+    </div>
+
+    <div class="flex-1 overflow-y-auto px-4 py-4">
+      @if (cartStore.items().length === 0) {
+        <div class="flex flex-col items-center gap-4 py-12 text-center">
+          <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" class="text-text-secondary" aria-hidden="true">
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              d="M3 3h2l.4 2M7 13h10l3.6-8H5.4M7 13L5.4 5M7 13l-1.5 6h13M9 21a1 1 0 100-2 1 1 0 000 2zM18 21a1 1 0 100-2 1 1 0 000 2z"
+            />
+          </svg>
+          <p class="text-text">Votre panier est vide.</p>
+          <a
+            routerLink="/catalogue"
+            (click)="close()"
+            class="rounded-button bg-accent px-6 py-3 text-sm font-semibold text-white tracking-wide hover:bg-accent-hover transition"
+          >
+            Découvrir notre catalogue
+          </a>
+        </div>
+      } @else {
+        <ul class="space-y-4">
+          @for (item of cartStore.items(); track item.id) {
+            <li class="flex gap-3">
+              @if (item.imageUrl) {
+                <img [src]="item.imageUrl" [alt]="item.productName" class="h-16 w-16 rounded-card object-cover" />
+              }
+              <div class="flex-1">
+                <p class="text-sm text-text">{{ item.productName }}</p>
+                <p class="text-sm text-text-secondary">{{ formatPrice(item.unitPriceInCents) }}</p>
+
+                <div class="mt-2 flex items-center gap-2">
+                  <button
+                    type="button"
+                    class="rounded-button border border-border px-2 py-1 text-sm text-text hover:border-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent disabled:opacity-50"
+                    [attr.aria-label]="'Réduire la quantité de ' + item.productName"
+                    [disabled]="cartStore.isLoading()"
+                    (click)="decrement(item.id, item.quantity)"
+                  >
+                    −
+                  </button>
+                  <span class="text-sm text-text" aria-live="polite">{{ item.quantity }}</span>
+                  <button
+                    type="button"
+                    class="rounded-button border border-border px-2 py-1 text-sm text-text hover:border-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent disabled:opacity-50"
+                    [attr.aria-label]="'Augmenter la quantité de ' + item.productName"
+                    [disabled]="cartStore.isLoading()"
+                    (click)="increment(item.id, item.quantity)"
+                  >
+                    +
+                  </button>
+
+                  <button
+                    type="button"
+                    class="ml-auto text-sm text-text-secondary underline hover:text-error focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent disabled:opacity-50"
+                    [attr.aria-label]="'Retirer ' + item.productName + ' du panier'"
+                    [disabled]="cartStore.isLoading()"
+                    (click)="remove(item.id)"
+                  >
+                    Retirer
+                  </button>
+                </div>
+              </div>
+              <p class="text-sm text-text">{{ formatPrice(item.lineTotalInCents) }}</p>
+            </li>
+          }
+        </ul>
+      }
+    </div>
+
+    @if (cartStore.items().length > 0) {
+      <div class="border-t border-border px-4 py-4">
+        <div class="flex items-center justify-between mb-4">
+          <span class="text-text-secondary">Sous-total</span>
+          <span class="font-heading text-lg text-text">{{ formatPrice(cartStore.totalInCents()) }}</span>
+        </div>
+        <button
+          type="button"
+          class="w-full rounded-button bg-accent px-6 py-3 text-sm font-semibold text-white tracking-wide hover:bg-accent-hover transition"
+        >
+          Passer commande
+        </button>
+      </div>
+    }
+  </div>
+}

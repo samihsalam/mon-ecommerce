@@ -54,7 +54,13 @@ if (app.Environment.IsDevelopment())
     app.UseCors(static builder =>
         builder.AllowAnyMethod()
             .AllowAnyHeader()
-            .AllowAnyOrigin());
+            .AllowAnyOrigin()
+            // Without this, the browser's fetch/XHR can SEND X-Cart-Session-Id (AllowAnyHeader
+            // covers requests) but cannot READ it back off a cross-origin response — the Angular
+            // dev server (:4200) and this API (:5287) are cross-origin, and Carts.ResolveOwner
+            // (Story 4.1) generates a fresh session id via a response header that Story 4.2's
+            // client needs to persist. Without WithExposedHeaders, that header is invisible to JS.
+            .WithExposedHeaders("X-Cart-Session-Id"));
 
     app.MapOpenApi();
     app.MapScalarApiReference();

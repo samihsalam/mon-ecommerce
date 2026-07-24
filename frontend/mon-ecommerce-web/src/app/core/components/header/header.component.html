@@ -1,0 +1,29 @@
+<header class="sticky top-0 z-40 bg-bg border-b border-border">
+  <div class="mx-auto max-w-5xl px-4 py-4 flex items-center justify-between">
+    <a routerLink="/" class="font-heading text-xl text-text">Mon Ecommerce</a>
+
+    <button
+      type="button"
+      class="relative rounded-button p-2 text-text hover:text-accent transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
+      aria-label="Ouvrir le panier"
+      (click)="onCartClick()"
+    >
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          d="M3 3h2l.4 2M7 13h10l3.6-8H5.4M7 13L5.4 5M7 13l-1.5 6h13M9 21a1 1 0 100-2 1 1 0 000 2zM18 21a1 1 0 100-2 1 1 0 000 2z"
+        />
+      </svg>
+
+      @if (cartStore.itemCount() > 0) {
+        <span
+          class="absolute -top-1 -right-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-accent px-1 text-[11px] font-medium text-white"
+          [class.cart-badge-pulse]="pulsing()"
+        >
+          {{ cartStore.itemCount() }}
+        </span>
+      }
+    </button>
+  </div>
+</header>

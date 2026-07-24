@@ -7,6 +7,7 @@ import { SeoService } from '../../../../core/services/seo.service';
 import { ToastService } from '../../../../core/services/toast.service';
 import { ProductCardComponent } from '../../components/product-card/product-card.component';
 import { ProductGalleryComponent } from '../../components/product-gallery/product-gallery.component';
+import { StickyAddToCartComponent } from '../../components/sticky-add-to-cart/sticky-add-to-cart.component';
 import type { ProductDetail } from '../../product-detail.store';
 import { ProductDetailStore } from '../../product-detail.store';
 import { buildProductUrl, extractProductIdFromSlug } from '../../product-url.util';
@@ -14,7 +15,7 @@ import { buildProductUrl, extractProductIdFromSlug } from '../../product-url.uti
 @Component({
   selector: 'app-product-detail',
   standalone: true,
-  imports: [RouterLink, ProductGalleryComponent, ProductCardComponent],
+  imports: [RouterLink, ProductGalleryComponent, ProductCardComponent, StickyAddToCartComponent],
   templateUrl: './product-detail.component.html',
   styleUrl: './product-detail.component.scss',
 })

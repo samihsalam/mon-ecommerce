@@ -1,0 +1,16 @@
+<div
+  class="fixed bottom-0 inset-x-0 z-30 flex items-center justify-between gap-4 border-t border-border bg-bg px-4 py-3 lg:static lg:mt-6 lg:border lg:rounded-card lg:px-4 lg:py-4"
+>
+  <span class="font-heading text-lg text-text">{{ formatPrice(product().priceInCents) }}</span>
+
+  <button
+    type="button"
+    class="rounded-button bg-accent px-6 py-3 text-sm font-semibold text-white tracking-wide hover:bg-accent-hover transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
+    [class.opacity-50]="!product().inStock || isAdding()"
+    [class.pointer-events-none]="!product().inStock || isAdding()"
+    [attr.aria-disabled]="!product().inStock || isAdding() ? 'true' : null"
+    (click)="onAddToCart()"
+  >
+    {{ product().inStock ? 'Ajouter au panier' : 'Rupture de stock' }}
+  </button>
+</div>

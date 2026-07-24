@@ -7,10 +7,10 @@ export class ToastService {
 
   private timeoutId: ReturnType<typeof setTimeout> | undefined;
 
-  show(text: string): void {
+  show(text: string, durationMs = 4000): void {
     this._message.set(text);
 
     clearTimeout(this.timeoutId);
-    this.timeoutId = setTimeout(() => this._message.set(null), 4000);
+    this.timeoutId = setTimeout(() => this._message.set(null), durationMs);
   }
 }
