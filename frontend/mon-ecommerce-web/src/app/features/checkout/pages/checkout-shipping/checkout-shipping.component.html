@@ -1,0 +1,74 @@
+<main class="mx-auto max-w-md px-4 py-16">
+  <app-order-step-indicator [currentStep]="2" class="mb-8" />
+
+  <h1 class="font-heading text-3xl text-text mb-8">Mode de livraison</h1>
+
+  @if (!initialized()) {
+    <p class="text-sm text-text" role="status">Chargement…</p>
+  } @else {
+    <!-- Only shown when there's nothing usable to fall back on — a refresh failure after an
+         earlier successful load leaves the still-valid, already-fetched options selectable
+         instead of contradicting them with an error banner (review finding). -->
+    @if (checkoutStore.shippingOptionsError() && checkoutStore.shippingOptions().length === 0) {
+      <div class="mb-4">
+        <p class="text-sm text-error" role="alert">{{ checkoutStore.shippingOptionsError() }}</p>
+        <button
+          type="button"
+          class="mt-2 text-sm text-text underline"
+          (click)="retryLoadShippingOptions()"
+        >
+          Réessayer
+        </button>
+      </div>
+    }
+
+    <!-- Plain signal-driven radio group, no Reactive/Template-driven FormGroup — (ngSubmit)
+         would need FormsModule/ReactiveFormsModule imported to ever fire, which this component
+         doesn't need for anything else, so the submit button is handled via a direct (click)
+         instead (review finding: (ngSubmit) alone here was dead code, silently falling back to
+         a native full-page form submission on click). -->
+    <form>
+      <fieldset class="mb-6">
+        <legend class="mb-2 text-sm font-medium text-text">Choisissez un mode de livraison</legend>
+
+        <div class="space-y-3">
+          @for (option of checkoutStore.shippingOptions(); track option.id) {
+            <label
+              class="flex items-center justify-between gap-4 rounded-card border px-4 py-3 cursor-pointer"
+              [class.border-accent]="selected()?.id === option.id"
+              [class.border-border]="selected()?.id !== option.id"
+            >
+              <span class="flex items-center gap-3">
+                <input
+                  type="radio"
+                  name="shippingOption"
+                  [checked]="selected()?.id === option.id"
+                  (change)="select(option)"
+                />
+                <span>
+                  <span class="block text-sm text-text">{{ option.name }}</span>
+                  <span class="block text-xs text-text-secondary">{{ option.estimatedDelay }}</span>
+                </span>
+              </span>
+              <span class="text-sm text-text">{{ formatPrice(option.priceInCents) }}</span>
+            </label>
+          }
+        </div>
+      </fieldset>
+
+      <div class="mb-6 flex items-center justify-between border-t border-border pt-4">
+        <span class="text-text-secondary">Sous-total</span>
+        <span class="font-heading text-lg text-text">{{ formatPrice(subtotalInCents()) }}</span>
+      </div>
+
+      <button
+        type="button"
+        [disabled]="!selected()"
+        class="w-full rounded-button bg-text text-white py-2 font-semibold hover:bg-accent hover:text-text transition disabled:opacity-50"
+        (click)="onSubmit()"
+      >
+        Continuer
+      </button>
+    </form>
+  }
+</main>
