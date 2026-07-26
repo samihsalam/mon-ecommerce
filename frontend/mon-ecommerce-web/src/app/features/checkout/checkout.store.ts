@@ -24,6 +24,7 @@ interface CheckoutState {
   shippingOptions: ShippingOption[];
   shippingOption: ShippingOption | null;
   shippingOptionsError: string | null;
+  paymentError: string | null;
 }
 
 const initialState: CheckoutState = {
@@ -31,13 +32,14 @@ const initialState: CheckoutState = {
   shippingOptions: [],
   shippingOption: null,
   shippingOptionsError: null,
+  paymentError: null,
 };
 
-// Root-provided, holds the checkout wizard's in-progress data across steps (address, shipping
-// now; payment fields join in Story 4.5). Being root-provided means it naturally survives
-// Angular Router navigation between checkout steps, satisfying "no data loss on back navigation"
-// (Story 4.3 AC #6, Story 4.4 AC #5) without any extra persistence — deliberately not backed by
-// sessionStorage/localStorage, since surviving a hard page refresh was never part of either AC.
+// Root-provided, holds the checkout wizard's in-progress data across steps (address, shipping,
+// payment). Being root-provided means it naturally survives Angular Router navigation between
+// checkout steps, satisfying "no data loss on back navigation" (Story 4.3 AC #6, Story 4.4 AC #5)
+// without any extra persistence — deliberately not backed by sessionStorage/localStorage, since
+// surviving a hard page refresh was never part of either AC.
 export const CheckoutStore = signalStore(
   { providedIn: 'root' },
   withState(initialState),
@@ -64,6 +66,23 @@ export const CheckoutStore = signalStore(
 
       setShippingOption(shippingOption: ShippingOption): void {
         patchState(store, { shippingOption });
+      },
+
+      async createPaymentIntent(shippingOptionId: string): Promise<string | null> {
+        try {
+          const response = await firstValueFrom(
+            http.post<{ clientSecret: string }>(`${environment.apiUrl}/api/v1/payments/create-intent`, {
+              shippingOptionId,
+            }),
+          );
+          patchState(store, { paymentError: null });
+          return response.clientSecret;
+        } catch {
+          patchState(store, {
+            paymentError: 'Impossible de préparer le paiement. Veuillez réessayer.',
+          });
+          return null;
+        }
       },
     };
   }),

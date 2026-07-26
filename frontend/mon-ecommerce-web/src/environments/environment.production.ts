@@ -8,4 +8,7 @@ export const environment = {
   // Replace with the real deployed frontend origin once deployed (Story 3.6) — mirrors the
   // backend's Frontend:BaseUrl.
   siteUrl: '',
+  // Replace with the real Stripe publishable key once a Stripe account is configured (Story 4.5) —
+  // publishable keys are safe to commit (Stripe docs).
+  stripePublishableKey: '',
 };

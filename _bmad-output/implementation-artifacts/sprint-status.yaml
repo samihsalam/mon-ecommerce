@@ -81,7 +81,7 @@ development_status:
   4-2-composants-stickyaddtocart-et-cartdrawer: done
   4-3-checkout-etape-1-adresse-de-livraison: done
   4-4-checkout-etape-2-choix-de-livraison: done
-  4-5-checkout-etape-3-paiement-stripe: backlog
+  4-5-checkout-etape-3-paiement-stripe: done
   4-6-confirmation-commande-et-anti-overselling: backlog
   epic-4-retrospective: optional
 

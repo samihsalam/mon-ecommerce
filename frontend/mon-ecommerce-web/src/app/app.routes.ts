@@ -79,4 +79,12 @@ export const routes: Routes = [
         (m) => m.CheckoutShippingComponent,
       ),
   },
+  {
+    path: 'checkout/paiement',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./features/checkout/pages/checkout-payment/checkout-payment.component').then(
+        (m) => m.CheckoutPaymentComponent,
+      ),
+  },
 ];

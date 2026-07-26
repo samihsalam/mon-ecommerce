@@ -86,4 +86,29 @@ describe('CheckoutStore', () => {
 
     expect(store.shippingOption()).toEqual(cannedOptions[1]);
   });
+
+  it('should return the clientSecret when createPaymentIntent succeeds', async () => {
+    const store = TestBed.inject(CheckoutStore);
+
+    const promise = store.createPaymentIntent('standard');
+    const req = httpMock.expectOne(`${environment.apiUrl}/api/v1/payments/create-intent`);
+    expect(req.request.method).toBe('POST');
+    expect(req.request.body).toEqual({ shippingOptionId: 'standard' });
+    req.flush({ clientSecret: 'pi_abc_secret_xyz' });
+
+    expect(await promise).toBe('pi_abc_secret_xyz');
+    expect(store.paymentError()).toBeNull();
+  });
+
+  it('should set paymentError and return null when createPaymentIntent fails', async () => {
+    const store = TestBed.inject(CheckoutStore);
+
+    const promise = store.createPaymentIntent('standard');
+    httpMock
+      .expectOne(`${environment.apiUrl}/api/v1/payments/create-intent`)
+      .flush(null, { status: 500, statusText: 'Server Error' });
+
+    expect(await promise).toBeNull();
+    expect(store.paymentError()).toBe('Impossible de préparer le paiement. Veuillez réessayer.');
+  });
 });

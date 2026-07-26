@@ -1,0 +1,72 @@
+<main class="mx-auto max-w-md px-4 py-16">
+  <app-order-step-indicator [currentStep]="3" class="mb-8" />
+
+  <h1 class="font-heading text-3xl text-text mb-8">Paiement</h1>
+
+  <!-- Order summary (AC #7): items, shipping, total — assembled from state already available
+       client-side (CartStore/CheckoutStore), no new backend call. -->
+  <section class="mb-8 rounded-card border border-border p-4">
+    <h2 class="mb-3 text-sm font-medium text-text">Récapitulatif</h2>
+    <ul class="mb-3 space-y-2">
+      @for (item of cartStore.items(); track item.id) {
+        <li class="flex justify-between text-sm text-text">
+          <span>{{ item.productName }} × {{ item.quantity }}</span>
+          <span>{{ formatPrice(item.lineTotalInCents) }}</span>
+        </li>
+      }
+    </ul>
+    @if (checkoutStore.shippingOption(); as shippingOption) {
+      <div class="flex justify-between text-sm text-text-secondary border-t border-border pt-2">
+        <span>{{ shippingOption.name }}</span>
+        <span>{{ formatPrice(shippingOption.priceInCents) }}</span>
+      </div>
+    }
+    <div class="flex justify-between border-t border-border pt-2 mt-2 font-heading text-lg text-text">
+      <span>Total</span>
+      <span>{{ formatPrice(totalInCents()) }}</span>
+    </div>
+  </section>
+
+  @if (!initialized()) {
+    <p class="text-sm text-text" role="status">Préparation du paiement…</p>
+  }
+
+  @if (initialized() && (checkoutStore.paymentError() || stripeFailedToLoad())) {
+    <div class="mb-4">
+      <p class="text-sm text-error" role="alert">
+        {{ checkoutStore.paymentError() || 'Impossible de charger le module de paiement.' }}
+      </p>
+      <button type="button" class="mt-2 text-sm text-text underline" (click)="retryLoadPaymentForm()">
+        Réessayer
+      </button>
+    </div>
+  }
+
+  <!-- Unconditionally rendered (visibility only, via [hidden]) — NOT gated behind @if/@else.
+       Stripe Elements is mounted into #paymentElementContainer once ready; if this div were
+       structurally removed/recreated by @if based on `initialized()`, the mount would race
+       against Angular's own change-detection timing (confirmed: this raced against test-driven
+       detectChanges() calls, which don't run on the same schedule as a real bootstrapped app's
+       automatic zone-triggered CD). Keeping the node always present means viewChild() resolves
+       during the component's very first render, well before the async ngOnInit chain finishes,
+       so no artificial delay (setTimeout, etc.) is needed to mount reliably. -->
+  <form
+    [hidden]="!initialized() || !!checkoutStore.paymentError() || stripeFailedToLoad()"
+    (submit)="$event.preventDefault()"
+  >
+    <div #paymentElementContainer class="mb-4"></div>
+
+    @if (declineError()) {
+      <p class="mb-4 text-sm text-error" role="alert">{{ declineError() }}</p>
+    }
+
+    <button
+      type="button"
+      [disabled]="submitting()"
+      class="w-full rounded-button bg-text text-white py-2 font-semibold hover:bg-accent hover:text-text transition disabled:opacity-50"
+      (click)="onSubmit()"
+    >
+      {{ submitting() ? 'Traitement en cours…' : 'Payer ' + formatPrice(totalInCents()) }}
+    </button>
+  </form>
+</main>
