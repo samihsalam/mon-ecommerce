@@ -87,4 +87,12 @@ export const routes: Routes = [
         (m) => m.CheckoutPaymentComponent,
       ),
   },
+  {
+    path: 'checkout/confirmation',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./features/checkout/pages/checkout-confirmation/checkout-confirmation.component').then(
+        (m) => m.CheckoutConfirmationComponent,
+      ),
+  },
 ];

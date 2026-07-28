@@ -26,6 +26,7 @@ public class AuthorizationPipelineTests
     private class StubIdentityService : IIdentityService
     {
         public Task<string?> GetUserNameAsync(string userId) => Task.FromResult<string?>("stub-user");
+        public Task<string?> GetEmailAsync(string userId) => Task.FromResult<string?>("stub-user@example.com");
         public Task<bool> IsInRoleAsync(string userId, string role) => Task.FromResult(true);
         public Task<bool> AuthorizeAsync(string userId, string policyName) => Task.FromResult(true);
         public Task<(Result Result, string UserId)> CreateUserAsync(string userName, string password)
@@ -45,6 +46,9 @@ public class AuthorizationPipelineTests
             => Task.FromResult(new PagedResult<OrderSummaryDto>([], 0, page, pageSize));
 
         public Task<OrderDetailDto> GetOrderDetailAsync(string userId, Guid orderId, CancellationToken cancellationToken = default)
+            => throw new NotImplementedException();
+
+        public Task<OrderDetailDto> GetOrderByPaymentIntentAsync(string userId, string paymentIntentId, CancellationToken cancellationToken = default)
             => throw new NotImplementedException();
     }
 

@@ -87,13 +87,21 @@ describe('CheckoutStore', () => {
     expect(store.shippingOption()).toEqual(cannedOptions[1]);
   });
 
+  const cannedAddress = { street: '12 rue de la Paix', city: 'Paris', postalCode: '75002', country: 'France' };
+
   it('should return the clientSecret when createPaymentIntent succeeds', async () => {
     const store = TestBed.inject(CheckoutStore);
 
-    const promise = store.createPaymentIntent('standard');
+    const promise = store.createPaymentIntent('standard', cannedAddress);
     const req = httpMock.expectOne(`${environment.apiUrl}/api/v1/payments/create-intent`);
     expect(req.request.method).toBe('POST');
-    expect(req.request.body).toEqual({ shippingOptionId: 'standard' });
+    expect(req.request.body).toEqual({
+      shippingOptionId: 'standard',
+      street: '12 rue de la Paix',
+      city: 'Paris',
+      postalCode: '75002',
+      country: 'France',
+    });
     req.flush({ clientSecret: 'pi_abc_secret_xyz' });
 
     expect(await promise).toBe('pi_abc_secret_xyz');
@@ -103,12 +111,56 @@ describe('CheckoutStore', () => {
   it('should set paymentError and return null when createPaymentIntent fails', async () => {
     const store = TestBed.inject(CheckoutStore);
 
-    const promise = store.createPaymentIntent('standard');
+    const promise = store.createPaymentIntent('standard', cannedAddress);
     httpMock
       .expectOne(`${environment.apiUrl}/api/v1/payments/create-intent`)
       .flush(null, { status: 500, statusText: 'Server Error' });
 
     expect(await promise).toBeNull();
     expect(store.paymentError()).toBe('Impossible de préparer le paiement. Veuillez réessayer.');
+  });
+
+  const cannedOrder = {
+    id: 'order-1',
+    orderNumber: '#ABC12345',
+    date: '2026-07-28T00:00:00Z',
+    totalInCents: 5490,
+    status: 'En préparation',
+    trackingNumber: null,
+    shippingAddress: { id: 'addr-1', ...cannedAddress },
+    items: [{ productName: 'Chaise Scandinave', unitPriceInCents: 5000, quantity: 1 }],
+  };
+
+  it('should return a "found" result with the order when getOrderByPaymentIntent succeeds', async () => {
+    const store = TestBed.inject(CheckoutStore);
+
+    const promise = store.getOrderByPaymentIntent('pi_abc');
+    const req = httpMock.expectOne(`${environment.apiUrl}/api/v1/account/orders/by-payment-intent/pi_abc`);
+    expect(req.request.method).toBe('GET');
+    req.flush(cannedOrder);
+
+    expect(await promise).toEqual({ status: 'found', order: cannedOrder });
+  });
+
+  it('should return a "pending" result when the order is not yet confirmed (404)', async () => {
+    const store = TestBed.inject(CheckoutStore);
+
+    const promise = store.getOrderByPaymentIntent('pi_pending');
+    httpMock
+      .expectOne(`${environment.apiUrl}/api/v1/account/orders/by-payment-intent/pi_pending`)
+      .flush(null, { status: 404, statusText: 'Not Found' });
+
+    expect(await promise).toEqual({ status: 'pending' });
+  });
+
+  it('should return a "refunded" result when stock was insufficient (409)', async () => {
+    const store = TestBed.inject(CheckoutStore);
+
+    const promise = store.getOrderByPaymentIntent('pi_refunded');
+    httpMock
+      .expectOne(`${environment.apiUrl}/api/v1/account/orders/by-payment-intent/pi_refunded`)
+      .flush(null, { status: 409, statusText: 'Conflict' });
+
+    expect(await promise).toEqual({ status: 'refunded' });
   });
 });

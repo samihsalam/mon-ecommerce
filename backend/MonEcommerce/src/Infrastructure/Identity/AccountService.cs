@@ -5,6 +5,7 @@ using MonEcommerce.Application.Common.Interfaces;
 using MonEcommerce.Application.Common.Models;
 using MonEcommerce.Domain.Entities;
 using MonEcommerce.Domain.Enums;
+using MonEcommerce.Application.Common.Exceptions;
 using AppNotFoundException = MonEcommerce.Application.Common.Exceptions.NotFoundException;
 
 namespace MonEcommerce.Infrastructure.Identity;
@@ -148,6 +149,42 @@ public class AccountService : IAccountService
             .FirstOrDefaultAsync(o => o.Id == orderId && o.UserId == userId, cancellationToken)
             ?? throw new AppNotFoundException(nameof(Order), orderId);
 
+        return BuildOrderDetailDto(order);
+    }
+
+    public async Task<OrderDetailDto> GetOrderByPaymentIntentAsync(string userId, string paymentIntentId, CancellationToken cancellationToken = default)
+    {
+        // Same ownership-in-the-query pattern as GetOrderDetailAsync above — a customer can only
+        // ever poll for their OWN order by payment intent id, never someone else's.
+        var order = await _context.Orders
+            .Include(o => o.Items)
+            .Include(o => o.ShippingAddress)
+            .FirstOrDefaultAsync(o => o.StripePaymentIntentId == paymentIntentId && o.UserId == userId, cancellationToken);
+
+        if (order != null)
+        {
+            return BuildOrderDetailDto(order);
+        }
+
+        // No Order yet — either the webhook hasn't landed (still pending, frontend keeps polling
+        // on a 404), or it landed and stock was insufficient (HandleStripeWebhookCommandHandler
+        // never creates an Order in that case — it only writes a PaymentAuditLog with
+        // Outcome.Refunded). Distinguish the two so the frontend can stop polling and show the
+        // right message instead of spinning forever on a payment that will never confirm.
+        var wasRefunded = await _context.PaymentAuditLogs.AnyAsync(
+            p => p.StripePaymentIntentId == paymentIntentId && p.UserId == userId && p.Outcome == PaymentAuditOutcome.Refunded,
+            cancellationToken);
+
+        if (wasRefunded)
+        {
+            throw new ConflictException("Le stock était insuffisant pour un ou plusieurs articles. Votre paiement a été intégralement remboursé.");
+        }
+
+        throw new AppNotFoundException(nameof(Order), paymentIntentId);
+    }
+
+    private static OrderDetailDto BuildOrderDetailDto(Order order)
+    {
         var items = order.Items
             .Select(i => new OrderItemDto(i.ProductName, i.UnitPriceInCents, i.Quantity))
             .ToList();

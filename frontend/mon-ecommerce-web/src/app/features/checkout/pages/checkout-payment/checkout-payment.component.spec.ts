@@ -91,7 +91,13 @@ describe('CheckoutPaymentComponent', () => {
     fixture.detectChanges();
 
     const req = httpMock.expectOne(`${environment.apiUrl}/api/v1/payments/create-intent`);
-    expect(req.request.body).toEqual({ shippingOptionId: 'standard' });
+    expect(req.request.body).toEqual({
+      shippingOptionId: 'standard',
+      street: '12 rue de la Paix',
+      city: 'Paris',
+      postalCode: '75002',
+      country: 'France',
+    });
     req.flush({ clientSecret: 'pi_abc_secret_xyz' });
 
     await fixture.whenStable();
@@ -139,7 +145,8 @@ describe('CheckoutPaymentComponent', () => {
     expect(cartStore.items().length).toBe(1);
   });
 
-  it('should navigate to /checkout/confirmation on a successful payment', async () => {
+  it('should navigate to /checkout/confirmation with the payment intent id on a successful payment', async () => {
+    confirmPaymentSpy.and.resolveTo({ paymentIntent: { id: 'pi_abc' } });
     const router = TestBed.inject(Router);
     const navigateSpy = spyOn(router, 'navigate').and.resolveTo(true);
 
@@ -152,7 +159,7 @@ describe('CheckoutPaymentComponent', () => {
 
     await fixture.componentInstance['onSubmit']();
 
-    expect(navigateSpy).toHaveBeenCalledWith(['/checkout/confirmation']);
+    expect(navigateSpy).toHaveBeenCalledWith(['/checkout/confirmation'], { queryParams: { payment_intent: 'pi_abc' } });
   });
 
   it('should show a retry option when creating the payment intent fails', async () => {

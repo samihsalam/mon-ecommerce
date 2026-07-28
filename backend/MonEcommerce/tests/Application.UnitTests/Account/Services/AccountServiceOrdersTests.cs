@@ -152,4 +152,60 @@ public class AccountServiceOrdersTests
         Assert.ThrowsAsync<NotFoundException>(async () =>
             await _accountService.GetOrderDetailAsync("user-1", order.Id));
     }
+
+    // Story 4.6: the checkout confirmation page polls by Stripe payment intent id, not Order.Id
+    // (order creation happens asynchronously via webhook — the browser only ever knows the
+    // payment intent id).
+    [Test]
+    public async Task GetOrderByPaymentIntentAsync_ShouldReturnTheOrderOnceConfirmed()
+    {
+        var addressId = SeedAddress("user-1");
+        var order = SeedOrder("user-1", addressId, DateTimeOffset.UtcNow, totalInCents: 5490);
+        order.StripePaymentIntentId = "pi_confirmed_123";
+        await _context.SaveChangesAsync(CancellationToken.None);
+
+        var detail = await _accountService.GetOrderByPaymentIntentAsync("user-1", "pi_confirmed_123");
+
+        Assert.That(detail.Id, Is.EqualTo(order.Id));
+        Assert.That(detail.TotalInCents, Is.EqualTo(5490));
+    }
+
+    [Test]
+    public void GetOrderByPaymentIntentAsync_ShouldThrowNotFoundWhileStillPending()
+    {
+        // No Order and no PaymentAuditLog for this payment intent yet — the webhook hasn't
+        // landed. 404 tells the frontend's poll loop to keep trying, not to give up.
+        Assert.ThrowsAsync<NotFoundException>(async () =>
+            await _accountService.GetOrderByPaymentIntentAsync("user-1", "pi_still_pending"));
+    }
+
+    [Test]
+    public async Task GetOrderByPaymentIntentAsync_ShouldThrowConflictWhenStockWasInsufficientAndThePaymentWasRefunded()
+    {
+        _context.PaymentAuditLogs.Add(new PaymentAuditLog
+        {
+            Id = Guid.NewGuid(),
+            StripePaymentIntentId = "pi_refunded_123",
+            UserId = "user-1",
+            AmountInCents = 5490,
+            Outcome = PaymentAuditOutcome.Refunded,
+            OrderId = null,
+        });
+        await _context.SaveChangesAsync(CancellationToken.None);
+
+        Assert.ThrowsAsync<ConflictException>(async () =>
+            await _accountService.GetOrderByPaymentIntentAsync("user-1", "pi_refunded_123"));
+    }
+
+    [Test]
+    public async Task GetOrderByPaymentIntentAsync_ShouldThrowNotFoundForAnotherUsersPaymentIntent_ProvingTheIdorGuard()
+    {
+        var addressId = SeedAddress("user-2");
+        var order = SeedOrder("user-2", addressId, DateTimeOffset.UtcNow);
+        order.StripePaymentIntentId = "pi_belongs_to_user_2";
+        await _context.SaveChangesAsync(CancellationToken.None);
+
+        Assert.ThrowsAsync<NotFoundException>(async () =>
+            await _accountService.GetOrderByPaymentIntentAsync("user-1", "pi_belongs_to_user_2"));
+    }
 }

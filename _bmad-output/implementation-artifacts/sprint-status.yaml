@@ -76,13 +76,13 @@ development_status:
   epic-3-retrospective: optional
 
   # ─── Epic 4: Panier & Checkout ─────────────────────────────────────────────
-  epic-4: in-progress
+  epic-4: done
   4-1-panier-anonyme-et-gestion-articles: done
   4-2-composants-stickyaddtocart-et-cartdrawer: done
   4-3-checkout-etape-1-adresse-de-livraison: done
   4-4-checkout-etape-2-choix-de-livraison: done
   4-5-checkout-etape-3-paiement-stripe: done
-  4-6-confirmation-commande-et-anti-overselling: backlog
+  4-6-confirmation-commande-et-anti-overselling: done
   epic-4-retrospective: optional
 
   # ─── Epic 5: Commandes, Retours & Notifications ────────────────────────────

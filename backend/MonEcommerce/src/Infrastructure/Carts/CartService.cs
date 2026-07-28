@@ -151,6 +151,22 @@ public class CartService : ICartService
         await _context.SaveChangesAsync(cancellationToken);
     }
 
+    public async Task ClearCartAsync(CartOwner owner, CancellationToken cancellationToken = default)
+    {
+        var cart = await FindCartWithItemsAsync(owner, cancellationToken);
+        if (cart == null)
+        {
+            // A duplicate webhook delivery re-processing an already-confirmed order would land
+            // here — no-op, not an error (see ProcessPaymentWebhookCommandHandler's idempotency
+            // guard, which should prevent this from even being reached twice, but this stays
+            // defensive regardless).
+            return;
+        }
+
+        _context.Carts.Remove(cart);
+        await _context.SaveChangesAsync(cancellationToken);
+    }
+
     private async Task<Domain.Entities.Cart> FindOrCreateActiveCartAsync(CartOwner owner, CancellationToken cancellationToken)
     {
         var cart = await FindCartWithItemsAsync(owner, cancellationToken);

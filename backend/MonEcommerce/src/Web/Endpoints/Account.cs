@@ -15,6 +15,7 @@ public class Account : IEndpointGroup
         groupBuilder.MapPatch(UpdateProfile, "profile").RequireAuthorization();
         groupBuilder.MapGet(GetOrders, "orders").RequireAuthorization();
         groupBuilder.MapGet(GetOrderDetail, "orders/{orderId:guid}").RequireAuthorization();
+        groupBuilder.MapGet(GetOrderByPaymentIntent, "orders/by-payment-intent/{paymentIntentId}").RequireAuthorization();
     }
 
     [EndpointSummary("Get the current user's profile")]
@@ -42,6 +43,17 @@ public class Account : IEndpointGroup
     public static async Task<IResult> GetOrderDetail(Guid orderId, ISender sender)
     {
         var order = await sender.Send(new GetOrderDetailQuery(orderId));
+        return Results.Ok(order);
+    }
+
+    // Polled by the checkout confirmation page (Story 4.6) — order creation happens
+    // asynchronously via a Stripe webhook, so the browser only ever knows the payment intent id,
+    // never the resulting Order.Id, until this resolves. 404 while still pending, 409 if stock
+    // was insufficient and the payment was refunded instead (see GetOrderByPaymentIntentAsync).
+    [EndpointSummary("Poll for the order resulting from a Stripe payment intent")]
+    public static async Task<IResult> GetOrderByPaymentIntent(string paymentIntentId, ISender sender)
+    {
+        var order = await sender.Send(new GetOrderByPaymentIntentQuery(paymentIntentId));
         return Results.Ok(order);
     }
 }

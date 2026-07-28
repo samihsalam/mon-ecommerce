@@ -66,14 +66,15 @@ export class CheckoutPaymentComponent implements OnInit, OnDestroy {
 
   private async loadPaymentForm(): Promise<void> {
     const shippingOption = this.checkoutStore.shippingOption();
-    if (!shippingOption) {
+    const address = this.checkoutStore.address();
+    if (!shippingOption || !address) {
       return;
     }
 
     this.stripeFailedToLoad.set(false);
     this.initialized.set(false);
 
-    const clientSecret = await this.checkoutStore.createPaymentIntent(shippingOption.id);
+    const clientSecret = await this.checkoutStore.createPaymentIntent(shippingOption.id, address);
     if (!clientSecret) {
       this.initialized.set(true);
       return;
@@ -115,8 +116,13 @@ export class CheckoutPaymentComponent implements OnInit, OnDestroy {
     this.submitting.set(true);
     this.declineError.set(null);
 
-    const { error } = await this.stripe.confirmPayment({
+    const { error, paymentIntent } = await this.stripe.confirmPayment({
       elements: this.elements,
+      // Required even with redirect: 'if_required' — some payment methods still need an
+      // off-site redirect (e.g. certain 3DS flows); Stripe appends ?payment_intent=pi_... to
+      // this URL itself in that case, matching the query param used below for the common
+      // (no-redirect) path, so both converge on the same confirmation-page contract.
+      confirmParams: { return_url: `${window.location.origin}/checkout/confirmation` },
       redirect: 'if_required',
     });
 
@@ -128,8 +134,9 @@ export class CheckoutPaymentComponent implements OnInit, OnDestroy {
       return;
     }
 
-    // Payment succeeded — order confirmation (Story 4.6) picks up from here.
-    void this.router.navigate(['/checkout/confirmation']);
+    // Payment succeeded client-side — order creation happens asynchronously via the Stripe
+    // webhook (Story 4.6), which the confirmation page polls for using this payment intent id.
+    void this.router.navigate(['/checkout/confirmation'], { queryParams: { payment_intent: paymentIntent?.id } });
   }
 
   protected formatPrice(cents: number): string {

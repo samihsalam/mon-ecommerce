@@ -21,6 +21,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>, IApplica
     public DbSet<CartItem> CartItems => Set<CartItem>();
     public DbSet<Address> Addresses => Set<Address>();
     public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
+    public DbSet<PaymentAuditLog> PaymentAuditLogs => Set<PaymentAuditLog>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {

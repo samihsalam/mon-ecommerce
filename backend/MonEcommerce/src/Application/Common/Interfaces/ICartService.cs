@@ -18,4 +18,8 @@ public interface ICartService
     // No-ops cleanly if no anonymous cart exists for sessionId (already expired, or the visitor
     // never added anything before logging in).
     Task MergeAnonymousCartAsync(string sessionId, string userId, CancellationToken cancellationToken = default);
+
+    // Called after a successful order confirmation (Story 4.6) — no-ops cleanly if the owner has
+    // no cart (e.g. this webhook delivery is a duplicate and a prior delivery already cleared it).
+    Task ClearCartAsync(CartOwner owner, CancellationToken cancellationToken = default);
 }

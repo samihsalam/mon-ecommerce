@@ -58,6 +58,13 @@ public class ProblemDetailsExceptionHandler : IExceptionHandler
                 Title = "Conflict",
                 Detail = "This resource was already modified or removed by another request."
             }),
+            InvalidWebhookSignatureException ie => (StatusCodes.Status400BadRequest, new ProblemDetails
+            {
+                Status = StatusCodes.Status400BadRequest,
+                Type = "https://tools.ietf.org/html/rfc9110#section-15.5.1",
+                Title = "Bad Request",
+                Detail = ie.Message
+            }),
             _ => (-1, null)
         };
 
