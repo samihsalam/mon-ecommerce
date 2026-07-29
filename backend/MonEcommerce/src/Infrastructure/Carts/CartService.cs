@@ -157,7 +157,7 @@ public class CartService : ICartService
         if (cart == null)
         {
             // A duplicate webhook delivery re-processing an already-confirmed order would land
-            // here — no-op, not an error (see ProcessPaymentWebhookCommandHandler's idempotency
+            // here — no-op, not an error (see HandleStripeWebhookCommandHandler's idempotency
             // guard, which should prevent this from even being reached twice, but this stays
             // defensive regardless).
             return;

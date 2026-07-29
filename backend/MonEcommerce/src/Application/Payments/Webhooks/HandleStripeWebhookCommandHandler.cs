@@ -78,10 +78,37 @@ public class HandleStripeWebhookCommandHandler : IRequestHandler<HandleStripeWeb
 
         var amountInCents = (int)(webhookEvent.AmountInCents ?? 0);
         var customerEmail = await _identityService.GetEmailAsync(userId);
+        if (customerEmail == null)
+        {
+            _logger.LogWarning("Stripe webhook: no account found for userId {UserId} on PaymentIntent {PaymentIntentId}; proceeding with an empty confirmation email.", userId, paymentIntentId);
+        }
 
         var cart = await _cartService.GetCartAsync(CartOwner.ForUser(userId), cancellationToken);
 
-        if (cart.Items.Count == 0 || !await TryReserveStockAsync(cart.Items, cancellationToken))
+        if (cart.Items.Count == 0)
+        {
+            // Nothing to reserve or confirm. Given the idempotency guard above, the only way this
+            // is reached for a legitimately-paid order is a redelivery racing just ahead of this
+            // exact payment intent's own PaymentAuditLog row becoming visible — a no-op, not a
+            // sign that stock ran out, so it must NOT fall into the refund path below.
+            return;
+        }
+
+        // Stripe's charged amount is authoritative; the cart is re-read live here, not the
+        // snapshot the customer actually paid for. If it changed between PaymentIntent creation
+        // and this webhook firing (another tab, another device), refuse to silently ship whatever
+        // the cart currently holds under a stale charge — refund and let the customer re-order.
+        var expectedTotalInCents = cart.TotalInCents + shippingOption.PriceInCents;
+        if (expectedTotalInCents != amountInCents)
+        {
+            _logger.LogError(
+                "Stripe webhook: PaymentIntent {PaymentIntentId} charged {AmountInCents} cents but the current cart+shipping total is {ExpectedTotalInCents} cents (cart changed after payment); refunding instead of creating a mismatched order.",
+                paymentIntentId, amountInCents, expectedTotalInCents);
+            await RefundAndNotifyAsync(paymentIntentId, userId, amountInCents, customerEmail, cancellationToken);
+            return;
+        }
+
+        if (!await TryReserveStockAsync(cart.Items, cancellationToken))
         {
             await RefundAndNotifyAsync(paymentIntentId, userId, amountInCents, customerEmail, cancellationToken);
             return;
@@ -125,9 +152,42 @@ public class HandleStripeWebhookCommandHandler : IRequestHandler<HandleStripeWeb
         // triggering OrderPlacedEmailHandler (already built, Story 1.x — untouched by this story).
         order.AddDomainEvent(new OrderPlacedEvent(order.Id, userId, customerEmail ?? string.Empty, order.TotalInCents));
 
-        await _context.SaveChangesAsync(cancellationToken);
+        try
+        {
+            await _context.SaveChangesAsync(cancellationToken);
+        }
+        catch (DbUpdateException)
+        {
+            // Order.StripePaymentIntentId is unique (OrderConfiguration) — this means a
+            // concurrently-processed duplicate delivery of the SAME webhook already won and
+            // committed its own Order for this payment intent (the AnyAsync check above can't
+            // fully close the window between two requests that both pass it before either
+            // commits). Same recovery pattern as CartService.FindOrCreateActiveCartAsync's
+            // split-cart race: this attempt lost, so give back the stock it just reserved rather
+            // than leaking it, and let the winner's order stand.
+            await ReleaseStockAsync(cart.Items, cancellationToken);
+            return;
+        }
 
         await _cartService.ClearCartAsync(CartOwner.ForUser(userId), cancellationToken);
+    }
+
+    private async Task ReleaseStockAsync(List<CartItemDto> items, CancellationToken cancellationToken)
+    {
+        var productIds = items.Select(i => i.ProductId).ToList();
+        var stocks = await _context.Stocks
+            .Where(s => productIds.Contains(s.ProductId))
+            .ToListAsync(cancellationToken);
+
+        foreach (var item in items)
+        {
+            if (stocks.FirstOrDefault(s => s.ProductId == item.ProductId) is { } stock)
+            {
+                stock.Quantity += item.Quantity;
+            }
+        }
+
+        await _context.SaveChangesAsync(cancellationToken);
     }
 
     // Checks every cart item's Stock.Quantity and decrements it in one batch, atomically, using
@@ -139,10 +199,11 @@ public class HandleStripeWebhookCommandHandler : IRequestHandler<HandleStripeWeb
     private async Task<bool> TryReserveStockAsync(List<CartItemDto> items, CancellationToken cancellationToken)
     {
         var productIds = items.Select(i => i.ProductId).ToList();
+        List<Stock>? stocks = null;
 
         for (var attempt = 1; attempt <= MaxStockRetries; attempt++)
         {
-            var stocks = await _context.Stocks
+            stocks ??= await _context.Stocks
                 .Where(s => productIds.Contains(s.ProductId))
                 .ToListAsync(cancellationToken);
 
@@ -165,14 +226,17 @@ public class HandleStripeWebhookCommandHandler : IRequestHandler<HandleStripeWeb
                 await _context.SaveChangesAsync(cancellationToken);
                 return true;
             }
-            catch (DbUpdateConcurrencyException ex)
+            catch (DbUpdateConcurrencyException)
             {
-                foreach (var entry in ex.Entries)
+                // Reload EVERY tracked row here, not just ex.Entries (the ones EF reports as
+                // actually conflicted): the change tracker's identity map hands back these SAME
+                // instances next iteration, so any row that did NOT conflict would otherwise still
+                // hold this attempt's already-applied in-memory decrement — and get decremented a
+                // second time on the retry, silently over-subtracting stock that was never sold.
+                foreach (var stock in stocks)
                 {
-                    await entry.ReloadAsync(cancellationToken);
+                    await _context.Entry(stock).ReloadAsync(cancellationToken);
                 }
-                // Loop again — the reloaded entries now hold the database's current values, so
-                // the next iteration's fresh query + sufficiency check reflects reality.
             }
         }
 

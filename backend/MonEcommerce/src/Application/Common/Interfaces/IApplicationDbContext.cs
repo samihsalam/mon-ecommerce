@@ -1,3 +1,4 @@
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 using MonEcommerce.Domain.Entities;
 
 namespace MonEcommerce.Application.Common.Interfaces;
@@ -16,4 +17,5 @@ public interface IApplicationDbContext
     DbSet<RefreshToken> RefreshTokens { get; }
     DbSet<PaymentAuditLog> PaymentAuditLogs { get; }
     Task<int> SaveChangesAsync(CancellationToken cancellationToken);
+    EntityEntry<TEntity> Entry<TEntity>(TEntity entity) where TEntity : class;
 }

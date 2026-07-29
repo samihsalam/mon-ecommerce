@@ -115,7 +115,9 @@ public class HandleStripeWebhookCommandHandlerTests
         var stockId = SeedStock(10);
         await _context.SaveChangesAsync(CancellationToken.None);
 
-        SetupWebhookEvent("pi_ok_1", Metadata("user-1", addressId), 5490);
+        // 3 x 5000 (cart) + 490 (standard shipping) = 15490 — must equal what Stripe actually
+        // charged, or the new cart/charge-amount consistency guard treats it as drift and refunds.
+        SetupWebhookEvent("pi_ok_1", Metadata("user-1", addressId), 15490);
         _cartServiceMock.Setup(s => s.GetCartAsync(It.Is<CartOwner>(o => o.UserId == "user-1"), It.IsAny<CancellationToken>()))
             .ReturnsAsync(CartWith(_productId, 3));
 
@@ -125,7 +127,7 @@ public class HandleStripeWebhookCommandHandlerTests
         Assert.That(order.UserId, Is.EqualTo("user-1"));
         Assert.That(order.ShippingAddressId, Is.EqualTo(addressId));
         Assert.That(order.StripePaymentIntentId, Is.EqualTo("pi_ok_1"));
-        Assert.That(order.TotalInCents, Is.EqualTo(5490));
+        Assert.That(order.TotalInCents, Is.EqualTo(15490));
         Assert.That(order.Items, Has.Count.EqualTo(1));
         Assert.That(order.Items[0].Quantity, Is.EqualTo(3));
 
@@ -201,6 +203,55 @@ public class HandleStripeWebhookCommandHandlerTests
         _paymentServiceMock.Verify(s => s.CreateRefundAsync(It.IsAny<string>(), It.IsAny<long?>(), It.IsAny<CancellationToken>()), Times.Never);
         _mediatorMock.Verify(p => p.Publish(It.IsAny<INotification>(), It.IsAny<CancellationToken>()), Times.Never);
         Assert.That(await _context.PaymentAuditLogs.CountAsync(), Is.EqualTo(1), "must not write a second audit row for the same payment intent");
+    }
+
+    [Test]
+    public async Task Handle_ShouldNoOpWithoutRefundingWhenCartIsAlreadyEmpty()
+    {
+        // An empty cart at this point (idempotency guard already checked above) means a
+        // redelivery raced just ahead of this exact payment intent's own audit-log row becoming
+        // visible — not a sign stock ran out, so this must NOT trigger a refund.
+        var addressId = SeedAddress();
+        SeedStock(10);
+        await _context.SaveChangesAsync(CancellationToken.None);
+
+        SetupWebhookEvent("pi_empty_cart", Metadata("user-1", addressId), 5490);
+        _cartServiceMock.Setup(s => s.GetCartAsync(It.IsAny<CartOwner>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new CartDto([], 0));
+
+        await _handler.Handle(new HandleStripeWebhookCommand("raw-payload", "sig-header"), CancellationToken.None);
+
+        Assert.That(await _context.Orders.AnyAsync(), Is.False);
+        Assert.That(await _context.PaymentAuditLogs.AnyAsync(), Is.False);
+        _paymentServiceMock.Verify(s => s.CreateRefundAsync(It.IsAny<string>(), It.IsAny<long?>(), It.IsAny<CancellationToken>()), Times.Never);
+        _mediatorMock.Verify(p => p.Publish(It.IsAny<INotification>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Test]
+    public async Task Handle_ShouldRefundInsteadOfCreatingAMismatchedOrderWhenCartDriftedAfterPayment()
+    {
+        // Stripe charged 5490 (the cart+shipping total at the time payment was confirmed), but by
+        // the time this webhook fires the live cart has since changed (e.g. edited in another
+        // tab) to a different total — must not silently create an Order for whatever the cart
+        // currently holds under a stale charge.
+        var addressId = SeedAddress();
+        SeedStock(10);
+        await _context.SaveChangesAsync(CancellationToken.None);
+
+        SetupWebhookEvent("pi_drifted", Metadata("user-1", addressId), 5490);
+        _cartServiceMock.Setup(s => s.GetCartAsync(It.IsAny<CartOwner>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(CartWith(_productId, 3)); // 15000 + 490 = 15490 != the charged 5490
+
+        await _handler.Handle(new HandleStripeWebhookCommand("raw-payload", "sig-header"), CancellationToken.None);
+
+        Assert.That(await _context.Orders.AnyAsync(), Is.False);
+
+        var stock = await _context.Stocks.SingleAsync();
+        Assert.That(stock.Quantity, Is.EqualTo(10), "stock must be untouched when the order is never created");
+
+        var auditLog = await _context.PaymentAuditLogs.SingleAsync();
+        Assert.That(auditLog.Outcome, Is.EqualTo(PaymentAuditOutcome.Refunded));
+        _paymentServiceMock.Verify(s => s.CreateRefundAsync("pi_drifted", 5490, It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [TestCase("payment_intent.payment_failed")]

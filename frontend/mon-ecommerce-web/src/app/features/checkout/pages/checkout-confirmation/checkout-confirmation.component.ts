@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, DestroyRef, inject, OnInit, signal } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 
 import { CheckoutStore, OrderDetail } from '../../checkout.store';
@@ -18,12 +18,18 @@ const MAX_POLL_ATTEMPTS = 15;
 })
 export class CheckoutConfirmationComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
+  private readonly destroyRef = inject(DestroyRef);
   protected readonly checkoutStore = inject(CheckoutStore);
 
   protected readonly order = signal<OrderDetail | null>(null);
   protected readonly refunded = signal(false);
   protected readonly timedOut = signal(false);
   protected readonly missingPaymentIntent = signal(false);
+
+  // Guards the poll loop against continuing to fire HTTP requests (and writing to signals on a
+  // detached component) after the customer navigates away mid-poll — there's no Observable/
+  // subscription here for takeUntilDestroyed to hook into, just a plain async loop.
+  private destroyed = false;
 
   async ngOnInit(): Promise<void> {
     const paymentIntentId = this.route.snapshot.queryParamMap.get('payment_intent');
@@ -34,12 +40,15 @@ export class CheckoutConfirmationComponent implements OnInit {
       return;
     }
 
+    this.destroyRef.onDestroy(() => (this.destroyed = true));
+
     await this.pollForOrder(paymentIntentId);
   }
 
   private async pollForOrder(paymentIntentId: string): Promise<void> {
     for (let attempt = 1; attempt <= MAX_POLL_ATTEMPTS; attempt++) {
       const result = await this.checkoutStore.getOrderByPaymentIntent(paymentIntentId);
+      if (this.destroyed) return;
 
       if (result.status === 'found') {
         this.order.set(result.order);
@@ -52,10 +61,13 @@ export class CheckoutConfirmationComponent implements OnInit {
 
       if (attempt < MAX_POLL_ATTEMPTS) {
         await new Promise((resolve) => setTimeout(resolve, POLL_INTERVAL_MS));
+        if (this.destroyed) return;
       }
     }
 
-    this.timedOut.set(true);
+    if (!this.destroyed) {
+      this.timedOut.set(true);
+    }
   }
 
   protected formatPrice(cents: number): string {
