@@ -86,8 +86,8 @@ development_status:
   epic-4-retrospective: optional
 
   # ─── Epic 5: Commandes, Retours & Notifications ────────────────────────────
-  epic-5: backlog
-  5-1-demande-de-retour-client: backlog
+  epic-5: in-progress
+  5-1-demande-de-retour-client: done
   5-2-notifications-email-changements-de-statut: backlog
   5-3-remboursement-admin-et-confirmation-client: backlog
   5-4-couverture-complete-emails-transactionnels: backlog

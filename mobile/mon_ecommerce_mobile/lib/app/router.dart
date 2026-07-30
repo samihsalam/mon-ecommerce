@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../features/account/screens/order_detail_screen.dart';
 import '../features/account/screens/orders_screen.dart';
 import '../features/account/screens/profile_screen.dart';
+import '../features/account/screens/return_request_screen.dart';
 import '../features/auth/providers/auth_provider.dart';
 import '../features/auth/screens/forgot_password_screen.dart';
 import '../features/auth/screens/login_screen.dart';
@@ -75,6 +76,10 @@ final router = GoRouter(
     GoRoute(
       path: '/compte/commandes/:orderId',
       builder: (context, state) => OrderDetailScreen(orderId: state.pathParameters['orderId']!),
+    ),
+    GoRoute(
+      path: '/compte/commandes/:orderId/retour',
+      builder: (context, state) => ReturnRequestScreen(orderId: state.pathParameters['orderId']!),
     ),
   ],
 );

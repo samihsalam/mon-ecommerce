@@ -8,4 +8,5 @@ public record OrderDetailDto(
     string Status,
     string? TrackingNumber,
     AddressDto ShippingAddress,
-    List<OrderItemDto> Items);
+    List<OrderItemDto> Items,
+    ReturnSummaryDto? Return);

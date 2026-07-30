@@ -32,10 +32,26 @@
     </section>
 
     @if (order.trackingNumber) {
-      <section>
+      <section class="mb-8">
         <h2 class="font-heading text-xl text-text mb-4">Suivi</h2>
         <p class="text-sm text-text">{{ order.trackingNumber }}</p>
       </section>
     }
+
+    <section>
+      <h2 class="font-heading text-xl text-text mb-4">Retour</h2>
+      @if (order.return; as returnRequest) {
+        <p class="text-sm text-text">
+          Demande de retour ({{ returnRequest.reason }}) — statut : {{ returnRequest.status }}
+        </p>
+      } @else if (isReturnEligible(order)) {
+        <a
+          [routerLink]="['/compte/commandes', order.id, 'retour']"
+          class="inline-block rounded-button bg-text text-white px-4 py-2 text-sm font-semibold hover:bg-accent hover:text-text transition"
+        >
+          Demander un retour
+        </a>
+      }
+    </section>
   }
 </main>

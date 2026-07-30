@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../app/theme/design_tokens.dart';
 import '../providers/orders_provider.dart';
@@ -31,6 +32,16 @@ class _OrderDetailScreenState extends ConsumerState<OrderDetailScreen> {
   }
 
   String _formatAmount(int cents) => '${(cents / 100).toStringAsFixed(2)} €';
+
+  // Client-side approximation only (Story 5.1, AC #3) — avoids showing a "Demander un retour"
+  // button that would always fail; the backend (using Order.LastModified, not this DTO's `date`)
+  // is the actual source of truth for the 14-day window. Mirrors the Angular web page's own
+  // isReturnEligible check.
+  bool _isReturnEligible(OrderDetail order) {
+    final deliveredAt = DateTime.tryParse(order.date);
+    if (deliveredAt == null) return false;
+    return order.status == 'Livrée' && DateTime.now().difference(deliveredAt) <= const Duration(days: 14);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -84,6 +95,16 @@ class _OrderDetailScreenState extends ConsumerState<OrderDetailScreen> {
                             const SizedBox(height: AppTokens.space16),
                             Text(order.trackingNumber!),
                           ],
+                          const SizedBox(height: AppTokens.space24),
+                          const Text('Retour', style: TextStyle(fontWeight: FontWeight.bold)),
+                          const SizedBox(height: AppTokens.space16),
+                          if (order.returnRequest != null)
+                            Text('Demande de retour (${order.returnRequest!.reason}) — statut : ${order.returnRequest!.status}')
+                          else if (_isReturnEligible(order))
+                            OutlinedButton(
+                              onPressed: () => context.go('/compte/commandes/${order.id}/retour'),
+                              child: const Text('Demander un retour'),
+                            ),
                         ],
                       ),
       ),

@@ -1,5 +1,5 @@
 import { inject } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { signalStore, withState, withMethods, patchState } from '@ngrx/signals';
 import { firstValueFrom } from 'rxjs';
 
@@ -27,10 +27,30 @@ interface Address {
   country: string;
 }
 
+// Story 5.1 — dropdown values must match the backend's ReturnReason enum exactly (by string
+// name, sent as a form field the [FromForm] ReturnReason binder parses by enum member name).
+export type ReturnReason = 'WrongSize' | 'DefectiveProduct' | 'NotAsDescribed' | 'ChangedMind' | 'Other';
+
+export const RETURN_REASON_LABELS: Record<ReturnReason, string> = {
+  WrongSize: 'Mauvaise taille',
+  DefectiveProduct: 'Produit défectueux',
+  NotAsDescribed: 'Non conforme à la description',
+  ChangedMind: "Changement d'avis",
+  Other: 'Autre',
+};
+
+export interface ReturnSummary {
+  id: string;
+  status: string;
+  reason: string;
+  created: string;
+}
+
 interface OrderDetail extends OrderSummary {
   trackingNumber: string | null;
   shippingAddress: Address;
   items: OrderItem[];
+  return: ReturnSummary | null;
 }
 
 interface PagedResult<T> {
@@ -48,6 +68,10 @@ interface OrdersState {
   selectedOrder: OrderDetail | null;
   isLoading: boolean;
   error: string | null;
+  // Distinct from `error` above: set only on a failed requestReturn() call, so the return-request
+  // form can show it inline without clobbering (or being clobbered by) the order-detail page's
+  // own loading error state.
+  returnError: string | null;
 }
 
 const initialState: OrdersState = {
@@ -58,6 +82,7 @@ const initialState: OrdersState = {
   selectedOrder: null,
   isLoading: false,
   error: null,
+  returnError: null,
 };
 
 export const OrdersStore = signalStore(
@@ -103,6 +128,39 @@ export const OrdersStore = signalStore(
             isLoading: false,
             error: 'Impossible de charger cette commande. Veuillez réessayer.',
           });
+        }
+      },
+
+      // multipart/form-data — the backend's [FromForm] binding expects reason/description as
+      // form fields and photos as files, not a JSON body (Story 5.1, AC #4's photo upload).
+      // Returns true/false rather than throwing, so the calling component can decide what to do
+      // next (navigate away on success, stay and show returnError() on failure) without a
+      // try/catch of its own — same convention as CheckoutStore.createPaymentIntent.
+      async requestReturn(
+        orderId: string,
+        reason: ReturnReason,
+        description: string,
+        photos: File[],
+      ): Promise<boolean> {
+        patchState(store, { returnError: null });
+
+        const formData = new FormData();
+        formData.append('reason', reason);
+        formData.append('description', description);
+        photos.forEach((photo) => formData.append('photos', photo, photo.name));
+
+        try {
+          await firstValueFrom(
+            http.post(`${environment.apiUrl}/api/v1/account/orders/${orderId}/returns`, formData),
+          );
+          return true;
+        } catch (err) {
+          const message =
+            err instanceof HttpErrorResponse && err.status === 422 && err.error?.detail
+              ? (err.error.detail as string)
+              : 'Impossible de créer la demande de retour. Veuillez réessayer.';
+          patchState(store, { returnError: message });
+          return false;
         }
       },
     };

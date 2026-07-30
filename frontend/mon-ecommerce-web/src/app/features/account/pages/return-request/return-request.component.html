@@ -1,0 +1,56 @@
+<main class="mx-auto max-w-md px-4 py-16">
+  <a [routerLink]="['/compte/commandes', orderId]" class="text-sm text-text underline">← Retour à la commande</a>
+
+  <h1 class="font-heading text-3xl text-text mt-8 mb-8">Demander un retour</h1>
+
+  <form [formGroup]="form" (ngSubmit)="onSubmit()" novalidate>
+    <div class="mb-4">
+      <label for="reason" class="block mb-1 text-sm font-medium text-text">Motif</label>
+      <select
+        id="reason"
+        formControlName="reason"
+        class="w-full rounded-card border border-border px-3 py-2"
+        [attr.aria-describedby]="form.controls.reason.invalid && form.controls.reason.touched ? 'reason-error' : null"
+      >
+        <option value="" disabled>Sélectionnez un motif</option>
+        @for (reason of reasons; track reason.value) {
+          <option [value]="reason.value">{{ reason.label }}</option>
+        }
+      </select>
+      @if (form.controls.reason.invalid && form.controls.reason.touched) {
+        <p id="reason-error" class="mt-1 text-sm text-error">Le motif est requis.</p>
+      }
+    </div>
+
+    <div class="mb-4">
+      <label for="description" class="block mb-1 text-sm font-medium text-text">Description</label>
+      <textarea
+        id="description"
+        formControlName="description"
+        rows="4"
+        class="w-full rounded-card border border-border px-3 py-2"
+        [attr.aria-describedby]="form.controls.description.invalid && form.controls.description.touched ? 'description-error' : null"
+      ></textarea>
+      @if (form.controls.description.invalid && form.controls.description.touched) {
+        <p id="description-error" class="mt-1 text-sm text-error">La description est requise.</p>
+      }
+    </div>
+
+    <div class="mb-6">
+      <label for="photos" class="block mb-1 text-sm font-medium text-text">Photos (facultatif)</label>
+      <input id="photos" type="file" accept="image/*" multiple (change)="onPhotosSelected($event)" class="w-full text-sm" />
+    </div>
+
+    @if (ordersStore.returnError()) {
+      <p class="mb-4 text-sm text-error" role="alert">{{ ordersStore.returnError() }}</p>
+    }
+
+    <button
+      type="submit"
+      [disabled]="submitting()"
+      class="w-full rounded-button bg-text text-white py-2 font-semibold hover:bg-accent hover:text-text transition disabled:opacity-50"
+    >
+      {{ submitting() ? 'Envoi en cours…' : 'Envoyer la demande' }}
+    </button>
+  </form>
+</main>

@@ -74,4 +74,37 @@ describe('OrdersStore', () => {
 
     expect(store.selectedOrder()?.orderNumber).toBe('#ABCD1234');
   });
+
+  it('should submit a multipart return request and return true on success', async () => {
+    const store = TestBed.inject(OrdersStore);
+
+    const promise = store.requestReturn('order-1', 'WrongSize', 'Trop petit.', []);
+
+    const req = httpMock.expectOne(`${environment.apiUrl}/api/v1/account/orders/order-1/returns`);
+    expect(req.request.method).toBe('POST');
+    expect(req.request.body instanceof FormData).toBe(true);
+    expect((req.request.body as FormData).get('reason')).toBe('WrongSize');
+    expect((req.request.body as FormData).get('description')).toBe('Trop petit.');
+    req.flush({ returnId: 'return-1', status: 'Pending' });
+
+    expect(await promise).toBe(true);
+    expect(store.returnError()).toBeNull();
+  });
+
+  it('should set returnError with the backend message and return false on a 422', async () => {
+    const store = TestBed.inject(OrdersStore);
+
+    const promise = store.requestReturn('order-1', 'Other', 'desc', []);
+
+    const req = httpMock.expectOne(`${environment.apiUrl}/api/v1/account/orders/order-1/returns`);
+    req.flush(
+      { detail: "Cette commande n'est pas éligible à un retour (statut non livré ou délai de 14 jours dépassé)." },
+      { status: 422, statusText: 'Unprocessable Entity' },
+    );
+
+    expect(await promise).toBe(false);
+    expect(store.returnError()).toBe(
+      "Cette commande n'est pas éligible à un retour (statut non livré ou délai de 14 jours dépassé).",
+    );
+  });
 });

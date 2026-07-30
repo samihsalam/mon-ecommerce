@@ -50,6 +50,10 @@ dependencies:
   # Catalogue product images (Story 3.4) — disk+memory caching for the ProductCard grid per AC.
   cached_network_image: ^3.4.1
 
+  # Return request photo upload (Story 5.1, AC #4 — optional photos), the first file-picker need
+  # in this codebase.
+  image_picker: ^1.2.0
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

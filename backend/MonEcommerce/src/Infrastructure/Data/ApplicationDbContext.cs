@@ -22,6 +22,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>, IApplica
     public DbSet<Address> Addresses => Set<Address>();
     public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
     public DbSet<PaymentAuditLog> PaymentAuditLogs => Set<PaymentAuditLog>();
+    public DbSet<Return> Returns => Set<Return>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {

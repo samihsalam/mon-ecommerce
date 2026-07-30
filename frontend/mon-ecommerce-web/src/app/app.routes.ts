@@ -64,6 +64,14 @@ export const routes: Routes = [
       import('./features/account/pages/order-detail/order-detail.component').then((m) => m.OrderDetailComponent),
   },
   {
+    path: 'compte/commandes/:orderId/retour',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./features/account/pages/return-request/return-request.component').then(
+        (m) => m.ReturnRequestComponent,
+      ),
+  },
+  {
     path: 'checkout/adresse',
     canActivate: [authGuard],
     loadComponent: () =>

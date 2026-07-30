@@ -149,7 +149,7 @@ public class AccountService : IAccountService
             .FirstOrDefaultAsync(o => o.Id == orderId && o.UserId == userId, cancellationToken)
             ?? throw new AppNotFoundException(nameof(Order), orderId);
 
-        return BuildOrderDetailDto(order);
+        return await BuildOrderDetailDtoAsync(order, cancellationToken);
     }
 
     public async Task<OrderDetailDto> GetOrderByPaymentIntentAsync(string userId, string paymentIntentId, CancellationToken cancellationToken = default)
@@ -163,7 +163,7 @@ public class AccountService : IAccountService
 
         if (order != null)
         {
-            return BuildOrderDetailDto(order);
+            return await BuildOrderDetailDtoAsync(order, cancellationToken);
         }
 
         // No Order yet — either the webhook hasn't landed (still pending, frontend keeps polling
@@ -183,7 +183,7 @@ public class AccountService : IAccountService
         throw new AppNotFoundException(nameof(Order), paymentIntentId);
     }
 
-    private static OrderDetailDto BuildOrderDetailDto(Order order)
+    private async Task<OrderDetailDto> BuildOrderDetailDtoAsync(Order order, CancellationToken cancellationToken)
     {
         var items = order.Items
             .Select(i => new OrderItemDto(i.ProductName, i.UnitPriceInCents, i.Quantity))
@@ -196,6 +196,22 @@ public class AccountService : IAccountService
             order.ShippingAddress.PostalCode,
             order.ShippingAddress.Country);
 
+        // Story 5.1 (AC #5): at most one return per order in this story's scope (nothing prevents
+        // a second attempt at the schema level, but the UI only ever offers the button once none
+        // exists yet) — most recent first is still the correct tiebreak if that ever changes.
+        var returnRequest = await _context.Returns
+            .Where(r => r.OrderId == order.Id)
+            .OrderByDescending(r => r.Created)
+            .FirstOrDefaultAsync(cancellationToken);
+
+        var returnSummary = returnRequest == null
+            ? null
+            : new ReturnSummaryDto(
+                returnRequest.Id,
+                MapReturnStatusLabel(returnRequest.Status),
+                MapReturnReasonLabel(returnRequest.Reason),
+                returnRequest.Created);
+
         return new OrderDetailDto(
             order.Id,
             FormatOrderNumber(order.Id),
@@ -204,7 +220,8 @@ public class AccountService : IAccountService
             MapStatusLabel(order.Status),
             order.TrackingNumber,
             shippingAddress,
-            items);
+            items,
+            returnSummary);
     }
 
     private static string FormatOrderNumber(Guid orderId) => $"#{orderId.ToString("N")[..8].ToUpperInvariant()}";
@@ -219,5 +236,24 @@ public class AccountService : IAccountService
         OrderStatus.Delivered => "Livrée",
         OrderStatus.Cancelled => "Annulée",
         _ => status.ToString(),
+    };
+
+    private static string MapReturnStatusLabel(ReturnStatus status) => status switch
+    {
+        ReturnStatus.Pending => "En attente",
+        ReturnStatus.Approved => "Approuvé",
+        ReturnStatus.Rejected => "Refusé",
+        ReturnStatus.Refunded => "Remboursé",
+        _ => status.ToString(),
+    };
+
+    private static string MapReturnReasonLabel(ReturnReason reason) => reason switch
+    {
+        ReturnReason.WrongSize => "Mauvaise taille",
+        ReturnReason.DefectiveProduct => "Produit défectueux",
+        ReturnReason.NotAsDescribed => "Non conforme à la description",
+        ReturnReason.ChangedMind => "Changement d'avis",
+        ReturnReason.Other => "Autre",
+        _ => reason.ToString(),
     };
 }

@@ -65,6 +65,13 @@ public class ProblemDetailsExceptionHandler : IExceptionHandler
                 Title = "Bad Request",
                 Detail = ie.Message
             }),
+            ReturnWindowExpiredException rwe => (StatusCodes.Status422UnprocessableEntity, new ProblemDetails
+            {
+                Status = StatusCodes.Status422UnprocessableEntity,
+                Type = "https://tools.ietf.org/html/rfc9110#section-15.5.21",
+                Title = "Unprocessable Entity",
+                Detail = rwe.Message
+            }),
             _ => (-1, null)
         };
 

@@ -133,6 +133,31 @@ public class AccountServiceOrdersTests
         Assert.That(detail.ShippingAddress.City, Is.EqualTo("Paris"));
         Assert.That(detail.Items, Has.Count.EqualTo(1));
         Assert.That(detail.Items[0].ProductName, Is.EqualTo("T-shirt"));
+        Assert.That(detail.Return, Is.Null);
+    }
+
+    // Story 5.1, AC #5: the order detail page shows the return's status once one exists.
+    [Test]
+    public async Task GetOrderDetailAsync_ShouldIncludeTheReturnSummaryOnceOneExists()
+    {
+        var addressId = SeedAddress("user-1");
+        var order = SeedOrder("user-1", addressId, DateTimeOffset.UtcNow, OrderStatus.Delivered);
+        _context.Returns.Add(new Return
+        {
+            Id = Guid.NewGuid(),
+            OrderId = order.Id,
+            UserId = "user-1",
+            Reason = ReturnReason.WrongSize,
+            Description = "Trop petit.",
+            Status = ReturnStatus.Pending,
+        });
+        await _context.SaveChangesAsync(CancellationToken.None);
+
+        var detail = await _accountService.GetOrderDetailAsync("user-1", order.Id);
+
+        Assert.That(detail.Return, Is.Not.Null);
+        Assert.That(detail.Return!.Status, Is.EqualTo("En attente"));
+        Assert.That(detail.Return.Reason, Is.EqualTo("Mauvaise taille"));
     }
 
     [Test]
