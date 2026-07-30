@@ -41,16 +41,23 @@ class _CatalogueScreenState extends ConsumerState<CatalogueScreen> {
     // state) so it survives navigating to a product detail and back (browser/OS-level back
     // restores the URL) — same mechanism as Angular's CatalogueComponent (Story 3.3).
     //
-    // Called directly, NOT wrapped in Future.microtask: catalogueProvider is shared with
-    // SearchScreen (Story 3.2), so this screen's first frame(s) could otherwise render whatever
-    // that OTHER screen last left in the shared state (a stale category label, a stale filter
-    // badge, even a flash of the previous screen's product cards) — a microtask only runs after
-    // the whole first frame (build/layout/paint) completes. browse() sets isSearching: true and
-    // clears/sets activeCategoryId synchronously, before its own first `await` — calling it
-    // directly here lets that synchronous prefix run during initState, before the first build(),
-    // so the very first frame already shows the skeleton loader instead of stale content.
-    ref.read(catalogueProvider.notifier).loadCategories();
-    ref.read(catalogueProvider.notifier).browse(categoryId: widget.categoryId);
+    // Deferred via addPostFrameCallback, NOT called directly: Riverpod's own
+    // `_debugCanModifyProviders` assertion disallows modifying a provider's state during ANY
+    // widget lifecycle method — initState included, not just build() — so calling
+    // browse()/loadCategories() directly here crashes with "Tried to modify a provider while the
+    // widget tree was building" the moment this screen is actually rendered (confirmed running
+    // the app for the first time — this path had never been exercised by any tooling before).
+    // addPostFrameCallback is Riverpod's own documented escape hatch: it runs immediately after
+    // the first frame is painted, before the user has a chance to really see it, so the
+    // originally-intended "avoid a flash of catalogueProvider's stale state from SearchScreen"
+    // goal is still met for all practical purposes — the shared provider still gets reset to this
+    // screen's own category almost immediately, just one frame later than the (invalid) original
+    // approach assumed was possible.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      ref.read(catalogueProvider.notifier).loadCategories();
+      ref.read(catalogueProvider.notifier).browse(categoryId: widget.categoryId);
+    });
   }
 
   @override
@@ -62,7 +69,12 @@ class _CatalogueScreenState extends ConsumerState<CatalogueScreen> {
     // for the new category. didUpdateWidget covers that case; it's a no-op if the framework
     // instead creates a fresh widget/State (initState already handled that).
     if (widget.categoryId != oldWidget.categoryId) {
-      ref.read(catalogueProvider.notifier).browse(categoryId: widget.categoryId);
+      // Same Riverpod constraint as initState above — didUpdateWidget is also a widget
+      // lifecycle method the framework disallows synchronous provider modification from.
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        ref.read(catalogueProvider.notifier).browse(categoryId: widget.categoryId);
+      });
     }
   }
 

@@ -20,11 +20,16 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
   @override
   void initState() {
     super.initState();
-    // Called directly, not wrapped in Future.microtask — same reasoning established in Story 3.4:
-    // the synchronous prefix of loadProduct() (clearing any previous product, setting isLoading)
-    // runs before the first build() this way, so the very first frame already shows the loading
-    // state instead of whatever the provider last held.
-    ref.read(productDetailProvider.notifier).loadProduct(widget.productId);
+    // addPostFrameCallback, NOT called directly: Riverpod disallows modifying provider state
+    // during ANY widget lifecycle method, including initState — calling this directly crashes
+    // with "Tried to modify a provider while the widget tree was building" the moment this screen
+    // is actually rendered (confirmed by actually running the app for the first time). Still runs
+    // before the user perceives the first frame, so the originally-intended "show loading state
+    // immediately, not stale previous-product data" goal is still met for practical purposes.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      ref.read(productDetailProvider.notifier).loadProduct(widget.productId);
+    });
   }
 
   @override

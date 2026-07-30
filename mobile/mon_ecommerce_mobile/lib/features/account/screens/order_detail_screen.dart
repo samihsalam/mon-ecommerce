@@ -17,13 +17,17 @@ class _OrderDetailScreenState extends ConsumerState<OrderDetailScreen> {
   @override
   void initState() {
     super.initState();
-    // Deliberately not wrapped in Future.microtask: loadOrderDetail's synchronous prefix (before
-    // its first `await`) clears selectedOrder and sets isLoading — calling it directly here
-    // means that happens before this widget's first build(). With a microtask wrapper, that
-    // clearing was deferred past the first frame, so navigating from one order's detail straight
-    // to another's briefly rendered the FIRST order's stale data (title, items, address) before
-    // flipping to the loading spinner.
-    ref.read(ordersProvider.notifier).loadOrderDetail(widget.orderId);
+    // addPostFrameCallback, NOT called directly: Riverpod disallows modifying provider state
+    // during ANY widget lifecycle method (initState included) — calling this directly crashes
+    // with "Tried to modify a provider while the widget tree was building" the moment this screen
+    // is actually rendered (confirmed by actually running the app — this path was never exercised
+    // by any tooling before). addPostFrameCallback still runs before the user perceives the first
+    // frame, so the originally-intended "avoid a flash of the PREVIOUS order's stale data" goal
+    // (see history) is still met for practical purposes, just one frame later than assumed.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      ref.read(ordersProvider.notifier).loadOrderDetail(widget.orderId);
+    });
   }
 
   String _formatAmount(int cents) => '${(cents / 100).toStringAsFixed(2)} €';
