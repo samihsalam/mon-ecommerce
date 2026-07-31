@@ -25,7 +25,8 @@ public class OrderShippedEmailHandler : INotificationHandler<OrderShippedEvent>
             await _emailService.SendAsync(
                 notification.CustomerEmail,
                 "Votre commande a été expédiée",
-                $"Votre commande {notification.OrderId} a été expédiée. Numéro de suivi : {trackingNumber}.",
+                $"Votre commande {notification.OrderId} a été expédiée. Numéro de suivi : {trackingNumber}. "
+                    + $"Suivre ma commande : {notification.TrackingLink}",
                 cancellationToken);
         }
         catch (OperationCanceledException)

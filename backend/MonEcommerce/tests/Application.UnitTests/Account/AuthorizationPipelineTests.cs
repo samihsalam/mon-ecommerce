@@ -3,8 +3,12 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using MonEcommerce.Application.Account.Models;
 using MonEcommerce.Application.Account.Queries;
+using MonEcommerce.Application.Common.Exceptions;
 using MonEcommerce.Application.Common.Interfaces;
 using MonEcommerce.Application.Common.Models;
+using MonEcommerce.Application.Orders.Commands;
+using MonEcommerce.Domain.Constants;
+using MonEcommerce.Domain.Enums;
 using NUnit.Framework;
 
 namespace MonEcommerce.Application.UnitTests.Account;
@@ -81,5 +85,28 @@ public class AuthorizationPipelineTests
         var profile = await mediator.Send(new GetProfileQuery());
 
         Assert.That(profile.Name, Is.EqualTo("Alice"));
+    }
+
+    // UpdateOrderStatusCommand (Story 5.2) is the first command anywhere in this codebase to use
+    // [Authorize(Roles = ...)] — AuthorizationBehaviour's role-checking branch (as opposed to just
+    // "is anyone authenticated") has never actually been exercised end-to-end until now.
+    [Test]
+    public void ShouldThrowForbiddenAccessExceptionWhenAnAuthenticatedNonAdminSendsAnAdminOnlyCommand()
+    {
+        var services = BuildServices(new StubUser { Id = "user-1", Roles = ["Customer"] });
+        var mediator = services.GetRequiredService<IMediator>();
+
+        Assert.ThrowsAsync<ForbiddenAccessException>(async () =>
+            await mediator.Send(new UpdateOrderStatusCommand(Guid.NewGuid(), OrderStatus.Shipped, "TRACK1")));
+    }
+
+    [Test]
+    public void ShouldThrowUnauthorizedAccessExceptionWhenNoUserSendsAnAdminOnlyCommand()
+    {
+        var services = BuildServices(new StubUser { Id = null });
+        var mediator = services.GetRequiredService<IMediator>();
+
+        Assert.ThrowsAsync<UnauthorizedAccessException>(async () =>
+            await mediator.Send(new UpdateOrderStatusCommand(Guid.NewGuid(), OrderStatus.Shipped, "TRACK1")));
     }
 }

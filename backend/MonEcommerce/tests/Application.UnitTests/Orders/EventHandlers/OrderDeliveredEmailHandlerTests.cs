@@ -7,31 +7,32 @@ using NUnit.Framework;
 
 namespace MonEcommerce.Application.UnitTests.Orders.EventHandlers;
 
-public class OrderShippedEmailHandlerTests
+public class OrderDeliveredEmailHandlerTests
 {
     private Mock<IEmailService> _emailService = null!;
-    private Mock<ILogger<OrderShippedEmailHandler>> _logger = null!;
-    private OrderShippedEmailHandler _handler = null!;
+    private Mock<ILogger<OrderDeliveredEmailHandler>> _logger = null!;
+    private OrderDeliveredEmailHandler _handler = null!;
 
     [SetUp]
     public void Setup()
     {
         _emailService = new Mock<IEmailService>();
-        _logger = new Mock<ILogger<OrderShippedEmailHandler>>();
-        _handler = new OrderShippedEmailHandler(_emailService.Object, _logger.Object);
+        _logger = new Mock<ILogger<OrderDeliveredEmailHandler>>();
+        _handler = new OrderDeliveredEmailHandler(_emailService.Object, _logger.Object);
     }
 
     [Test]
-    public async Task ShouldSendShipmentEmailWhenOrderShipped()
+    public async Task ShouldSendDeliveryEmailWhenOrderDelivered()
     {
-        var notification = new OrderShippedEvent(Guid.NewGuid(), "client@example.com", "TRACK123", "https://example.com/compte/commandes/abc");
+        var orderId = Guid.NewGuid();
+        var notification = new OrderDeliveredEvent(orderId, "client@example.com");
 
         await _handler.Handle(notification, CancellationToken.None);
 
         _emailService.Verify(e => e.SendAsync(
             "client@example.com",
             It.IsAny<string>(),
-            It.Is<string>(body => body.Contains("TRACK123") && body.Contains("https://example.com/compte/commandes/abc")),
+            It.Is<string>(body => body.Contains(orderId.ToString())),
             It.IsAny<CancellationToken>()), Times.Once);
     }
 
@@ -42,7 +43,7 @@ public class OrderShippedEmailHandlerTests
             .Setup(e => e.SendAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
             .ThrowsAsync(new InvalidOperationException("SendGrid unavailable"));
 
-        var notification = new OrderShippedEvent(Guid.NewGuid(), "client@example.com", "TRACK123", "https://example.com/compte/commandes/abc");
+        var notification = new OrderDeliveredEvent(Guid.NewGuid(), "client@example.com");
 
         Assert.DoesNotThrowAsync(async () => await _handler.Handle(notification, CancellationToken.None));
 
