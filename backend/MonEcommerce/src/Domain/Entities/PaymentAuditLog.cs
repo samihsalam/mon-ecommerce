@@ -12,4 +12,10 @@ public class PaymentAuditLog : BaseAuditableEntity
     public int AmountInCents { get; set; }
     public PaymentAuditOutcome Outcome { get; set; }
     public Guid? OrderId { get; set; }
+
+    // Both null for Story 4.6's webhook-originated rows (no admin involved, no Stripe refund
+    // object — CreateRefundAsync isn't called on that path either); both set for Story 5.3's
+    // admin-issued return refunds (AC #5's "admin user, Stripe refund ID").
+    public string? AdminUserId { get; set; }
+    public string? StripeRefundId { get; set; }
 }

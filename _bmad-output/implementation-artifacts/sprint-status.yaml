@@ -89,7 +89,7 @@ development_status:
   epic-5: in-progress
   5-1-demande-de-retour-client: done
   5-2-notifications-email-changements-de-statut: done
-  5-3-remboursement-admin-et-confirmation-client: backlog
+  5-3-remboursement-admin-et-confirmation-client: done
   5-4-couverture-complete-emails-transactionnels: backlog
   epic-5-retrospective: optional
 

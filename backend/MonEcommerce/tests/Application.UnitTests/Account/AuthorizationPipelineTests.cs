@@ -7,6 +7,7 @@ using MonEcommerce.Application.Common.Exceptions;
 using MonEcommerce.Application.Common.Interfaces;
 using MonEcommerce.Application.Common.Models;
 using MonEcommerce.Application.Orders.Commands;
+using MonEcommerce.Application.Returns.Commands;
 using MonEcommerce.Domain.Constants;
 using MonEcommerce.Domain.Enums;
 using NUnit.Framework;
@@ -108,5 +109,27 @@ public class AuthorizationPipelineTests
 
         Assert.ThrowsAsync<UnauthorizedAccessException>(async () =>
             await mediator.Send(new UpdateOrderStatusCommand(Guid.NewGuid(), OrderStatus.Shipped, "TRACK1")));
+    }
+
+    // Story 5.3's two admin-only return commands — same role-checking coverage as Story 5.2's
+    // UpdateOrderStatusCommand above.
+    [Test]
+    public void ShouldThrowForbiddenAccessExceptionWhenAnAuthenticatedNonAdminSendsUpdateReturnStatusCommand()
+    {
+        var services = BuildServices(new StubUser { Id = "user-1", Roles = ["Customer"] });
+        var mediator = services.GetRequiredService<IMediator>();
+
+        Assert.ThrowsAsync<ForbiddenAccessException>(async () =>
+            await mediator.Send(new UpdateReturnStatusCommand(Guid.NewGuid(), ReturnStatus.Approved)));
+    }
+
+    [Test]
+    public void ShouldThrowForbiddenAccessExceptionWhenAnAuthenticatedNonAdminSendsIssueReturnRefundCommand()
+    {
+        var services = BuildServices(new StubUser { Id = "user-1", Roles = ["Customer"] });
+        var mediator = services.GetRequiredService<IMediator>();
+
+        Assert.ThrowsAsync<ForbiddenAccessException>(async () =>
+            await mediator.Send(new IssueReturnRefundCommand(Guid.NewGuid())));
     }
 }

@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using MonEcommerce.Application.Account.Models;
+using MonEcommerce.Application.Common;
 using MonEcommerce.Application.Common.Interfaces;
 using MonEcommerce.Application.Common.Models;
 using MonEcommerce.Domain.Entities;
@@ -224,7 +225,7 @@ public class AccountService : IAccountService
             returnSummary);
     }
 
-    private static string FormatOrderNumber(Guid orderId) => $"#{orderId.ToString("N")[..8].ToUpperInvariant()}";
+    private static string FormatOrderNumber(Guid orderId) => OrderNumberFormatter.Format(orderId);
 
     // AC #5 lists 4 French labels for the 5-value OrderStatus enum — Pending and Processing
     // both map to "En préparation" (see Story 2.5's Dev Notes for the reasoning).
@@ -238,14 +239,8 @@ public class AccountService : IAccountService
         _ => status.ToString(),
     };
 
-    private static string MapReturnStatusLabel(ReturnStatus status) => status switch
-    {
-        ReturnStatus.Pending => "En attente",
-        ReturnStatus.Approved => "Approuvé",
-        ReturnStatus.Rejected => "Refusé",
-        ReturnStatus.Refunded => "Remboursé",
-        _ => status.ToString(),
-    };
+    // Shared with UpdateReturnStatusCommandHandler (Story 5.3) — see ReturnStatusLabelFormatter.
+    private static string MapReturnStatusLabel(ReturnStatus status) => ReturnStatusLabelFormatter.Format(status);
 
     private static string MapReturnReasonLabel(ReturnReason reason) => reason switch
     {

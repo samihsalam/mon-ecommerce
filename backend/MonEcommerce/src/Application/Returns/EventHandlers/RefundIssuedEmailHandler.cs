@@ -26,7 +26,8 @@ public class RefundIssuedEmailHandler : INotificationHandler<RefundIssuedEvent>
             await _emailService.SendAsync(
                 notification.CustomerEmail,
                 "Confirmation de votre remboursement",
-                $"Un remboursement de {amount} a été émis pour la commande {notification.OrderId}.",
+                $"Un remboursement de {amount} a été émis pour la commande {notification.OrderNumber}. "
+                    + "Le montant sera crédité sur votre moyen de paiement d'origine sous 3 à 5 jours ouvrés.",
                 cancellationToken);
         }
         catch (OperationCanceledException)

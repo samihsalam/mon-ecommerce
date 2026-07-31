@@ -72,6 +72,13 @@ public class ProblemDetailsExceptionHandler : IExceptionHandler
                 Title = "Unprocessable Entity",
                 Detail = rwe.Message
             }),
+            RefundFailedException rfe => (StatusCodes.Status502BadGateway, new ProblemDetails
+            {
+                Status = StatusCodes.Status502BadGateway,
+                Type = "https://tools.ietf.org/html/rfc9110#section-15.6.3",
+                Title = "Bad Gateway",
+                Detail = rfe.Message
+            }),
             _ => (-1, null)
         };
 
