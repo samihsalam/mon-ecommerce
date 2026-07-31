@@ -33,6 +33,7 @@ public class ReturnRequestedEmailHandlerTests
             "client@example.com",
             It.IsAny<string>(),
             It.Is<string>(body => body.Contains(orderId.ToString()) && body.Contains("Produit non conforme")),
+            It.IsAny<string>(),
             It.IsAny<CancellationToken>()), Times.Once);
     }
 
@@ -47,6 +48,7 @@ public class ReturnRequestedEmailHandlerTests
             "client@example.com",
             It.IsAny<string>(),
             It.Is<string>(body => !body.Contains("<script>")),
+            It.IsAny<string>(),
             It.IsAny<CancellationToken>()), Times.Once);
     }
 
@@ -54,7 +56,7 @@ public class ReturnRequestedEmailHandlerTests
     public void ShouldLogErrorAndNotThrowWhenEmailServiceFails()
     {
         _emailService
-            .Setup(e => e.SendAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .Setup(e => e.SendAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
             .ThrowsAsync(new InvalidOperationException("SendGrid unavailable"));
 
         var notification = new ReturnRequestedEvent(Guid.NewGuid(), Guid.NewGuid(), "client@example.com", "Produit défectueux");

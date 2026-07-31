@@ -32,6 +32,7 @@ public class OrderShippedEmailHandlerTests
             "client@example.com",
             It.IsAny<string>(),
             It.Is<string>(body => body.Contains("TRACK123") && body.Contains("https://example.com/compte/commandes/abc")),
+            It.IsAny<string>(),
             It.IsAny<CancellationToken>()), Times.Once);
     }
 
@@ -39,7 +40,7 @@ public class OrderShippedEmailHandlerTests
     public void ShouldLogErrorAndNotThrowWhenEmailServiceFails()
     {
         _emailService
-            .Setup(e => e.SendAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .Setup(e => e.SendAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
             .ThrowsAsync(new InvalidOperationException("SendGrid unavailable"));
 
         var notification = new OrderShippedEvent(Guid.NewGuid(), "client@example.com", "TRACK123", "https://example.com/compte/commandes/abc");

@@ -37,6 +37,20 @@ public static class DependencyInjection
             options.ConfigureWarnings(warnings => warnings.Ignore(RelationalEventId.PendingModelChangesWarning));
         });
 
+        // Story 5.4: SendGridEmailService needs to persist an EmailDispatchLog row from INSIDE
+        // an email handler that may itself be running inside DispatchDomainEventsInterceptor's
+        // SavingChangesAsync — i.e. mid-way through the ambient scoped ApplicationDbContext's
+        // own SaveChangesAsync call. Calling SaveChangesAsync again on that SAME instance at that
+        // point is a reentrant call EF Core explicitly rejects ("a second operation was started
+        // on this context before a previous operation completed"). A factory-created, independent
+        // context instance sidesteps this entirely — same connection string, deliberately no
+        // interceptors (an EmailDispatchLog row has no domain events of its own to dispatch).
+        builder.Services.AddDbContextFactory<ApplicationDbContext>(options =>
+        {
+            options.UseSqlServer(connectionString);
+            options.ConfigureWarnings(warnings => warnings.Ignore(RelationalEventId.PendingModelChangesWarning));
+        });
+
         builder.Services.AddScoped<IApplicationDbContext>(provider => provider.GetRequiredService<ApplicationDbContext>());
         builder.Services.AddScoped<ApplicationDbContextInitialiser>();
 

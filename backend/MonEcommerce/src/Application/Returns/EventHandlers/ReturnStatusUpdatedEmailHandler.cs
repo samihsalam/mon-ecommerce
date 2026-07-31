@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Logging;
+using MonEcommerce.Application.Common;
 using MonEcommerce.Application.Common.Interfaces;
 using MonEcommerce.Domain.Events;
 
@@ -19,10 +20,15 @@ public class ReturnStatusUpdatedEmailHandler : INotificationHandler<ReturnStatus
     {
         try
         {
+            var htmlBody = EmailTemplateBuilder.Wrap(
+                "Mise à jour de votre demande de retour",
+                $"<p>Votre demande de retour pour la commande {notification.OrderId} a été mise à jour : {notification.NewStatus}.</p>");
+
             await _emailService.SendAsync(
                 notification.CustomerEmail,
                 "Mise à jour de votre demande de retour",
-                $"Votre demande de retour pour la commande {notification.OrderId} a été mise à jour : {notification.NewStatus}.",
+                htmlBody,
+                "ReturnStatusUpdated",
                 cancellationToken);
         }
         catch (OperationCanceledException)

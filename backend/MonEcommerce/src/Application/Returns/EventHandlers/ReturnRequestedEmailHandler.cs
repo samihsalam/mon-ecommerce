@@ -1,5 +1,6 @@
 using System.Net;
 using Microsoft.Extensions.Logging;
+using MonEcommerce.Application.Common;
 using MonEcommerce.Application.Common.Interfaces;
 using MonEcommerce.Domain.Events;
 
@@ -21,10 +22,15 @@ public class ReturnRequestedEmailHandler : INotificationHandler<ReturnRequestedE
         try
         {
             var reason = WebUtility.HtmlEncode(notification.Reason);
+            var htmlBody = EmailTemplateBuilder.Wrap(
+                "Votre demande de retour a été reçue",
+                $"<p>Nous avons bien reçu votre demande de retour pour la commande {notification.OrderId} (motif : {reason}).</p>");
+
             await _emailService.SendAsync(
                 notification.CustomerEmail,
                 "Votre demande de retour a été reçue",
-                $"Nous avons bien reçu votre demande de retour pour la commande {notification.OrderId} (motif : {reason}).",
+                htmlBody,
+                "ReturnRequested",
                 cancellationToken);
         }
         catch (OperationCanceledException)

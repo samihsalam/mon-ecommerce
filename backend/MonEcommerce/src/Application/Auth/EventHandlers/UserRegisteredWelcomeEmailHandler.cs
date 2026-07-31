@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Logging;
+using MonEcommerce.Application.Common;
 using MonEcommerce.Application.Common.Interfaces;
 using MonEcommerce.Domain.Events;
 
@@ -19,10 +20,15 @@ public class UserRegisteredWelcomeEmailHandler : INotificationHandler<UserRegist
     {
         try
         {
+            var htmlBody = EmailTemplateBuilder.Wrap(
+                "Bienvenue chez MonEcommerce",
+                $"<p>Bonjour {notification.Name}, bienvenue ! Votre compte a été créé avec succès.</p>");
+
             await _emailService.SendAsync(
                 notification.Email,
                 "Bienvenue chez MonEcommerce",
-                $"Bonjour {notification.Name}, bienvenue ! Votre compte a été créé avec succès.",
+                htmlBody,
+                "UserRegistered",
                 cancellationToken);
         }
         catch (OperationCanceledException)

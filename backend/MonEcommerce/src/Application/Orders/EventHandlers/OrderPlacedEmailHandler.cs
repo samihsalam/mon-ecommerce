@@ -1,5 +1,6 @@
 using System.Globalization;
 using Microsoft.Extensions.Logging;
+using MonEcommerce.Application.Common;
 using MonEcommerce.Application.Common.Interfaces;
 using MonEcommerce.Domain.Events;
 
@@ -23,10 +24,15 @@ public class OrderPlacedEmailHandler : INotificationHandler<OrderPlacedEvent>
         try
         {
             var total = (notification.TotalInCents / 100m).ToString("C", FrenchCulture);
+            var htmlBody = EmailTemplateBuilder.Wrap(
+                "Confirmation de votre commande",
+                $"<p>Votre commande {notification.OrderId} d'un montant de {total} a bien été enregistrée.</p>");
+
             await _emailService.SendAsync(
                 notification.CustomerEmail,
                 "Confirmation de votre commande",
-                $"Votre commande {notification.OrderId} d'un montant de {total} a bien été enregistrée.",
+                htmlBody,
+                "OrderPlaced",
                 cancellationToken);
         }
         catch (OperationCanceledException)

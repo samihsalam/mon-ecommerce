@@ -32,6 +32,7 @@ public class ReturnStatusUpdatedEmailHandlerTests
             "client@example.com",
             It.IsAny<string>(),
             It.Is<string>(body => body.Contains("Validé")),
+            It.IsAny<string>(),
             It.IsAny<CancellationToken>()), Times.Once);
     }
 
@@ -39,7 +40,7 @@ public class ReturnStatusUpdatedEmailHandlerTests
     public void ShouldLogErrorAndNotThrowWhenEmailServiceFails()
     {
         _emailService
-            .Setup(e => e.SendAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .Setup(e => e.SendAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
             .ThrowsAsync(new InvalidOperationException("SendGrid unavailable"));
 
         var notification = new ReturnStatusUpdatedEvent(Guid.NewGuid(), Guid.NewGuid(), "client@example.com", "Refusé");

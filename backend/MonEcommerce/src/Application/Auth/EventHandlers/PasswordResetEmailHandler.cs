@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Logging;
+using MonEcommerce.Application.Common;
 using MonEcommerce.Application.Common.Interfaces;
 using MonEcommerce.Domain.Events;
 
@@ -19,21 +20,21 @@ public class PasswordResetEmailHandler : INotificationHandler<PasswordResetReque
     {
         try
         {
-            var htmlBody = $"""
-                <div style="font-family: 'DM Sans', Arial, sans-serif; color: #111111; max-width: 480px; margin: 0 auto;">
-                  <h1 style="font-family: 'Cormorant Garamond', Georgia, serif; font-size: 28px;">Réinitialisation du mot de passe</h1>
-                  <p>Bonjour {notification.Name},</p>
-                  <p>Vous avez demandé la réinitialisation de votre mot de passe MonEcommerce. Ce lien est valable 1 heure :</p>
-                  <p>
-                    <a href="{notification.ResetLink}" style="display: inline-block; background-color: #C9A96E; color: #111111; padding: 12px 24px; border-radius: 4px; text-decoration: none; font-weight: 600;">
-                      Réinitialiser mon mot de passe
-                    </a>
-                  </p>
-                  <p>Si vous n'êtes pas à l'origine de cette demande, vous pouvez ignorer cet email.</p>
-                </div>
-                """;
+            var htmlBody = EmailTemplateBuilder.Wrap(
+                "Réinitialisation du mot de passe",
+                $"""
+                <p>Bonjour {notification.Name},</p>
+                <p>Vous avez demandé la réinitialisation de votre mot de passe MonEcommerce. Ce lien est valable 1 heure :</p>
+                {EmailTemplateBuilder.Button(notification.ResetLink, "Réinitialiser mon mot de passe")}
+                <p>Si vous n'êtes pas à l'origine de cette demande, vous pouvez ignorer cet email.</p>
+                """);
 
-            await _emailService.SendAsync(notification.Email, "Réinitialisation de votre mot de passe", htmlBody, cancellationToken);
+            await _emailService.SendAsync(
+                notification.Email,
+                "Réinitialisation de votre mot de passe",
+                htmlBody,
+                "PasswordResetRequested",
+                cancellationToken);
         }
         catch (OperationCanceledException)
         {

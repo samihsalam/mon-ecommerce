@@ -32,6 +32,7 @@ public class UserRegisteredWelcomeEmailHandlerTests
             "alice@example.com",
             It.IsAny<string>(),
             It.Is<string>(body => body.Contains("Alice")),
+            It.IsAny<string>(),
             It.IsAny<CancellationToken>()), Times.Once);
     }
 
@@ -39,7 +40,7 @@ public class UserRegisteredWelcomeEmailHandlerTests
     public void ShouldLogErrorAndNotThrowWhenEmailServiceFails()
     {
         _emailService
-            .Setup(e => e.SendAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .Setup(e => e.SendAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
             .ThrowsAsync(new InvalidOperationException("SendGrid unavailable"));
 
         var notification = new UserRegisteredEvent("user-1", "Alice", "alice@example.com");

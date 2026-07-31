@@ -1,5 +1,6 @@
 using System.Globalization;
 using Microsoft.Extensions.Logging;
+using MonEcommerce.Application.Common;
 using MonEcommerce.Application.Common.Interfaces;
 using MonEcommerce.Domain.Events;
 
@@ -23,11 +24,18 @@ public class RefundIssuedEmailHandler : INotificationHandler<RefundIssuedEvent>
         try
         {
             var amount = (notification.AmountInCents / 100m).ToString("C", FrenchCulture);
+            var htmlBody = EmailTemplateBuilder.Wrap(
+                "Confirmation de votre remboursement",
+                $"""
+                <p>Un remboursement de {amount} a été émis pour la commande {notification.OrderNumber}.
+                Le montant sera crédité sur votre moyen de paiement d'origine sous 3 à 5 jours ouvrés.</p>
+                """);
+
             await _emailService.SendAsync(
                 notification.CustomerEmail,
                 "Confirmation de votre remboursement",
-                $"Un remboursement de {amount} a été émis pour la commande {notification.OrderNumber}. "
-                    + "Le montant sera crédité sur votre moyen de paiement d'origine sous 3 à 5 jours ouvrés.",
+                htmlBody,
+                "RefundIssued",
                 cancellationToken);
         }
         catch (OperationCanceledException)

@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Logging;
+using MonEcommerce.Application.Common;
 using MonEcommerce.Application.Common.Interfaces;
 using MonEcommerce.Domain.Events;
 
@@ -19,10 +20,15 @@ public class OrderDeliveredEmailHandler : INotificationHandler<OrderDeliveredEve
     {
         try
         {
+            var htmlBody = EmailTemplateBuilder.Wrap(
+                "Votre commande a été livrée",
+                $"<p>Votre commande {notification.OrderId} a été livrée. Merci pour votre achat !</p>");
+
             await _emailService.SendAsync(
                 notification.CustomerEmail,
                 "Votre commande a été livrée",
-                $"Votre commande {notification.OrderId} a été livrée. Merci pour votre achat !",
+                htmlBody,
+                "OrderDelivered",
                 cancellationToken);
         }
         catch (OperationCanceledException)

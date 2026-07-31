@@ -35,6 +35,7 @@ public class RefundIssuedEmailHandlerTests
             "client@example.com",
             It.IsAny<string>(),
             It.Is<string>(body => body.Contains("#ABCD1234") && body.Contains("150,00") && body.Contains("3 à 5 jours ouvrés")),
+            It.IsAny<string>(),
             It.IsAny<CancellationToken>()), Times.Once);
     }
 
@@ -42,7 +43,7 @@ public class RefundIssuedEmailHandlerTests
     public void ShouldLogErrorAndNotThrowWhenEmailServiceFails()
     {
         _emailService
-            .Setup(e => e.SendAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .Setup(e => e.SendAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
             .ThrowsAsync(new InvalidOperationException("SendGrid unavailable"));
 
         var notification = new RefundIssuedEvent(Guid.NewGuid(), Guid.NewGuid(), "client@example.com", 15000, "#ABCD1234");

@@ -33,6 +33,7 @@ public class OrderPlacedEmailHandlerTests
             "client@example.com",
             It.IsAny<string>(),
             It.Is<string>(body => body.Contains(orderId.ToString()) && body.Contains("285,00")),
+            It.IsAny<string>(),
             It.IsAny<CancellationToken>()), Times.Once);
     }
 
@@ -40,7 +41,7 @@ public class OrderPlacedEmailHandlerTests
     public void ShouldLogErrorAndNotThrowWhenEmailServiceFails()
     {
         _emailService
-            .Setup(e => e.SendAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .Setup(e => e.SendAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
             .ThrowsAsync(new InvalidOperationException("SendGrid unavailable"));
 
         var notification = new OrderPlacedEvent(Guid.NewGuid(), "user-1", "client@example.com", 28500);
