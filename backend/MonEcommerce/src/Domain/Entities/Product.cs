@@ -9,6 +9,10 @@ public class Product : BaseAuditableEntity
     public string? Color { get; set; }
     public string? Dimensions { get; set; }
     public bool IsPublished { get; set; }
+    // Story 6.1: dedicated soft-delete flag, deliberately independent of IsPublished — Story 6.5
+    // owns IsPublished exclusively via its own PATCH /publish endpoint, so a deleted product must
+    // stay hidden regardless of whatever that endpoint later does to IsPublished.
+    public bool IsDeleted { get; set; }
     public Guid? VendorId { get; set; }
     public Guid CategoryId { get; set; }
     public Category Category { get; set; } = null!;

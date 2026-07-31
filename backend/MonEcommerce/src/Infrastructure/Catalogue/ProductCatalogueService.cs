@@ -54,7 +54,7 @@ public class ProductCatalogueService : IProductCatalogueService
             return cached;
         }
 
-        var query = _context.Products.AsNoTracking().Where(p => p.IsPublished);
+        var query = _context.Products.AsNoTracking().Where(p => p.IsPublished && !p.IsDeleted);
 
         if (filter.CategoryId.HasValue)
         {
@@ -133,7 +133,7 @@ public class ProductCatalogueService : IProductCatalogueService
         }
 
         var product = await _context.Products.AsNoTracking()
-            .Where(p => p.IsPublished)
+            .Where(p => p.IsPublished && !p.IsDeleted)
             .Include(p => p.Category)
             .Include(p => p.Images)
             .Include(p => p.Stock)
@@ -165,7 +165,7 @@ public class ProductCatalogueService : IProductCatalogueService
         var products = remaining == 0
             ? []
             : await _context.Products.AsNoTracking()
-                .Where(p => p.IsPublished && p.Name.ToLower().Contains(normalized))
+                .Where(p => p.IsPublished && !p.IsDeleted && p.Name.ToLower().Contains(normalized))
                 .OrderBy(p => p.Name)
                 .ThenBy(p => p.Id)
                 .Select(p => p.Name)
@@ -208,7 +208,7 @@ public class ProductCatalogueService : IProductCatalogueService
         }
 
         var categoryId = await _context.Products.AsNoTracking()
-            .Where(p => p.Id == productId && p.IsPublished)
+            .Where(p => p.Id == productId && p.IsPublished && !p.IsDeleted)
             .Select(p => (Guid?)p.CategoryId)
             .FirstOrDefaultAsync(cancellationToken);
 
@@ -221,7 +221,7 @@ public class ProductCatalogueService : IProductCatalogueService
         }
 
         var similarProducts = await _context.Products.AsNoTracking()
-            .Where(p => p.IsPublished && p.CategoryId == categoryId && p.Id != productId)
+            .Where(p => p.IsPublished && !p.IsDeleted && p.CategoryId == categoryId && p.Id != productId)
             .Include(p => p.Category)
             .Include(p => p.Images)
             .Include(p => p.Stock)
@@ -263,7 +263,7 @@ public class ProductCatalogueService : IProductCatalogueService
         }
 
         var products = await _context.Products.AsNoTracking()
-            .Where(p => p.IsPublished)
+            .Where(p => p.IsPublished && !p.IsDeleted)
             .Include(p => p.Category)
             .ToListAsync(cancellationToken);
 

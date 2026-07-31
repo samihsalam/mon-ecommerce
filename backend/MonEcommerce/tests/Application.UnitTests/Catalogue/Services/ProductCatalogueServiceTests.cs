@@ -55,7 +55,8 @@ public class ProductCatalogueServiceTests
         string? material = null,
         string? color = null,
         bool isPublished = true,
-        int stockQuantity = 5)
+        int stockQuantity = 5,
+        bool isDeleted = false)
     {
         var product = new Product
         {
@@ -66,6 +67,7 @@ public class ProductCatalogueServiceTests
             Material = material,
             Color = color,
             IsPublished = isPublished,
+            IsDeleted = isDeleted,
             CategoryId = category.Id,
             Category = category,
         };
@@ -98,6 +100,32 @@ public class ProductCatalogueServiceTests
 
         Assert.That(result.Items, Has.Count.EqualTo(1));
         Assert.That(result.Items[0].Name, Is.EqualTo("Published Chair"));
+    }
+
+    // Story 6.1: a soft-deleted product must never appear in the public catalogue, even if it's
+    // still (stale) marked IsPublished = true — IsDeleted is a dedicated, independent flag.
+    [Test]
+    public async Task GetProductsAsync_ShouldExcludeSoftDeletedProductsEvenIfPublished()
+    {
+        var category = SeedCategory();
+        SeedProduct(category, "Published Chair", 10000, isPublished: true);
+        SeedProduct(category, "Deleted Chair", 10000, isPublished: true, isDeleted: true);
+        await _context.SaveChangesAsync(CancellationToken.None);
+
+        var result = await CreateService().GetProductsAsync(new ProductFilter(null, null, null, null, null, null, 1, 20));
+
+        Assert.That(result.Items, Has.Count.EqualTo(1));
+        Assert.That(result.Items[0].Name, Is.EqualTo("Published Chair"));
+    }
+
+    [Test]
+    public void GetProductByIdAsync_ShouldThrowNotFoundForASoftDeletedProduct()
+    {
+        var category = SeedCategory();
+        var product = SeedProduct(category, "Deleted Chair", 10000, isPublished: true, isDeleted: true);
+        _context.SaveChangesAsync(CancellationToken.None).GetAwaiter().GetResult();
+
+        Assert.ThrowsAsync<NotFoundException>(async () => await CreateService().GetProductByIdAsync(product.Id));
     }
 
     [Test]
