@@ -23,6 +23,11 @@ public class AdminProducts : IEndpointGroup
         groupBuilder.MapPost(AddImage, "{id:guid}/images").RequireAuthorization();
         groupBuilder.MapPatch(ReorderImages, "{id:guid}/images/order").RequireAuthorization();
         groupBuilder.MapDelete(DeleteImage, "{id:guid}/images/{imageId:guid}").RequireAuthorization();
+
+        // Story 6.3: bulk CSV import. Literal "import" segments never collide with the {id:guid}
+        // routes above — "import" fails the :guid constraint, so routing falls through correctly.
+        groupBuilder.MapPost(ImportCsv, "import").RequireAuthorization();
+        groupBuilder.MapGet(DownloadImportTemplate, "import/template").RequireAuthorization();
     }
 
     [EndpointSummary("Create a product (admin only) — created unpublished")]
@@ -86,6 +91,22 @@ public class AdminProducts : IEndpointGroup
     {
         await sender.Send(new DeleteProductImageCommand(id, imageId));
         return Results.NoContent();
+    }
+
+    // multipart/form-data — same IFormFile -> Application-layer Stream conversion pattern as
+    // AddImage/Account.CreateReturnRequest.
+    [EndpointSummary("Bulk-import products from a CSV file (admin only) — invalid/duplicate rows are reported, not fatal")]
+    public static async Task<IResult> ImportCsv(IFormFile file, ISender sender)
+    {
+        var result = await sender.Send(new ImportProductsCsvCommand(file.OpenReadStream()));
+        return Results.Ok(result);
+    }
+
+    [EndpointSummary("Download the CSV import template (admin only)")]
+    public static IResult DownloadImportTemplate()
+    {
+        const string template = "nom,description,prix,catégorie,matière,couleur,stock\n";
+        return Results.File(System.Text.Encoding.UTF8.GetBytes(template), "text/csv", "modele-import-produits.csv");
     }
 }
 
