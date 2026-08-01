@@ -14,13 +14,27 @@ public class CloudinaryFileStorageService : IFileStorageService
         _cloudinary = cloudinary;
     }
 
-    public async Task<FileUploadResult> UploadAsync(Stream fileStream, string fileName, string? folder = null, CancellationToken ct = default)
+    public async Task<FileUploadResult> UploadAsync(
+        Stream fileStream,
+        string fileName,
+        string? folder = null,
+        ImageTransformPreset preset = ImageTransformPreset.None,
+        CancellationToken ct = default)
     {
+        var transformation = new Transformation().FetchFormat("webp").Quality("auto");
+
+        // AC #5: ratio 3:4, max width 1200px — a single crop=fill step with both an aspect ratio
+        // and a width applies them together, rather than needing a second chained transformation.
+        if (preset == ImageTransformPreset.ProductGallery)
+        {
+            transformation = transformation.AspectRatio("3:4").Crop("fill").Width(1200);
+        }
+
         var uploadParams = new ImageUploadParams
         {
             File = new FileDescription(fileName, fileStream),
             Folder = folder ?? "mon-ecommerce",
-            Transformation = new Transformation().FetchFormat("webp").Quality("auto"),
+            Transformation = transformation,
             UniqueFilename = true,
             Overwrite = false
         };

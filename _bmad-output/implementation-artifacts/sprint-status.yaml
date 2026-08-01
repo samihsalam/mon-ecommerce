@@ -96,7 +96,7 @@ development_status:
   # ─── Epic 6: Administration Catalogue ──────────────────────────────────────
   epic-6: in-progress
   6-1-crud-fiches-produits: done
-  6-2-gestion-des-images-produit: backlog
+  6-2-gestion-des-images-produit: done
   6-3-import-csv-en-masse: backlog
   6-4-gestion-des-stocks-et-alertes: backlog
   6-5-categories-et-publication: backlog

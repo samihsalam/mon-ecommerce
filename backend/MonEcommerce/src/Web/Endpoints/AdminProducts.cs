@@ -1,6 +1,7 @@
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using MonEcommerce.Application.Catalogue.Commands;
+using MonEcommerce.Application.Catalogue.Models;
 
 namespace MonEcommerce.Web.Endpoints;
 
@@ -16,6 +17,12 @@ public class AdminProducts : IEndpointGroup
         groupBuilder.MapPost(Create, "").RequireAuthorization();
         groupBuilder.MapPut(Update, "{id:guid}").RequireAuthorization();
         groupBuilder.MapDelete(Delete, "{id:guid}").RequireAuthorization();
+
+        // Story 6.2: image management — nested resources under the same product, not a separate
+        // endpoint-group class.
+        groupBuilder.MapPost(AddImage, "{id:guid}/images").RequireAuthorization();
+        groupBuilder.MapPatch(ReorderImages, "{id:guid}/images/order").RequireAuthorization();
+        groupBuilder.MapDelete(DeleteImage, "{id:guid}/images/{imageId:guid}").RequireAuthorization();
     }
 
     [EndpointSummary("Create a product (admin only) — created unpublished")]
@@ -56,6 +63,30 @@ public class AdminProducts : IEndpointGroup
         await sender.Send(new DeleteProductCommand(id));
         return Results.NoContent();
     }
+
+    // multipart/form-data — same IFormFile -> Application-layer-record conversion pattern as
+    // Account.CreateReturnRequest (Story 5.1's first file-upload endpoint).
+    [EndpointSummary("Upload a product image via Cloudinary (admin only) — WebP, 3:4 crop, max width 1200px")]
+    public static async Task<IResult> AddImage(Guid id, IFormFile file, ISender sender)
+    {
+        var upload = new ProductImageUpload(file.OpenReadStream(), file.FileName);
+        var image = await sender.Send(new AddProductImageCommand(id, upload));
+        return Results.Created($"/api/v1/admin/products/{id}/images/{image.Id}", image);
+    }
+
+    [EndpointSummary("Reorder a product's images (admin only)")]
+    public static async Task<IResult> ReorderImages(Guid id, [FromBody] ReorderProductImagesRequest request, ISender sender)
+    {
+        await sender.Send(new ReorderProductImagesCommand(id, request.ImageIds));
+        return Results.NoContent();
+    }
+
+    [EndpointSummary("Delete a product image (admin only) — removes it from Cloudinary and the product's gallery")]
+    public static async Task<IResult> DeleteImage(Guid id, Guid imageId, ISender sender)
+    {
+        await sender.Send(new DeleteProductImageCommand(id, imageId));
+        return Results.NoContent();
+    }
 }
 
 public record CreateProductRequest(
@@ -76,3 +107,5 @@ public record UpdateProductRequest(
     string? Material,
     string? Color,
     string? Dimensions);
+
+public record ReorderProductImagesRequest(IReadOnlyList<Guid> ImageIds);

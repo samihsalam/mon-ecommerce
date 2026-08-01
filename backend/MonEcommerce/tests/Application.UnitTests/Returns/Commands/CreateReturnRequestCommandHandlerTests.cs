@@ -108,7 +108,7 @@ public class CreateReturnRequestCommandHandlerTests
         await _context.SaveChangesAsync(CancellationToken.None);
 
         _fileStorageServiceMock
-            .Setup(s => s.UploadAsync(It.IsAny<Stream>(), "photo1.jpg", "returns", It.IsAny<CancellationToken>()))
+            .Setup(s => s.UploadAsync(It.IsAny<Stream>(), "photo1.jpg", "returns", It.IsAny<ImageTransformPreset>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new FileUploadResult("https://cdn.example.com/photo1.jpg", "public-id-1"));
 
         using var stream = new MemoryStream();

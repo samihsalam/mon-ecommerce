@@ -56,7 +56,7 @@ public class CreateReturnRequestCommandHandler : IRequestHandler<CreateReturnReq
         var photoUrls = new List<string>();
         foreach (var photo in request.Photos)
         {
-            var result = await _fileStorageService.UploadAsync(photo.Content, photo.FileName, "returns", cancellationToken);
+            var result = await _fileStorageService.UploadAsync(photo.Content, photo.FileName, "returns", ct: cancellationToken);
             photoUrls.Add(result.Url);
         }
 
