@@ -1,3 +1,4 @@
+using System.Net;
 using Microsoft.Extensions.Logging;
 using MonEcommerce.Application.Common;
 using MonEcommerce.Application.Common.Interfaces;
@@ -20,9 +21,15 @@ public class ReturnStatusUpdatedEmailHandler : INotificationHandler<ReturnStatus
     {
         try
         {
-            var htmlBody = EmailTemplateBuilder.Wrap(
-                "Mise à jour de votre demande de retour",
-                $"<p>Votre demande de retour pour la commande {notification.OrderId} a été mise à jour : {notification.NewStatus}.</p>");
+            // Reason (Story 7.3, AC #4) is free-text admin input reflected into an email —
+            // HTML-encoded, same convention as ReturnRequestedEmailHandler's own reason field.
+            var body = $"<p>Votre demande de retour pour la commande {notification.OrderId} a été mise à jour : {notification.NewStatus}.</p>";
+            if (!string.IsNullOrWhiteSpace(notification.Reason))
+            {
+                body += $"<p>Motif : {WebUtility.HtmlEncode(notification.Reason)}</p>";
+            }
+
+            var htmlBody = EmailTemplateBuilder.Wrap("Mise à jour de votre demande de retour", body);
 
             await _emailService.SendAsync(
                 notification.CustomerEmail,

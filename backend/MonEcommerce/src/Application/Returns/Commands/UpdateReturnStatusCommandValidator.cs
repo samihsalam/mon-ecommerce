@@ -15,5 +15,11 @@ public class UpdateReturnStatusCommandValidator : AbstractValidator<UpdateReturn
         RuleFor(x => x.NewStatus)
             .Must(s => s is ReturnStatus.Approved or ReturnStatus.Rejected)
             .WithMessage("Le statut doit être 'Approved' ou 'Rejected'.");
+
+        // AC #4: a rejection must include a reason to email the customer.
+        RuleFor(x => x.Reason)
+            .NotEmpty()
+            .When(x => x.NewStatus == ReturnStatus.Rejected)
+            .WithMessage("Un motif est requis pour refuser une demande de retour.");
     }
 }

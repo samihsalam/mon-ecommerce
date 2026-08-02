@@ -106,7 +106,7 @@ development_status:
   epic-7: in-progress
   7-1-liste-et-filtrage-des-commandes: done
   7-2-mise-a-jour-statut-et-numero-de-suivi: done
-  7-3-traitement-des-demandes-de-retour: backlog
+  7-3-traitement-des-demandes-de-retour: done
   7-4-dashboard-kpis-temps-reel: backlog
   7-5-analytics-produits-et-stocks-critiques: backlog
   epic-7-retrospective: optional

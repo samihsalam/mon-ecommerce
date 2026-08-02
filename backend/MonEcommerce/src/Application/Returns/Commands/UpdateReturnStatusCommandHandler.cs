@@ -39,7 +39,8 @@ public class UpdateReturnStatusCommandHandler : IRequestHandler<UpdateReturnStat
             returnRequest.Id,
             returnRequest.OrderId,
             customerEmail,
-            ReturnStatusLabelFormatter.Format(request.NewStatus)));
+            ReturnStatusLabelFormatter.Format(request.NewStatus),
+            request.Reason));
 
         await _context.SaveChangesAsync(cancellationToken);
     }

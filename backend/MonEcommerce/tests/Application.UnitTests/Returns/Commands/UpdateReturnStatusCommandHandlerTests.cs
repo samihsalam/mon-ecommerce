@@ -72,10 +72,38 @@ public class UpdateReturnStatusCommandHandlerTests
         var returnId = SeedReturn();
         await _context.SaveChangesAsync(CancellationToken.None);
 
-        await _handler.Handle(new UpdateReturnStatusCommand(returnId, ReturnStatus.Rejected), CancellationToken.None);
+        await _handler.Handle(new UpdateReturnStatusCommand(returnId, ReturnStatus.Rejected, "Produit porté."), CancellationToken.None);
 
         var returnRequest = await _context.Returns.SingleAsync();
         Assert.That(returnRequest.Status, Is.EqualTo(ReturnStatus.Rejected));
+    }
+
+    // Story 7.3, AC #4: the rejection reason is threaded through to the email event.
+    [Test]
+    public async Task Handle_ShouldIncludeTheReasonOnTheDomainEventWhenRejecting()
+    {
+        var returnId = SeedReturn();
+        await _context.SaveChangesAsync(CancellationToken.None);
+
+        await _handler.Handle(new UpdateReturnStatusCommand(returnId, ReturnStatus.Rejected, "Produit porté."), CancellationToken.None);
+
+        var returnRequest = await _context.Returns.SingleAsync();
+        var domainEvent = returnRequest.DomainEvents.OfType<ReturnStatusUpdatedEvent>().Single();
+        Assert.That(domainEvent.Reason, Is.EqualTo("Produit porté."));
+        Assert.That(domainEvent.NewStatus, Is.EqualTo("Refusé"));
+    }
+
+    [Test]
+    public async Task Handle_ShouldLeaveTheReasonNullWhenApproving()
+    {
+        var returnId = SeedReturn();
+        await _context.SaveChangesAsync(CancellationToken.None);
+
+        await _handler.Handle(new UpdateReturnStatusCommand(returnId, ReturnStatus.Approved), CancellationToken.None);
+
+        var returnRequest = await _context.Returns.SingleAsync();
+        var domainEvent = returnRequest.DomainEvents.OfType<ReturnStatusUpdatedEvent>().Single();
+        Assert.That(domainEvent.Reason, Is.Null);
     }
 
     [Test]

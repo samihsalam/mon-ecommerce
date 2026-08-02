@@ -233,13 +233,6 @@ public class AccountService : IAccountService
     // Shared with UpdateReturnStatusCommandHandler (Story 5.3) — see ReturnStatusLabelFormatter.
     private static string MapReturnStatusLabel(ReturnStatus status) => ReturnStatusLabelFormatter.Format(status);
 
-    private static string MapReturnReasonLabel(ReturnReason reason) => reason switch
-    {
-        ReturnReason.WrongSize => "Mauvaise taille",
-        ReturnReason.DefectiveProduct => "Produit défectueux",
-        ReturnReason.NotAsDescribed => "Non conforme à la description",
-        ReturnReason.ChangedMind => "Changement d'avis",
-        ReturnReason.Other => "Autre",
-        _ => reason.ToString(),
-    };
+    // Shared with Story 7.3's admin returns list — see ReturnReasonLabelFormatter.
+    private static string MapReturnReasonLabel(ReturnReason reason) => ReturnReasonLabelFormatter.Format(reason);
 }

@@ -4,4 +4,5 @@ namespace MonEcommerce.Domain.Events;
 // handler has no reason to re-derive/duplicate that mapping (already centralized in
 // AccountService.MapReturnStatusLabel); the caller (UpdateReturnStatusCommandHandler) passes the
 // same label the customer would see on their order detail page.
-public record ReturnStatusUpdatedEvent(Guid ReturnId, Guid OrderId, string CustomerEmail, string NewStatus) : BaseEvent;
+// Reason (Story 7.3, AC #4): only ever set on rejection, included in the email when present.
+public record ReturnStatusUpdatedEvent(Guid ReturnId, Guid OrderId, string CustomerEmail, string NewStatus, string? Reason = null) : BaseEvent;

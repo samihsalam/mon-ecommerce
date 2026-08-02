@@ -36,6 +36,55 @@ public class ReturnStatusUpdatedEmailHandlerTests
             It.IsAny<CancellationToken>()), Times.Once);
     }
 
+    // Story 7.3, AC #4.
+    [Test]
+    public async Task ShouldIncludeTheRejectionReasonWhenPresent()
+    {
+        // ASCII-only reason — WebUtility.HtmlEncode also encodes accented characters (not just
+        // <script>-style markup), so an accented reason wouldn't appear verbatim in the rendered
+        // body; the encoding itself is covered separately by ShouldHtmlEncodeTheReasonToPreventInjection.
+        var notification = new ReturnStatusUpdatedEvent(Guid.NewGuid(), Guid.NewGuid(), "client@example.com", "Refusé", "Produit endommage");
+
+        await _handler.Handle(notification, CancellationToken.None);
+
+        _emailService.Verify(e => e.SendAsync(
+            "client@example.com",
+            It.IsAny<string>(),
+            It.Is<string>(body => body.Contains("Refusé") && body.Contains("Produit endommage")),
+            It.IsAny<string>(),
+            It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Test]
+    public async Task ShouldHtmlEncodeTheReasonToPreventInjection()
+    {
+        var notification = new ReturnStatusUpdatedEvent(Guid.NewGuid(), Guid.NewGuid(), "client@example.com", "Refusé", "<script>alert(1)</script>");
+
+        await _handler.Handle(notification, CancellationToken.None);
+
+        _emailService.Verify(e => e.SendAsync(
+            "client@example.com",
+            It.IsAny<string>(),
+            It.Is<string>(body => !body.Contains("<script>")),
+            It.IsAny<string>(),
+            It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Test]
+    public async Task ShouldNotMentionAReasonWhenApproving()
+    {
+        var notification = new ReturnStatusUpdatedEvent(Guid.NewGuid(), Guid.NewGuid(), "client@example.com", "Validé");
+
+        await _handler.Handle(notification, CancellationToken.None);
+
+        _emailService.Verify(e => e.SendAsync(
+            "client@example.com",
+            It.IsAny<string>(),
+            It.Is<string>(body => !body.Contains("Motif")),
+            It.IsAny<string>(),
+            It.IsAny<CancellationToken>()), Times.Once);
+    }
+
     [Test]
     public void ShouldLogErrorAndNotThrowWhenEmailServiceFails()
     {
