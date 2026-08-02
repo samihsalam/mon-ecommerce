@@ -188,7 +188,7 @@ public class ProductCatalogueService : IProductCatalogueService
 
         var categories = await _context.Categories.AsNoTracking()
             .OrderBy(c => c.Name)
-            .Select(c => new CategorySummaryDto(c.Id, c.Name, c.Slug))
+            .Select(c => new CategorySummaryDto(c.Id, c.Name, c.Slug, c.ParentId))
             .ToListAsync(cancellationToken);
 
         await _cache.SetAsync(cacheKey, categories, EntryTtl, cancellationToken);

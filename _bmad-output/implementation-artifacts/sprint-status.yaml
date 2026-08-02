@@ -94,12 +94,12 @@ development_status:
   epic-5-retrospective: optional
 
   # ─── Epic 6: Administration Catalogue ──────────────────────────────────────
-  epic-6: in-progress
+  epic-6: done
   6-1-crud-fiches-produits: done
   6-2-gestion-des-images-produit: done
   6-3-import-csv-en-masse: done
   6-4-gestion-des-stocks-et-alertes: done
-  6-5-categories-et-publication: backlog
+  6-5-categories-et-publication: done
   epic-6-retrospective: optional
 
   # ─── Epic 7: Administration Commandes & Dashboard ──────────────────────────

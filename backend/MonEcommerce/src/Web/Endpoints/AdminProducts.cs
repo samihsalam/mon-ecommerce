@@ -33,6 +33,10 @@ public class AdminProducts : IEndpointGroup
         // Story 6.4: stock management.
         groupBuilder.MapPatch(UpdateStock, "{id:guid}/stock").RequireAuthorization();
         groupBuilder.MapGet(GetStockHistory, "{id:guid}/stock-history").RequireAuthorization();
+
+        // Story 6.5: publish/unpublish — the one endpoint that sets IsPublished (see Update's
+        // summary and Story 6.1's Dev Notes for why it's excluded from PUT).
+        groupBuilder.MapPatch(Publish, "{id:guid}/publish").RequireAuthorization();
     }
 
     [EndpointSummary("Create a product (admin only) — created unpublished")]
@@ -127,6 +131,13 @@ public class AdminProducts : IEndpointGroup
         var history = await sender.Send(new GetStockHistoryQuery(id));
         return Results.Ok(history);
     }
+
+    [EndpointSummary("Publish or unpublish a product (admin only) — publishing requires at least one image")]
+    public static async Task<IResult> Publish(Guid id, [FromBody] PublishProductRequest request, ISender sender)
+    {
+        var product = await sender.Send(new PublishProductCommand(id, request.IsPublished));
+        return Results.Ok(product);
+    }
 }
 
 public record CreateProductRequest(
@@ -151,3 +162,5 @@ public record UpdateProductRequest(
 public record ReorderProductImagesRequest(IReadOnlyList<Guid> ImageIds);
 
 public record UpdateStockRequest(int Quantity, int AlertThreshold, string? Reason);
+
+public record PublishProductRequest(bool IsPublished);
