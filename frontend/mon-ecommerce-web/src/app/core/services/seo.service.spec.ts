@@ -37,6 +37,17 @@ describe('SeoService', () => {
     document.querySelectorAll('link[rel="canonical"], script[type="application/ld+json"]').forEach((el) => el.remove());
   });
 
+  it('should set a static page title and meta description (Story 8.1)', () => {
+    const service = TestBed.inject(SeoService);
+    const titleService = TestBed.inject(Title);
+    const meta = TestBed.inject(Meta);
+
+    service.setStaticPageSeo('Conditions générales de vente', 'Consultez nos CGV.');
+
+    expect(titleService.getTitle()).toBe('Conditions générales de vente | MonEcommerce');
+    expect(meta.getTag('name="description"')?.content).toBe('Consultez nos CGV.');
+  });
+
   it('should set the page title and meta description', () => {
     const service = TestBed.inject(SeoService);
     const titleService = TestBed.inject(Title);

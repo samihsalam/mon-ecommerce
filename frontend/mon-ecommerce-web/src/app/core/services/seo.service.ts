@@ -19,6 +19,14 @@ export class SeoService {
   private jsonLdScript: HTMLScriptElement | null = null;
   private canonicalLink: HTMLLinkElement | null = null;
 
+  // AC #6 (Story 8.1): a static content page (legal pages, and any future one like it) only ever
+  // needs <title>/<meta description> — no Open Graph/JSON-LD/canonical-link machinery, unlike
+  // setProductSeo's product-specific needs.
+  setStaticPageSeo(title: string, description: string): void {
+    this.titleService.setTitle(`${title} | MonEcommerce`);
+    this.meta.updateTag({ name: 'description', content: description });
+  }
+
   setProductSeo(product: ProductDetail, canonicalUrl: string): void {
     const title = `${product.name} | MonEcommerce`;
     const description = this.truncateDescription(product.description);

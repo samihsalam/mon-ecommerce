@@ -3,11 +3,12 @@ import { RouterOutlet } from '@angular/router';
 
 import { ToastComponent } from './core/components/toast/toast.component';
 import { HeaderComponent } from './core/components/header/header.component';
+import { FooterComponent } from './core/components/footer/footer.component';
 import { CartDrawerComponent } from './core/components/cart-drawer/cart-drawer.component';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, ToastComponent, HeaderComponent, CartDrawerComponent],
+  imports: [RouterOutlet, ToastComponent, HeaderComponent, FooterComponent, CartDrawerComponent],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss',
 })

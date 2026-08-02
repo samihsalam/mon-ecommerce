@@ -103,4 +103,19 @@ export const routes: Routes = [
         (m) => m.CheckoutConfirmationComponent,
       ),
   },
+  // Story 8.1: public legal pages, no authGuard (AC #1 — accessible without login).
+  {
+    path: 'cgv',
+    loadComponent: () => import('./features/legal/pages/cgv/cgv.component').then((m) => m.CgvComponent),
+  },
+  {
+    path: 'confidentialite',
+    loadComponent: () =>
+      import('./features/legal/pages/privacy-policy/privacy-policy.component').then((m) => m.PrivacyPolicyComponent),
+  },
+  {
+    path: 'retours',
+    loadComponent: () =>
+      import('./features/legal/pages/returns-policy/returns-policy.component').then((m) => m.ReturnsPolicyComponent),
+  },
 ];
