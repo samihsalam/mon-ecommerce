@@ -15,19 +15,21 @@ public class AdminCategories : IEndpointGroup
         // .RequireAuthorization() only proves the caller is authenticated as someone — the real
         // admin-role gate is each command's own [Authorize(Roles = Roles.Administrator)],
         // enforced by AuthorizationBehaviour (same split as AdminOrders.cs/AdminProducts.cs).
-        groupBuilder.MapPost(Create, "").RequireAuthorization();
-        groupBuilder.MapDelete(Delete, "{id:guid}").RequireAuthorization();
+        groupBuilder.MapPost(CreateCategory, "").RequireAuthorization();
+        groupBuilder.MapDelete(DeleteCategory, "{id:guid}").RequireAuthorization();
     }
 
+    // Method names unique across every endpoint group — see AdminProducts.cs's CreateProduct
+    // comment for why (endpoint names must be globally unique; caught only by running the app).
     [EndpointSummary("Create a category or subcategory (admin only) — auto-generates a kebab-case slug")]
-    public static async Task<IResult> Create([FromBody] CreateCategoryRequest request, ISender sender)
+    public static async Task<IResult> CreateCategory([FromBody] CreateCategoryRequest request, ISender sender)
     {
         var category = await sender.Send(new CreateCategoryCommand(request.Name, request.ParentId));
         return Results.Created($"/api/v1/admin/categories/{category.Id}", category);
     }
 
     [EndpointSummary("Delete a category (admin only) — blocked if it has children or any products")]
-    public static async Task<IResult> Delete(Guid id, ISender sender)
+    public static async Task<IResult> DeleteCategory(Guid id, ISender sender)
     {
         await sender.Send(new DeleteCategoryCommand(id));
         return Results.NoContent();

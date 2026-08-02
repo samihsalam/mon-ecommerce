@@ -100,6 +100,9 @@ public class SendGridEmailService : IEmailService
         // _dbContextFactory for why the ambient scoped context can't safely be reused here.
         await using var context = await _dbContextFactory.CreateDbContextAsync(ct);
 
+        // Created is set explicitly, not by AuditableEntityInterceptor — this context's factory
+        // (IndependentDbContextFactory) deliberately configures no interceptors, since there's no
+        // "acting user" for a system-sent email and EmailDispatchLog has no domain events.
         context.EmailDispatchLogs.Add(new EmailDispatchLog
         {
             Id = Guid.NewGuid(),
@@ -109,6 +112,7 @@ public class SendGridEmailService : IEmailService
             AttemptCount = attemptCount,
             SendGridMessageId = messageId,
             ErrorMessage = errorMessage,
+            Created = DateTimeOffset.UtcNow,
         });
 
         await context.SaveChangesAsync(ct);

@@ -15,9 +15,9 @@ public class AdminProducts : IEndpointGroup
         // .RequireAuthorization() only proves the caller is authenticated as someone — the real
         // admin-role gate is each command's own [Authorize(Roles = Roles.Administrator)],
         // enforced by AuthorizationBehaviour (same split as AdminOrders.cs/AdminReturns.cs).
-        groupBuilder.MapPost(Create, "").RequireAuthorization();
-        groupBuilder.MapPut(Update, "{id:guid}").RequireAuthorization();
-        groupBuilder.MapDelete(Delete, "{id:guid}").RequireAuthorization();
+        groupBuilder.MapPost(CreateProduct, "").RequireAuthorization();
+        groupBuilder.MapPut(UpdateProduct, "{id:guid}").RequireAuthorization();
+        groupBuilder.MapDelete(DeleteProduct, "{id:guid}").RequireAuthorization();
 
         // Story 6.2: image management — nested resources under the same product, not a separate
         // endpoint-group class.
@@ -39,8 +39,13 @@ public class AdminProducts : IEndpointGroup
         groupBuilder.MapPatch(Publish, "{id:guid}/publish").RequireAuthorization();
     }
 
+    // Method names are unique across every endpoint group, not just within this class — ASP.NET
+    // Core Minimal APIs infers each endpoint's Name from the handler method's name when mapped as
+    // a method group, and endpoint names must be globally unique (a same-named handler in another
+    // IEndpointGroup, e.g. AdminCategories.CreateCategory, would otherwise collide at startup —
+    // this exact collision was caught by actually running the app, not by `dotnet build`/`test`).
     [EndpointSummary("Create a product (admin only) — created unpublished")]
-    public static async Task<IResult> Create([FromBody] CreateProductRequest request, ISender sender)
+    public static async Task<IResult> CreateProduct([FromBody] CreateProductRequest request, ISender sender)
     {
         var id = await sender.Send(new CreateProductCommand(
             request.Name,
@@ -56,7 +61,7 @@ public class AdminProducts : IEndpointGroup
     }
 
     [EndpointSummary("Update a product's fields (admin only) — invalidates the catalogue cache")]
-    public static async Task<IResult> Update(Guid id, [FromBody] UpdateProductRequest request, ISender sender)
+    public static async Task<IResult> UpdateProduct(Guid id, [FromBody] UpdateProductRequest request, ISender sender)
     {
         var product = await sender.Send(new UpdateProductCommand(
             id,
@@ -72,7 +77,7 @@ public class AdminProducts : IEndpointGroup
     }
 
     [EndpointSummary("Soft-delete a product (admin only) — hides it from the catalogue, data preserved")]
-    public static async Task<IResult> Delete(Guid id, ISender sender)
+    public static async Task<IResult> DeleteProduct(Guid id, ISender sender)
     {
         await sender.Send(new DeleteProductCommand(id));
         return Results.NoContent();

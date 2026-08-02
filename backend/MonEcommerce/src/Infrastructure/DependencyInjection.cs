@@ -42,14 +42,13 @@ public static class DependencyInjection
         // SavingChangesAsync — i.e. mid-way through the ambient scoped ApplicationDbContext's
         // own SaveChangesAsync call. Calling SaveChangesAsync again on that SAME instance at that
         // point is a reentrant call EF Core explicitly rejects ("a second operation was started
-        // on this context before a previous operation completed"). A factory-created, independent
-        // context instance sidesteps this entirely — same connection string, deliberately no
-        // interceptors (an EmailDispatchLog row has no domain events of its own to dispatch).
-        builder.Services.AddDbContextFactory<ApplicationDbContext>(options =>
-        {
-            options.UseSqlServer(connectionString);
-            options.ConfigureWarnings(warnings => warnings.Ignore(RelationalEventId.PendingModelChangesWarning));
-        });
+        // on this context before a previous operation completed"). An independent context instance
+        // sidesteps this entirely — see IndependentDbContextFactory.cs for why this ISN'T built
+        // via EF Core's own AddDbContextFactory<T> (registering both AddDbContext<T> and
+        // AddDbContextFactory<T> for the SAME T is invalid; caught by ValidateOnBuild only when
+        // the app actually boots, not by `dotnet build`/`test`).
+        builder.Services.AddSingleton<IDbContextFactory<ApplicationDbContext>>(
+            new IndependentDbContextFactory(connectionString));
 
         builder.Services.AddScoped<IApplicationDbContext>(provider => provider.GetRequiredService<ApplicationDbContext>());
         builder.Services.AddScoped<ApplicationDbContextInitialiser>();

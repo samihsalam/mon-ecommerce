@@ -62,6 +62,10 @@ public class SendGridEmailServiceTests
         Assert.That(logs[0].SendGridMessageId, Is.EqualTo("msg-success-1"));
         Assert.That(logs[0].EventType, Is.EqualTo("OrderPlaced"));
         Assert.That(logs[0].Recipient, Is.EqualTo("client@example.com"));
+        // Set explicitly by LogDispatchAsync, not by an interceptor — the independent factory
+        // context configures none. Regression check for a bug caught only by actually booting the
+        // app (dotnet build/test never exercise the real DI container).
+        Assert.That(logs[0].Created, Is.GreaterThan(DateTimeOffset.UtcNow.AddMinutes(-1)));
     }
 
     [Test]
