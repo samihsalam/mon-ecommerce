@@ -53,6 +53,8 @@ public class CreateProductCommandHandlerTests
         Assert.That(product.IsDeleted, Is.False);
         Assert.That(product.Stock, Is.Not.Null);
         Assert.That(product.Stock!.Quantity, Is.EqualTo(12));
+        // Story 6.4, AC #5: alert thresholds default to 5 units if not explicitly set.
+        Assert.That(product.Stock.AlertThreshold, Is.EqualTo(5));
     }
 
     [Test]

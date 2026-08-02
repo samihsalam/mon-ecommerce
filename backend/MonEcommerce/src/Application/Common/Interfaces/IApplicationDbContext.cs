@@ -18,6 +18,7 @@ public interface IApplicationDbContext
     DbSet<PaymentAuditLog> PaymentAuditLogs { get; }
     DbSet<Return> Returns { get; }
     DbSet<EmailDispatchLog> EmailDispatchLogs { get; }
+    DbSet<StockMovement> StockMovements { get; }
     Task<int> SaveChangesAsync(CancellationToken cancellationToken);
     EntityEntry<TEntity> Entry<TEntity>(TEntity entity) where TEntity : class;
 }

@@ -98,7 +98,7 @@ development_status:
   6-1-crud-fiches-produits: done
   6-2-gestion-des-images-produit: done
   6-3-import-csv-en-masse: done
-  6-4-gestion-des-stocks-et-alertes: backlog
+  6-4-gestion-des-stocks-et-alertes: done
   6-5-categories-et-publication: backlog
   epic-6-retrospective: optional
 

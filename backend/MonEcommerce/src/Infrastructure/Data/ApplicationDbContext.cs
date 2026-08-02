@@ -24,6 +24,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>, IApplica
     public DbSet<PaymentAuditLog> PaymentAuditLogs => Set<PaymentAuditLog>();
     public DbSet<Return> Returns => Set<Return>();
     public DbSet<EmailDispatchLog> EmailDispatchLogs => Set<EmailDispatchLog>();
+    public DbSet<StockMovement> StockMovements => Set<StockMovement>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {

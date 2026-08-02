@@ -2,6 +2,7 @@ using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using MonEcommerce.Application.Catalogue.Commands;
 using MonEcommerce.Application.Catalogue.Models;
+using MonEcommerce.Application.Catalogue.Queries;
 
 namespace MonEcommerce.Web.Endpoints;
 
@@ -28,6 +29,10 @@ public class AdminProducts : IEndpointGroup
         // routes above — "import" fails the :guid constraint, so routing falls through correctly.
         groupBuilder.MapPost(ImportCsv, "import").RequireAuthorization();
         groupBuilder.MapGet(DownloadImportTemplate, "import/template").RequireAuthorization();
+
+        // Story 6.4: stock management.
+        groupBuilder.MapPatch(UpdateStock, "{id:guid}/stock").RequireAuthorization();
+        groupBuilder.MapGet(GetStockHistory, "{id:guid}/stock-history").RequireAuthorization();
     }
 
     [EndpointSummary("Create a product (admin only) — created unpublished")]
@@ -108,6 +113,20 @@ public class AdminProducts : IEndpointGroup
         const string template = "nom,description,prix,catégorie,matière,couleur,stock\n";
         return Results.File(System.Text.Encoding.UTF8.GetBytes(template), "text/csv", "modele-import-produits.csv");
     }
+
+    [EndpointSummary("Set a product's stock quantity and alert threshold (admin only) — logs a stock movement")]
+    public static async Task<IResult> UpdateStock(Guid id, [FromBody] UpdateStockRequest request, ISender sender)
+    {
+        var stock = await sender.Send(new UpdateStockCommand(id, request.Quantity, request.AlertThreshold, request.Reason));
+        return Results.Ok(stock);
+    }
+
+    [EndpointSummary("Get a product's stock movement history (admin only)")]
+    public static async Task<IResult> GetStockHistory(Guid id, ISender sender)
+    {
+        var history = await sender.Send(new GetStockHistoryQuery(id));
+        return Results.Ok(history);
+    }
 }
 
 public record CreateProductRequest(
@@ -130,3 +149,5 @@ public record UpdateProductRequest(
     string? Dimensions);
 
 public record ReorderProductImagesRequest(IReadOnlyList<Guid> ImageIds);
+
+public record UpdateStockRequest(int Quantity, int AlertThreshold, string? Reason);
