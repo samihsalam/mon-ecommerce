@@ -1,6 +1,7 @@
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using MonEcommerce.Application.Orders.Commands;
+using MonEcommerce.Application.Orders.Queries;
 using MonEcommerce.Domain.Enums;
 
 namespace MonEcommerce.Web.Endpoints;
@@ -12,10 +13,29 @@ public class AdminOrders : IEndpointGroup
     public static void Map(RouteGroupBuilder groupBuilder)
     {
         // .RequireAuthorization() only proves the caller is authenticated as someone — the actual
-        // admin-role gate is UpdateOrderStatusCommand's [Authorize(Roles = Roles.Administrator)],
+        // admin-role gate is each command/query's own [Authorize(Roles = Roles.Administrator)],
         // enforced by AuthorizationBehaviour (same split already used everywhere else in this
         // codebase between HTTP-level auth and MediatR-pipeline authorization).
+        groupBuilder.MapGet(GetAdminOrders, "").RequireAuthorization();
         groupBuilder.MapPatch(UpdateOrderStatus, "{orderId:guid}/status").RequireAuthorization();
+    }
+
+    // Story 7.1. Named GetAdminOrders, not GetOrders — Web/Endpoints/Account.cs already has a
+    // customer-facing GetOrders; a same-named handler in a different IEndpointGroup collides
+    // (endpoint names, inferred from the method name for method-group handlers, must be globally
+    // unique — the exact bug class just fixed live while running the app).
+    [EndpointSummary("List and filter all orders (admin only) — paginated, sorted by date descending")]
+    public static async Task<IResult> GetAdminOrders(
+        ISender sender,
+        OrderStatus? status = null,
+        DateTimeOffset? dateFrom = null,
+        DateTimeOffset? dateTo = null,
+        string? search = null,
+        int pageNumber = 1,
+        int pageSize = 20)
+    {
+        var result = await sender.Send(new GetAdminOrdersQuery(status, dateFrom, dateTo, search, pageNumber, pageSize));
+        return Results.Ok(result);
     }
 
     // Method name unique across every endpoint group — ASP.NET Core Minimal APIs infers each

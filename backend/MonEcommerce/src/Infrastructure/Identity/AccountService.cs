@@ -227,17 +227,8 @@ public class AccountService : IAccountService
 
     private static string FormatOrderNumber(Guid orderId) => OrderNumberFormatter.Format(orderId);
 
-    // AC #5 lists 4 French labels for the 5-value OrderStatus enum — Pending and Processing
-    // both map to "En préparation" (see Story 2.5's Dev Notes for the reasoning).
-    private static string MapStatusLabel(OrderStatus status) => status switch
-    {
-        OrderStatus.Pending => "En préparation",
-        OrderStatus.Processing => "En préparation",
-        OrderStatus.Shipped => "Expédiée",
-        OrderStatus.Delivered => "Livrée",
-        OrderStatus.Cancelled => "Annulée",
-        _ => status.ToString(),
-    };
+    // Shared with Story 7.1's admin order list — see OrderStatusLabelFormatter.
+    private static string MapStatusLabel(OrderStatus status) => OrderStatusLabelFormatter.Format(status);
 
     // Shared with UpdateReturnStatusCommandHandler (Story 5.3) — see ReturnStatusLabelFormatter.
     private static string MapReturnStatusLabel(ReturnStatus status) => ReturnStatusLabelFormatter.Format(status);
