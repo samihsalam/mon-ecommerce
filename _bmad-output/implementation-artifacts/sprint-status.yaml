@@ -103,12 +103,12 @@ development_status:
   epic-6-retrospective: optional
 
   # ─── Epic 7: Administration Commandes & Dashboard ──────────────────────────
-  epic-7: in-progress
+  epic-7: done
   7-1-liste-et-filtrage-des-commandes: done
   7-2-mise-a-jour-statut-et-numero-de-suivi: done
   7-3-traitement-des-demandes-de-retour: done
   7-4-dashboard-kpis-temps-reel: done
-  7-5-analytics-produits-et-stocks-critiques: backlog
+  7-5-analytics-produits-et-stocks-critiques: done
   epic-7-retrospective: optional
 
   # ─── Epic 8: Conformité, Accessibilité & Qualité ───────────────────────────

@@ -20,6 +20,7 @@ public interface IApplicationDbContext
     DbSet<EmailDispatchLog> EmailDispatchLogs { get; }
     DbSet<StockMovement> StockMovements { get; }
     DbSet<OrderStatusHistory> OrderStatusHistories { get; }
+    DbSet<ProductDailyViewCount> ProductDailyViewCounts { get; }
     Task<int> SaveChangesAsync(CancellationToken cancellationToken);
     EntityEntry<TEntity> Entry<TEntity>(TEntity entity) where TEntity : class;
 }
