@@ -17,6 +17,8 @@ public class UpdateOrderStatusCommandValidatorTests
         var result = _validator.Validate(new UpdateOrderStatusCommand(Guid.NewGuid(), OrderStatus.Shipped, null));
 
         Assert.That(result.IsValid, Is.False);
+        // AC #2's exact wording.
+        Assert.That(result.Errors[0].ErrorMessage, Is.EqualTo("Le numéro de suivi est requis pour le statut Expédiée"));
     }
 
     [Test]

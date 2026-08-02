@@ -64,6 +64,20 @@ public class AccountServiceOrdersTests
         return order;
     }
 
+    // Story 7.2: Pending now has its own distinct "En attente" label, no longer merged with
+    // Processing's "En préparation" — see OrderStatusLabelFormatter's Dev Notes.
+    [Test]
+    public async Task GetOrdersAsync_ShouldLabelAPendingOrderAsEnAttente()
+    {
+        var addressId = SeedAddress("user-1");
+        SeedOrder("user-1", addressId, DateTimeOffset.UtcNow, OrderStatus.Pending);
+        await _context.SaveChangesAsync(CancellationToken.None);
+
+        var result = await _accountService.GetOrdersAsync("user-1", 1, 10);
+
+        Assert.That(result.Items.Single().Status, Is.EqualTo("En attente"));
+    }
+
     [Test]
     public async Task GetOrdersAsync_ShouldReturnEmptyListWhenUserHasNoOrders()
     {

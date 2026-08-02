@@ -7,11 +7,14 @@ namespace MonEcommerce.Application.Common;
 // same refactor precedent as OrderNumberFormatter/ReturnStatusLabelFormatter (Stories 5.3/5.4).
 public static class OrderStatusLabelFormatter
 {
-    // Pending and Processing both map to "En préparation" (see Story 2.5's Dev Notes) — the AC's
-    // 4 French labels cover the 5-value OrderStatus enum.
+    // Story 2.5 originally collapsed Pending+Processing into one shared "En préparation" label.
+    // Story 7.2's own AC #5 names "En attente" and "En préparation" as two distinct stages in its
+    // order-status transition graph — the PRD always intended these to be different, customer-
+    // visible states. Corrected here at the source rather than left inconsistent with the
+    // transition rules Story 7.2 builds against the same 5-value enum. See Story 7.2's Dev Notes.
     public static string Format(OrderStatus status) => status switch
     {
-        OrderStatus.Pending => "En préparation",
+        OrderStatus.Pending => "En attente",
         OrderStatus.Processing => "En préparation",
         OrderStatus.Shipped => "Expédiée",
         OrderStatus.Delivered => "Livrée",

@@ -105,7 +105,7 @@ development_status:
   # ─── Epic 7: Administration Commandes & Dashboard ──────────────────────────
   epic-7: in-progress
   7-1-liste-et-filtrage-des-commandes: done
-  7-2-mise-a-jour-statut-et-numero-de-suivi: backlog
+  7-2-mise-a-jour-statut-et-numero-de-suivi: done
   7-3-traitement-des-demandes-de-retour: backlog
   7-4-dashboard-kpis-temps-reel: backlog
   7-5-analytics-produits-et-stocks-critiques: backlog
