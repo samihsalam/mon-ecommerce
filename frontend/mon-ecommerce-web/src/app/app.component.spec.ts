@@ -41,5 +41,6 @@ describe('AppComponent', () => {
     expect(compiled.querySelector('app-toast')).toBeTruthy();
     expect(compiled.querySelector('app-header')).toBeTruthy();
     expect(compiled.querySelector('app-cart-drawer')).toBeTruthy();
+    expect(compiled.querySelector('app-cookie-banner')).toBeTruthy();
   });
 });

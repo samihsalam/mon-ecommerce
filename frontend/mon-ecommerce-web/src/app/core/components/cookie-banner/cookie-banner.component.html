@@ -1,0 +1,81 @@
+@if (consentService.isBannerOpen()) {
+  <div
+    #banner
+    role="dialog"
+    aria-modal="true"
+    aria-label="Gestion des cookies"
+    tabindex="-1"
+    cdkTrapFocus
+    (keydown.escape)="closeCustomizePanel()"
+    class="fixed inset-x-0 bottom-0 z-50 border-t border-border bg-bg-secondary px-4 py-6 shadow-lg outline-none"
+  >
+    <div class="mx-auto flex max-w-5xl flex-col gap-4">
+      <p class="text-sm text-text">
+        Nous utilisons des cookies strictement nécessaires au fonctionnement du site et, sous réserve de votre accord,
+        des cookies non-essentiels (analyse d'audience, marketing). Vous pouvez modifier votre choix à tout moment
+        via le lien « Modifier mes préférences » en pied de page.
+      </p>
+
+      @if (!showCustomize()) {
+        <div class="flex flex-wrap items-center justify-end gap-3">
+          <button
+            type="button"
+            aria-label="Personnaliser les cookies"
+            class="rounded-button border border-border px-4 py-2 text-sm text-text hover:border-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
+            (click)="openCustomize()"
+          >
+            Personnaliser
+          </button>
+          <button
+            type="button"
+            aria-label="Refuser les cookies non-essentiels"
+            class="rounded-button border-2 border-accent px-6 py-2 text-sm font-semibold text-accent tracking-wide hover:bg-accent hover:text-white transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
+            (click)="reject()"
+          >
+            Refuser
+          </button>
+          <button
+            type="button"
+            aria-label="Accepter tous les cookies"
+            class="rounded-button bg-accent px-6 py-2 text-sm font-semibold text-white tracking-wide hover:bg-accent-hover transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
+            (click)="acceptAll()"
+          >
+            Accepter tout
+          </button>
+        </div>
+      } @else {
+        <div class="flex flex-col gap-4 border-t border-border pt-4">
+          <label class="flex items-center gap-3 text-sm text-text">
+            <input
+              type="checkbox"
+              aria-label="Autoriser les cookies non-essentiels (analyse d'audience, marketing)"
+              [checked]="nonEssentialToggle()"
+              (change)="toggleNonEssential()"
+              class="h-4 w-4 accent-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+            />
+            Cookies non-essentiels (analyse d'audience, marketing)
+          </label>
+
+          <div class="flex flex-wrap justify-end gap-3">
+            <button
+              type="button"
+              aria-label="Revenir au choix rapide"
+              class="rounded-button border border-border px-4 py-2 text-sm text-text hover:border-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
+              (click)="closeCustomizePanel()"
+            >
+              Retour
+            </button>
+            <button
+              type="button"
+              aria-label="Enregistrer mes préférences de cookies"
+              class="rounded-button bg-accent px-6 py-2 text-sm font-semibold text-white tracking-wide hover:bg-accent-hover transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
+              (click)="saveCustom()"
+            >
+              Enregistrer mes choix
+            </button>
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+}
