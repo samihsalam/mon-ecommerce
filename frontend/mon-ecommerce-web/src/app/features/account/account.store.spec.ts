@@ -63,4 +63,34 @@ describe('AccountStore', () => {
     expect(result).toBe(false);
     expect(store.error()).toBe('Mot de passe actuel incorrect.');
   });
+
+  it('should request account deletion and mark deletionRequested on success', async () => {
+    const store = TestBed.inject(AccountStore);
+
+    const requestPromise = store.requestAccountDeletion();
+
+    const req = httpMock.expectOne(`${environment.apiUrl}/api/v1/account/delete-request`);
+    expect(req.request.method).toBe('POST');
+    req.flush({ requestId: 'a-guid' });
+
+    const result = await requestPromise;
+
+    expect(result).toBe(true);
+    expect(store.deletionRequested()).toBe(true);
+  });
+
+  it('should surface a specific message when a deletion request is already pending (409)', async () => {
+    const store = TestBed.inject(AccountStore);
+
+    const requestPromise = store.requestAccountDeletion();
+
+    const req = httpMock.expectOne(`${environment.apiUrl}/api/v1/account/delete-request`);
+    req.flush({ title: 'Conflict' }, { status: 409, statusText: 'Conflict' });
+
+    const result = await requestPromise;
+
+    expect(result).toBe(false);
+    expect(store.deletionRequested()).toBe(false);
+    expect(store.error()).toBe('Une demande de suppression est déjà en cours pour ce compte.');
+  });
 });

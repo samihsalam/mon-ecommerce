@@ -24,12 +24,14 @@ interface AccountState {
   profile: Profile | null;
   isLoading: boolean;
   error: string | null;
+  deletionRequested: boolean;
 }
 
 const initialState: AccountState = {
   profile: null,
   isLoading: false,
   error: null,
+  deletionRequested: false,
 };
 
 export const AccountStore = signalStore(
@@ -68,6 +70,27 @@ export const AccountStore = signalStore(
           const message =
             err instanceof HttpErrorResponse && err.status === 400 && err.error?.errors?.length
               ? err.error.errors[0]
+              : 'Une erreur est survenue. Veuillez réessayer.';
+
+          patchState(store, { isLoading: false, error: message });
+          return false;
+        }
+      },
+
+      // Story 8.3, AC #1: no confirmation is destructive here — the account stays fully usable
+      // until an admin processes the request (up to 30 days later), so there's nothing to roll
+      // back locally on success beyond flipping deletionRequested for the UI.
+      async requestAccountDeletion(): Promise<boolean> {
+        patchState(store, { isLoading: true, error: null });
+
+        try {
+          await firstValueFrom(http.post(`${environment.apiUrl}/api/v1/account/delete-request`, {}));
+          patchState(store, { isLoading: false, deletionRequested: true });
+          return true;
+        } catch (err) {
+          const message =
+            err instanceof HttpErrorResponse && err.status === 409
+              ? 'Une demande de suppression est déjà en cours pour ce compte.'
               : 'Une erreur est survenue. Veuillez réessayer.';
 
           patchState(store, { isLoading: false, error: message });

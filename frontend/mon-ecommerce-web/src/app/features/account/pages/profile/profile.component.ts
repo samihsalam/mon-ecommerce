@@ -17,6 +17,17 @@ export class ProfileComponent implements OnInit {
 
   private loadedEmail = '';
 
+  // Story 8.3 AC #1: reveals the "Supprimer mon compte" confirmation panel — separate from
+  // accountStore.deletionRequested (server-confirmed state) since this is purely local UI state
+  // for the not-yet-submitted confirm/cancel step.
+  protected readonly showDeleteConfirmation = signal(false);
+
+  // Captured from accountStore.error() the instant requestAccountDeletion() resolves — NOT bound
+  // directly to accountStore.error() in the template (review finding: that field is shared with
+  // the profile-update form above; a stale profile-form error would otherwise bleed into this
+  // panel the moment it opens, before the customer has even attempted a deletion request).
+  protected readonly deletionError = signal<string | null>(null);
+
   // The form is hidden until the profile has actually loaded — without this, a user could
   // start typing while loadProfile() is still in flight and have their input silently
   // clobbered by patchValue() once it resolves, and isEmailChanged (compared against a still-
@@ -58,6 +69,27 @@ export class ProfileComponent implements OnInit {
     if (success) {
       this.loadedEmail = email;
       this.form.patchValue({ currentPassword: '' });
+    }
+  }
+
+  protected openDeleteConfirmation(): void {
+    this.deletionError.set(null);
+    this.showDeleteConfirmation.set(true);
+  }
+
+  protected cancelDeleteConfirmation(): void {
+    this.showDeleteConfirmation.set(false);
+  }
+
+  protected async confirmAccountDeletion(): Promise<void> {
+    const success = await this.accountStore.requestAccountDeletion();
+
+    if (success) {
+      this.showDeleteConfirmation.set(false);
+    } else {
+      // Review finding: the panel must stay open on failure (e.g. a 409 "already pending") so the
+      // customer sees why, instead of silently reappearing at the "Supprimer mon compte" button.
+      this.deletionError.set(this.accountStore.error());
     }
   }
 }

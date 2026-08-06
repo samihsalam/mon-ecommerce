@@ -85,4 +85,32 @@ public class IdentityService : IIdentityService
 
         return result.ToApplicationResult();
     }
+
+    public async Task<Result> AnonymizeUserAsync(string userId, string anonymizedName, string anonymizedEmail)
+    {
+        var user = await _userManager.FindByIdAsync(userId);
+        if (user == null)
+        {
+            return Result.Failure(["Utilisateur introuvable."]);
+        }
+
+        // Set Name on the tracked entity before the first Set*Async call — same reasoning as
+        // AccountService.UpdateProfileAsync's email-change path: each Set*Async call persists
+        // immediately, and EF Core saves every dirty property on the tracked entity along with it.
+        user.Name = anonymizedName;
+
+        var setEmailResult = await _userManager.SetEmailAsync(user, anonymizedEmail);
+        if (!setEmailResult.Succeeded)
+        {
+            return setEmailResult.ToApplicationResult();
+        }
+
+        var setUserNameResult = await _userManager.SetUserNameAsync(user, anonymizedEmail);
+        if (!setUserNameResult.Succeeded)
+        {
+            return setUserNameResult.ToApplicationResult();
+        }
+
+        return Result.Success();
+    }
 }

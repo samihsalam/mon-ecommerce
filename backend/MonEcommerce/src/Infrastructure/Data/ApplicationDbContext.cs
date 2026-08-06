@@ -27,6 +27,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>, IApplica
     public DbSet<StockMovement> StockMovements => Set<StockMovement>();
     public DbSet<OrderStatusHistory> OrderStatusHistories => Set<OrderStatusHistory>();
     public DbSet<ProductDailyViewCount> ProductDailyViewCounts => Set<ProductDailyViewCount>();
+    public DbSet<AccountDeletionRequest> AccountDeletionRequests => Set<AccountDeletionRequest>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {

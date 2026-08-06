@@ -22,6 +22,7 @@ public class Account : IEndpointGroup
         groupBuilder.MapPost(CreateReturnRequest, "orders/{orderId:guid}/returns")
             .RequireAuthorization()
             .DisableAntiforgery();
+        groupBuilder.MapPost(RequestAccountDeletion, "delete-request").RequireAuthorization();
     }
 
     [EndpointSummary("Get the current user's profile")]
@@ -80,5 +81,12 @@ public class Account : IEndpointGroup
 
         var result = await sender.Send(new CreateReturnRequestCommand(orderId, reason, description, uploads));
         return Results.Ok(result);
+    }
+
+    [EndpointSummary("Request deletion of the current user's personal data (GDPR right to erasure)")]
+    public static async Task<IResult> RequestAccountDeletion(ISender sender)
+    {
+        var requestId = await sender.Send(new RequestAccountDeletionCommand());
+        return Results.Ok(new { requestId });
     }
 }

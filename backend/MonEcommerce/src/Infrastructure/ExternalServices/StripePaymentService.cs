@@ -11,12 +11,18 @@ public class StripePaymentService : IPaymentService
 {
     private readonly PaymentIntentService _paymentIntentService;
     private readonly RefundService _refundService;
+    private readonly CustomerService _customerService;
     private readonly IConfiguration _configuration;
 
-    public StripePaymentService(PaymentIntentService paymentIntentService, RefundService refundService, IConfiguration configuration)
+    public StripePaymentService(
+        PaymentIntentService paymentIntentService,
+        RefundService refundService,
+        CustomerService customerService,
+        IConfiguration configuration)
     {
         _paymentIntentService = paymentIntentService;
         _refundService = refundService;
+        _customerService = customerService;
         _configuration = configuration;
     }
 
@@ -74,5 +80,20 @@ public class StripePaymentService : IPaymentService
             : new Dictionary<string, string>();
 
         return new WebhookEvent(stripeEvent.Type, paymentIntent?.Id, paymentIntent?.Amount, metadata);
+    }
+
+    public async Task DeleteCustomerDataAsync(string email, CancellationToken ct = default)
+    {
+        // Review finding: Stripe allows more than one Customer to share an email (repeat
+        // checkouts, support-created duplicates) — deleting only the first match would leave
+        // other Stripe-side PII behind. 100 (Stripe's max page size) comfortably covers any
+        // realistic duplicate count for one email; a customer's data.
+        var options = new CustomerListOptions { Email = email, Limit = 100 };
+        var customers = await _customerService.ListAsync(options, cancellationToken: ct);
+
+        foreach (var customer in customers.Data)
+        {
+            await _customerService.DeleteAsync(customer.Id, cancellationToken: ct);
+        }
     }
 }

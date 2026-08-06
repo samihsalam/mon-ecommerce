@@ -21,6 +21,7 @@ public interface IApplicationDbContext
     DbSet<StockMovement> StockMovements { get; }
     DbSet<OrderStatusHistory> OrderStatusHistories { get; }
     DbSet<ProductDailyViewCount> ProductDailyViewCounts { get; }
+    DbSet<AccountDeletionRequest> AccountDeletionRequests { get; }
     Task<int> SaveChangesAsync(CancellationToken cancellationToken);
     EntityEntry<TEntity> Entry<TEntity>(TEntity entity) where TEntity : class;
 }

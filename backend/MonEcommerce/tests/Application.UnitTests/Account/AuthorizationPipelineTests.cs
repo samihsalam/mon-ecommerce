@@ -37,6 +37,7 @@ public class AuthorizationPipelineTests
         public Task<(Result Result, string UserId)> CreateUserAsync(string userName, string password)
             => Task.FromResult((Result.Success(), userId: "stub-id"));
         public Task<Result> DeleteUserAsync(string userId) => Task.FromResult(Result.Success());
+        public Task<Result> AnonymizeUserAsync(string userId, string anonymizedName, string anonymizedEmail) => Task.FromResult(Result.Success());
     }
 
     private class StubAccountService : IAccountService

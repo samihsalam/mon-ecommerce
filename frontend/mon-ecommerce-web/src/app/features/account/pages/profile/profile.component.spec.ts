@@ -74,4 +74,85 @@ describe('ProfileComponent', () => {
 
     expect(component['accountStore'].profile()?.name).toBe('Alice Updated');
   });
+
+  it('should reveal a confirmation panel before submitting an account deletion request', async () => {
+    const fixture = createAndLoad();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    let compiled = fixture.nativeElement as HTMLElement;
+    const deleteButton = Array.from(compiled.querySelectorAll('button')).find((b) =>
+      b.textContent?.trim() === 'Supprimer mon compte',
+    ) as HTMLButtonElement;
+    expect(deleteButton).toBeTruthy();
+
+    deleteButton.click();
+    fixture.detectChanges();
+
+    compiled = fixture.nativeElement as HTMLElement;
+    const confirmButton = Array.from(compiled.querySelectorAll('button')).find((b) =>
+      b.textContent?.includes('Confirmer la suppression'),
+    );
+    expect(confirmButton).toBeTruthy();
+  });
+
+  it('should submit the deletion request and show a persisted confirmation on success', async () => {
+    const fixture = createAndLoad();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    const component = fixture.componentInstance;
+    component['openDeleteConfirmation']();
+    fixture.detectChanges();
+
+    const confirmPromise = component['confirmAccountDeletion']();
+
+    const req = httpMock.expectOne(`${environment.apiUrl}/api/v1/account/delete-request`);
+    req.flush({ requestId: 'a-guid' });
+
+    await confirmPromise;
+    fixture.detectChanges();
+
+    const compiled = fixture.nativeElement as HTMLElement;
+    expect(compiled.textContent).toContain('Votre demande de suppression a bien été reçue');
+  });
+
+  it('should keep the confirmation panel open and show the error message when the deletion request fails', async () => {
+    const fixture = createAndLoad();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    const component = fixture.componentInstance;
+    component['openDeleteConfirmation']();
+    fixture.detectChanges();
+
+    const confirmPromise = component['confirmAccountDeletion']();
+
+    const req = httpMock.expectOne(`${environment.apiUrl}/api/v1/account/delete-request`);
+    req.flush({ title: 'Conflict' }, { status: 409, statusText: 'Conflict' });
+
+    await confirmPromise;
+    fixture.detectChanges();
+
+    const compiled = fixture.nativeElement as HTMLElement;
+    expect(compiled.textContent).toContain('Une demande de suppression est déjà en cours');
+    expect(Array.from(compiled.querySelectorAll('button')).some((b) => b.textContent?.includes('Confirmer la suppression'))).toBe(true);
+  });
+
+  it('should hide the confirmation panel without submitting when cancelled', async () => {
+    const fixture = createAndLoad();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    const component = fixture.componentInstance;
+    component['openDeleteConfirmation']();
+    fixture.detectChanges();
+
+    component['cancelDeleteConfirmation']();
+    fixture.detectChanges();
+
+    const compiled = fixture.nativeElement as HTMLElement;
+    expect(Array.from(compiled.querySelectorAll('button')).some((b) => b.textContent?.includes('Confirmer la suppression'))).toBe(false);
+    httpMock.expectNone(`${environment.apiUrl}/api/v1/account/delete-request`);
+  });
 });

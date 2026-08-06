@@ -152,6 +152,7 @@ public static class DependencyInjection
             StripeConfiguration.ApiKey = stripeKey;
             builder.Services.AddTransient<PaymentIntentService>();
             builder.Services.AddTransient<RefundService>();
+            builder.Services.AddTransient<CustomerService>();
             builder.Services.AddTransient<IPaymentService, StripePaymentService>();
         }
     }

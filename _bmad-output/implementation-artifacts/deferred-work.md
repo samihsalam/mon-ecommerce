@@ -47,3 +47,10 @@
 - No `aria-describedby` linking the cookie banner dialog to its descriptive paragraph — minor a11y polish; Stories 8.4/8.5 own WCAG work for this epic.
 - Fixed-position cookie banner has no explicit z-index/scroll-padding coordination with other fixed elements (`app-toast`, `app-cart-drawer`) — low practical risk (banner is dismissed on first interaction), no reported conflict.
 - `CookieBannerComponent`'s focus-management `effect()`'s `setTimeout` has no cleanup if `isBannerOpen()` toggles rapidly — no user-triggered path in this story produces rapid toggling today.
+
+## Deferred from: code review of story-8-3-droit-a-loubli-et-suppression-des-donnees (2026-08-06)
+
+- No transaction spans `IIdentityService.AnonymizeUserAsync` (persists immediately via `UserManager`) and `ProcessAccountDeletionCommandHandler`'s own `SaveChangesAsync` — a late failure could leave the identity already anonymized while the audit trail (`Status`/`ProcessedByAdminUserId`/`ProcessedAt`) never gets stamped. Same unaddressed gap class as `AccountService.UpdateProfileAsync` (Story 2.4) already has for its own `UserManager` calls; revisit if/when this codebase adopts a general pattern for sharing a transaction between `UserManager` and `IApplicationDbContext`.
+- TOCTOU race in `RequestAccountDeletionCommandHandler`'s idempotency guard (plain `AnyAsync` check, no unique/filtered index) — two concurrent submits could create two `Pending` rows for one user. Same class of gap as every other check-then-insert idempotency guard in this codebase.
+- No concurrency token on `AccountDeletionRequest` — two admins processing the same request id concurrently could corrupt `ProcessedByAdminUserId`/`ProcessedAt`. `Return` has the identical gap, unaddressed.
+- `ConflictException` (409) is overloaded for two different failures in `ProcessAccountDeletionCommandHandler` ("already processed" vs. `AnonymizeUserAsync` returning "user not found") — properly distinguishing them needs `ProcessAccountDeletionCommand` to return a `Result` instead of being a bare `IRequest`, a larger change than this edge case (only reachable if referential integrity is already broken) justifies today.

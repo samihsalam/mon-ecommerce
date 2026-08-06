@@ -80,5 +80,51 @@
       </ul>
     </section>
   }
+
+  <section class="mt-12 border-t border-border pt-8">
+    <h2 class="font-heading text-xl text-text mb-4">Supprimer mon compte</h2>
+
+    @if (accountStore.deletionRequested()) {
+      <p class="text-sm text-text" role="status">
+        Votre demande de suppression a bien été reçue. Un administrateur la traitera sous 30 jours.
+      </p>
+    } @else if (!showDeleteConfirmation()) {
+      <button
+        type="button"
+        (click)="openDeleteConfirmation()"
+        class="rounded-button border border-error px-4 py-2 text-sm text-error hover:bg-error hover:text-white transition"
+      >
+        Supprimer mon compte
+      </button>
+    } @else {
+      <div class="rounded-card border border-error px-4 py-4">
+        <p class="mb-4 text-sm text-text">
+          Cette action est irréversible. Votre compte sera supprimé sous 30 jours après traitement par un
+          administrateur. Voulez-vous continuer ?
+        </p>
+        @if (deletionError()) {
+          <p class="mb-4 text-sm text-error" role="alert">{{ deletionError() }}</p>
+        }
+        <div class="flex gap-3">
+          <button
+            type="button"
+            [disabled]="accountStore.isLoading()"
+            (click)="cancelDeleteConfirmation()"
+            class="rounded-button border border-border px-4 py-2 text-sm text-text disabled:opacity-50"
+          >
+            Annuler
+          </button>
+          <button
+            type="button"
+            [disabled]="accountStore.isLoading()"
+            (click)="confirmAccountDeletion()"
+            class="rounded-button bg-error px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
+          >
+            Confirmer la suppression
+          </button>
+        </div>
+      </div>
+    }
+  </section>
   }
 </main>

@@ -35,7 +35,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 
 generated: 2026-04-13
-last_updated: 2026-08-06 (8.2 done)
+last_updated: 2026-08-06 (8.3 done)
 project: mon-ecommerce
 project_key: NOKEY
 tracking_system: file-system
@@ -115,7 +115,7 @@ development_status:
   epic-8: in-progress
   8-1-pages-legales: done
   8-2-banniere-rgpd-et-gestion-des-cookies: done
-  8-3-droit-a-loubli-et-suppression-des-donnees: backlog
+  8-3-droit-a-loubli-et-suppression-des-donnees: done
   8-4-accessibilite-wcag-21-aa-formulaires-et-navigation: backlog
   8-5-accessibilite-wcag-21-aa-etats-vides-et-pagination: backlog
   epic-8-retrospective: optional

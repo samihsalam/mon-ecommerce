@@ -20,4 +20,11 @@ public interface IPaymentService
     // propagated as-is) when the signature doesn't verify — callers must never process an
     // unverified payload.
     WebhookEvent ParseWebhookEvent(string payload, string signatureHeader);
+
+    // Story 8.3, AC #6: best-effort — this codebase's checkout flow never creates a Stripe
+    // Customer object (CreatePaymentIntentAsync above has no Customer param), so this is expected
+    // to be a no-op for essentially every real customer today. Searches by email and deletes the
+    // first match if one exists; does nothing if none does. Propagates Stripe.net exceptions like
+    // CreateRefundAsync does — the caller decides how to handle a failed request.
+    Task DeleteCustomerDataAsync(string email, CancellationToken ct = default);
 }
