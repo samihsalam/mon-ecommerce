@@ -6,10 +6,19 @@ import { HeaderComponent } from './core/components/header/header.component';
 import { FooterComponent } from './core/components/footer/footer.component';
 import { CartDrawerComponent } from './core/components/cart-drawer/cart-drawer.component';
 import { CookieBannerComponent } from './core/components/cookie-banner/cookie-banner.component';
+import { SkipLinkComponent } from './core/components/skip-link/skip-link.component';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, ToastComponent, HeaderComponent, FooterComponent, CartDrawerComponent, CookieBannerComponent],
+  imports: [
+    RouterOutlet,
+    ToastComponent,
+    HeaderComponent,
+    FooterComponent,
+    CartDrawerComponent,
+    CookieBannerComponent,
+    SkipLinkComponent,
+  ],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss',
 })

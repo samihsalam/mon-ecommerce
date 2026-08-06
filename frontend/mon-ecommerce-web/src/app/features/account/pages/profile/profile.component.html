@@ -1,7 +1,7 @@
-<main class="mx-auto max-w-md px-4 py-16">
+<main id="main-content" tabindex="-1" class="mx-auto max-w-md px-4 py-16">
   <h1 class="font-heading text-3xl text-text mb-4">Mon profil</h1>
 
-  <a routerLink="/compte/commandes" class="inline-block mb-8 text-sm text-text underline">
+  <a routerLink="/compte/commandes" class="inline-block mb-8 text-sm text-text underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2">
     Historique des commandes
   </a>
 
@@ -19,11 +19,11 @@
         id="name"
         type="text"
         formControlName="name"
-        class="w-full rounded-card border border-border px-3 py-2"
+        class="w-full rounded-card border border-border px-3 py-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
         [attr.aria-describedby]="form.controls.name.invalid && form.controls.name.touched ? 'name-error' : null"
       />
       @if (form.controls.name.invalid && form.controls.name.touched) {
-        <p id="name-error" class="mt-1 text-sm text-error">Le nom est requis.</p>
+        <p id="name-error" class="mt-1 text-sm text-error"><span aria-hidden="true">⚠</span> Le nom est requis.</p>
       }
     </div>
 
@@ -33,11 +33,11 @@
         id="email"
         type="email"
         formControlName="email"
-        class="w-full rounded-card border border-border px-3 py-2"
+        class="w-full rounded-card border border-border px-3 py-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
         [attr.aria-describedby]="form.controls.email.invalid && form.controls.email.touched ? 'email-error' : null"
       />
       @if (form.controls.email.invalid && form.controls.email.touched) {
-        <p id="email-error" class="mt-1 text-sm text-error">Veuillez saisir un email valide.</p>
+        <p id="email-error" class="mt-1 text-sm text-error"><span aria-hidden="true">⚠</span> Veuillez saisir un email valide.</p>
       }
     </div>
 
@@ -50,7 +50,7 @@
           id="currentPassword"
           type="password"
           formControlName="currentPassword"
-          class="w-full rounded-card border border-border px-3 py-2"
+          class="w-full rounded-card border border-border px-3 py-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
         />
       </div>
     }
@@ -62,7 +62,7 @@
     <button
       type="submit"
       [disabled]="accountStore.isLoading()"
-      class="w-full rounded-button bg-text text-white py-2 font-semibold hover:bg-accent hover:text-text transition disabled:opacity-50"
+      class="w-full rounded-button bg-text text-white py-2 font-semibold hover:bg-accent hover:text-text transition disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
     >
       {{ accountStore.isLoading() ? 'Enregistrement en cours…' : 'Enregistrer' }}
     </button>
@@ -92,7 +92,7 @@
       <button
         type="button"
         (click)="openDeleteConfirmation()"
-        class="rounded-button border border-error px-4 py-2 text-sm text-error hover:bg-error hover:text-white transition"
+        class="rounded-button border border-error px-4 py-2 text-sm text-error hover:bg-error hover:text-white transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
       >
         Supprimer mon compte
       </button>
@@ -110,7 +110,7 @@
             type="button"
             [disabled]="accountStore.isLoading()"
             (click)="cancelDeleteConfirmation()"
-            class="rounded-button border border-border px-4 py-2 text-sm text-text disabled:opacity-50"
+            class="rounded-button border border-border px-4 py-2 text-sm text-text disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
           >
             Annuler
           </button>
@@ -118,7 +118,7 @@
             type="button"
             [disabled]="accountStore.isLoading()"
             (click)="confirmAccountDeletion()"
-            class="rounded-button bg-error px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
+            class="rounded-button bg-error px-4 py-2 text-sm font-semibold text-white disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
           >
             Confirmer la suppression
           </button>

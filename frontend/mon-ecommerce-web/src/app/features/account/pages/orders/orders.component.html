@@ -1,4 +1,4 @@
-<main class="mx-auto max-w-2xl px-4 py-16">
+<main id="main-content" tabindex="-1" class="mx-auto max-w-2xl px-4 py-16">
   <h1 class="font-heading text-3xl text-text mb-8">Historique des commandes</h1>
 
   @if (ordersStore.isLoading()) {
@@ -8,7 +8,7 @@
   } @else if (ordersStore.orders().length === 0) {
     <div class="text-center py-16">
       <p class="text-text mb-6">Aucune commande pour le moment</p>
-      <a routerLink="/" class="inline-block rounded-button bg-text text-white px-6 py-2 font-semibold">
+      <a routerLink="/" class="inline-block rounded-button bg-text text-white px-6 py-2 font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2">
         Commencer à shopper
       </a>
     </div>
@@ -18,7 +18,7 @@
         <li>
           <a
             [routerLink]="['/compte/commandes', order.id]"
-            class="block rounded-card border border-border px-4 py-3 hover:border-accent transition"
+            class="block rounded-card border border-border px-4 py-3 hover:border-accent transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
           >
             <div class="flex justify-between items-center">
               <span class="font-semibold text-text">{{ order.orderNumber }}</span>

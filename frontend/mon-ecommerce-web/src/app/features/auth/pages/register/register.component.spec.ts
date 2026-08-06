@@ -39,6 +39,21 @@ describe('RegisterComponent', () => {
     expect(compiled.querySelector('#email-error')).toBeTruthy();
   });
 
+  // Story 8.4, AC #1: every inline error carries a ⚠ icon, hidden from AT via aria-hidden so it
+  // isn't announced literally alongside the error text.
+  it('should show a ⚠ icon inside the inline error, hidden from assistive technology', () => {
+    const fixture = TestBed.createComponent(RegisterComponent);
+    fixture.detectChanges();
+    const component = fixture.componentInstance;
+
+    component['form'].controls.email.markAsTouched();
+    fixture.detectChanges();
+
+    const error = (fixture.nativeElement as HTMLElement).querySelector('#email-error');
+    const icon = error?.querySelector('span[aria-hidden="true"]');
+    expect(icon?.textContent?.trim()).toBe('⚠');
+  });
+
   it('should call the register endpoint and navigate on valid submit', async () => {
     const fixture = TestBed.createComponent(RegisterComponent);
     const component = fixture.componentInstance;

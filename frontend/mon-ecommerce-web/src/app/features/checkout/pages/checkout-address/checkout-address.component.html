@@ -1,4 +1,4 @@
-<main class="mx-auto max-w-md px-4 py-16">
+<main id="main-content" tabindex="-1" class="mx-auto max-w-md px-4 py-16">
   <app-order-step-indicator [currentStep]="1" class="mb-8" />
 
   <h1 class="font-heading text-3xl text-text mb-8">Adresse de livraison</h1>
@@ -19,11 +19,11 @@
           id="street"
           type="text"
           formControlName="street"
-          class="w-full rounded-card border border-border px-3 py-2"
+          class="w-full rounded-card border border-border px-3 py-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
           [attr.aria-describedby]="form.controls.street.invalid && form.controls.street.touched ? 'street-error' : null"
         />
         @if (form.controls.street.invalid && form.controls.street.touched) {
-          <p id="street-error" class="mt-1 text-sm text-error">La rue est requise.</p>
+          <p id="street-error" class="mt-1 text-sm text-error"><span aria-hidden="true">⚠</span> La rue est requise.</p>
         }
       </div>
 
@@ -33,11 +33,11 @@
           id="city"
           type="text"
           formControlName="city"
-          class="w-full rounded-card border border-border px-3 py-2"
+          class="w-full rounded-card border border-border px-3 py-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
           [attr.aria-describedby]="form.controls.city.invalid && form.controls.city.touched ? 'city-error' : null"
         />
         @if (form.controls.city.invalid && form.controls.city.touched) {
-          <p id="city-error" class="mt-1 text-sm text-error">La ville est requise.</p>
+          <p id="city-error" class="mt-1 text-sm text-error"><span aria-hidden="true">⚠</span> La ville est requise.</p>
         }
       </div>
 
@@ -47,11 +47,11 @@
           id="postalCode"
           type="text"
           formControlName="postalCode"
-          class="w-full rounded-card border border-border px-3 py-2"
+          class="w-full rounded-card border border-border px-3 py-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
           [attr.aria-describedby]="form.controls.postalCode.invalid && form.controls.postalCode.touched ? 'postalCode-error' : null"
         />
         @if (form.controls.postalCode.invalid && form.controls.postalCode.touched) {
-          <p id="postalCode-error" class="mt-1 text-sm text-error">Le code postal est requis.</p>
+          <p id="postalCode-error" class="mt-1 text-sm text-error"><span aria-hidden="true">⚠</span> Le code postal est requis.</p>
         }
       </div>
 
@@ -61,17 +61,17 @@
           id="country"
           type="text"
           formControlName="country"
-          class="w-full rounded-card border border-border px-3 py-2"
+          class="w-full rounded-card border border-border px-3 py-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
           [attr.aria-describedby]="form.controls.country.invalid && form.controls.country.touched ? 'country-error' : null"
         />
         @if (form.controls.country.invalid && form.controls.country.touched) {
-          <p id="country-error" class="mt-1 text-sm text-error">Le pays est requis.</p>
+          <p id="country-error" class="mt-1 text-sm text-error"><span aria-hidden="true">⚠</span> Le pays est requis.</p>
         }
       </div>
 
       <button
         type="submit"
-        class="w-full rounded-button bg-text text-white py-2 font-semibold hover:bg-accent hover:text-text transition"
+        class="w-full rounded-button bg-text text-white py-2 font-semibold hover:bg-accent hover:text-text transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
       >
         Continuer
       </button>

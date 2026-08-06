@@ -1,16 +1,16 @@
-<main class="mx-auto max-w-md px-4 py-16">
+<main id="main-content" tabindex="-1" class="mx-auto max-w-md px-4 py-16">
   <app-order-step-indicator [currentStep]="4" class="mb-8" />
 
   @if (missingPaymentIntent()) {
     <p class="text-sm text-error" role="alert">
       Impossible d'identifier votre paiement. Si le montant a été débité, vous recevrez un email de confirmation.
     </p>
-    <a routerLink="/" class="mt-4 inline-block text-sm text-text underline">Retour à l'accueil</a>
+    <a routerLink="/" class="mt-4 inline-block text-sm text-text underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2">Retour à l'accueil</a>
   } @else if (refunded()) {
     <p class="text-sm text-error" role="alert">
       Le stock était insuffisant pour un ou plusieurs articles. Votre paiement a été intégralement remboursé.
     </p>
-    <a routerLink="/catalogue" class="mt-4 inline-block text-sm text-text underline">Retour au catalogue</a>
+    <a routerLink="/catalogue" class="mt-4 inline-block text-sm text-text underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2">Retour au catalogue</a>
   } @else if (order()) {
     <!-- @else if doesn't support an "as" binding (only the primary @if does) — @let is the
          Angular 19 way to name the already-truthy signal read once for the rest of this block. -->
@@ -50,7 +50,7 @@
       </section>
     }
 
-    <a routerLink="/catalogue" class="text-sm text-text underline">Continuer mes achats</a>
+    <a routerLink="/catalogue" class="text-sm text-text underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2">Continuer mes achats</a>
   } @else if (timedOut()) {
     <p class="text-sm text-text" role="status">
       Votre paiement est en cours de vérification. Vous recevrez un email de confirmation dès que votre commande sera enregistrée.

@@ -43,4 +43,15 @@ describe('AppComponent', () => {
     expect(compiled.querySelector('app-cart-drawer')).toBeTruthy();
     expect(compiled.querySelector('app-cookie-banner')).toBeTruthy();
   });
+
+  // Story 8.4, AC #3: the skip link must be the FIRST focusable element on every page.
+  it('should render the skip link as the first element', () => {
+    const fixture = TestBed.createComponent(AppComponent);
+    fixture.detectChanges();
+    flushInitialCartLoad();
+
+    const compiled = fixture.nativeElement as HTMLElement;
+    expect(compiled.querySelector('app-skip-link')).toBeTruthy();
+    expect(compiled.firstElementChild?.tagName.toLowerCase()).toBe('app-skip-link');
+  });
 });

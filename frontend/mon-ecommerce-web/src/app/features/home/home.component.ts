@@ -9,21 +9,21 @@ import { AuthStore } from '../auth/auth.store';
   standalone: true,
   imports: [RouterLink],
   template: `
-    <main class="mx-auto max-w-md px-4 py-16 text-center">
+    <main id="main-content" tabindex="-1" class="mx-auto max-w-md px-4 py-16 text-center">
       <h1 class="font-heading text-3xl text-text mb-8">MonEcommerce</h1>
       @if (hydrated() && authStore.isAuthenticated()) {
         <div class="flex flex-col gap-4 items-center">
-          <a routerLink="/compte" class="inline-block rounded-button bg-text text-white px-6 py-2 font-semibold">
+          <a routerLink="/compte" class="inline-block rounded-button bg-text text-white px-6 py-2 font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2">
             Mon compte
           </a>
-          <button type="button" (click)="onLogout()" class="text-sm text-text underline">Se déconnecter</button>
+          <button type="button" (click)="onLogout()" class="text-sm text-text underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2">Se déconnecter</button>
         </div>
       } @else {
         <div class="flex flex-col gap-4 items-center">
-          <a routerLink="/inscription" class="inline-block rounded-button bg-text text-white px-6 py-2 font-semibold">
+          <a routerLink="/inscription" class="inline-block rounded-button bg-text text-white px-6 py-2 font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2">
             Créer un compte
           </a>
-          <a routerLink="/connexion" class="text-sm text-text underline"> Se connecter </a>
+          <a routerLink="/connexion" class="text-sm text-text underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"> Se connecter </a>
         </div>
       }
     </main>

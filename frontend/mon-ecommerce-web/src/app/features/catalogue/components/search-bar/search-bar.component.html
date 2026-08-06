@@ -3,7 +3,7 @@
   <input
     id="search-input"
     type="search"
-    class="w-full rounded-button border border-border px-4 py-2 text-text focus:outline-none focus:ring-2 focus:ring-accent"
+    class="w-full rounded-button border border-border px-4 py-2 text-text focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
     placeholder="Rechercher un produit…"
     [value]="term()"
     (input)="onInput($any($event.target).value)"
@@ -25,7 +25,7 @@
         <li role="option">
           <button
             type="button"
-            class="block w-full text-left px-4 py-2 hover:bg-background text-text-secondary text-sm"
+            class="block w-full text-left px-4 py-2 hover:bg-background text-text-secondary text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
             (click)="selectSuggestion(category)"
           >
             {{ category }} <span class="text-xs">(catégorie)</span>
@@ -36,7 +36,7 @@
         <li role="option">
           <button
             type="button"
-            class="block w-full text-left px-4 py-2 hover:bg-background text-text text-sm"
+            class="block w-full text-left px-4 py-2 hover:bg-background text-text text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
             (click)="selectSuggestion(product)"
           >
             {{ product }}

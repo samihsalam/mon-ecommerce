@@ -54,3 +54,7 @@
 - TOCTOU race in `RequestAccountDeletionCommandHandler`'s idempotency guard (plain `AnyAsync` check, no unique/filtered index) — two concurrent submits could create two `Pending` rows for one user. Same class of gap as every other check-then-insert idempotency guard in this codebase.
 - No concurrency token on `AccountDeletionRequest` — two admins processing the same request id concurrently could corrupt `ProcessedByAdminUserId`/`ProcessedAt`. `Return` has the identical gap, unaddressed.
 - `ConflictException` (409) is overloaded for two different failures in `ProcessAccountDeletionCommandHandler` ("already processed" vs. `AnonymizeUserAsync` returning "user not found") — properly distinguishing them needs `ProcessAccountDeletionCommand` to return a `Result` instead of being a bare `IRequest`, a larger change than this edge case (only reachable if referential integrity is already broken) justifies today.
+
+## Deferred from: code review of story-8-4-accessibilite-wcag-21-aa-formulaires-et-navigation (2026-08-06)
+
+- No automated accessibility regression test (`axe-core`/`cypress-axe`/`pa11y`) exists anywhere in this codebase — the standard engineering-controllable substitute for AC #6's manual VoiceOver/TalkBack/NVDA testing. Adding one is a real, valuable follow-up (new devDependency + CI wiring) but larger in scope than this review pass's fixes; worth a dedicated future story.

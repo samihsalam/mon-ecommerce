@@ -1,4 +1,4 @@
-<main class="mx-auto max-w-md px-4 py-16">
+<main id="main-content" tabindex="-1" class="mx-auto max-w-md px-4 py-16">
   <app-order-step-indicator [currentStep]="2" class="mb-8" />
 
   <h1 class="font-heading text-3xl text-text mb-8">Mode de livraison</h1>
@@ -14,7 +14,7 @@
         <p class="text-sm text-error" role="alert">{{ checkoutStore.shippingOptionsError() }}</p>
         <button
           type="button"
-          class="mt-2 text-sm text-text underline"
+          class="mt-2 text-sm text-text underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
           (click)="retryLoadShippingOptions()"
         >
           Réessayer
@@ -44,6 +44,7 @@
                   name="shippingOption"
                   [checked]="selected()?.id === option.id"
                   (change)="select(option)"
+                  class="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
                 />
                 <span>
                   <span class="block text-sm text-text">{{ option.name }}</span>
@@ -64,7 +65,7 @@
       <button
         type="button"
         [disabled]="!selected()"
-        class="w-full rounded-button bg-text text-white py-2 font-semibold hover:bg-accent hover:text-text transition disabled:opacity-50"
+        class="w-full rounded-button bg-text text-white py-2 font-semibold hover:bg-accent hover:text-text transition disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
         (click)="onSubmit()"
       >
         Continuer

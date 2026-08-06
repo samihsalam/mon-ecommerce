@@ -1,5 +1,5 @@
-<main class="mx-auto max-w-2xl px-4 py-16">
-  <a routerLink="/compte/commandes" class="text-sm text-text underline">← Retour à mes commandes</a>
+<main id="main-content" tabindex="-1" class="mx-auto max-w-2xl px-4 py-16">
+  <a routerLink="/compte/commandes" class="text-sm text-text underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2">← Retour à mes commandes</a>
 
   @if (ordersStore.isLoading()) {
     <p class="mt-8 text-sm text-text" role="status">Chargement…</p>
@@ -47,7 +47,7 @@
       } @else if (isReturnEligible(order)) {
         <a
           [routerLink]="['/compte/commandes', order.id, 'retour']"
-          class="inline-block rounded-button bg-text text-white px-4 py-2 text-sm font-semibold hover:bg-accent hover:text-text transition"
+          class="inline-block rounded-button bg-text text-white px-4 py-2 text-sm font-semibold hover:bg-accent hover:text-text transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
         >
           Demander un retour
         </a>

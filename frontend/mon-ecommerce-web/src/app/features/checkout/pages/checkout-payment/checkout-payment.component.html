@@ -1,4 +1,4 @@
-<main class="mx-auto max-w-md px-4 py-16">
+<main id="main-content" tabindex="-1" class="mx-auto max-w-md px-4 py-16">
   <app-order-step-indicator [currentStep]="3" class="mb-8" />
 
   <h1 class="font-heading text-3xl text-text mb-8">Paiement</h1>
@@ -36,7 +36,7 @@
       <p class="text-sm text-error" role="alert">
         {{ checkoutStore.paymentError() || 'Impossible de charger le module de paiement.' }}
       </p>
-      <button type="button" class="mt-2 text-sm text-text underline" (click)="retryLoadPaymentForm()">
+      <button type="button" class="mt-2 text-sm text-text underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2" (click)="retryLoadPaymentForm()">
         Réessayer
       </button>
     </div>
@@ -63,7 +63,7 @@
     <button
       type="button"
       [disabled]="submitting()"
-      class="w-full rounded-button bg-text text-white py-2 font-semibold hover:bg-accent hover:text-text transition disabled:opacity-50"
+      class="w-full rounded-button bg-text text-white py-2 font-semibold hover:bg-accent hover:text-text transition disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
       (click)="onSubmit()"
     >
       {{ submitting() ? 'Traitement en cours…' : 'Payer ' + formatPrice(totalInCents()) }}
