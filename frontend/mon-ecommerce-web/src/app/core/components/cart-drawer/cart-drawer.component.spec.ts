@@ -4,6 +4,7 @@ import { provideRouter } from '@angular/router';
 
 import { CartDrawerComponent } from './cart-drawer.component';
 import { CartStore, CartItem } from '../../../features/cart/cart.store';
+import { expectNoAccessibilityViolations } from '../../testing/axe-helper';
 
 @Component({
   standalone: true,
@@ -70,6 +71,26 @@ describe('CartDrawerComponent', () => {
     const text = (fixture.nativeElement as HTMLElement).textContent ?? '';
     expect(text).toContain('Votre panier est vide');
     expect(text).toContain('Découvrir notre catalogue');
+  });
+
+  // Story 8.5, AC #7.
+  it('should have no axe-core accessibility violations when open with items', async () => {
+    items.set([cannedItem]);
+    const fixture = TestBed.createComponent(HostComponent);
+    isOpen.set(true);
+    fixture.detectChanges();
+
+    await expectNoAccessibilityViolations(fixture.nativeElement as HTMLElement);
+  });
+
+  // Story 8.5, AC #7 — the empty-cart state has structurally different DOM (a CTA link instead
+  // of an item list) from the "with items" state above, so it's checked separately (review finding).
+  it('should have no axe-core accessibility violations when open and empty', async () => {
+    const fixture = TestBed.createComponent(HostComponent);
+    isOpen.set(true);
+    fixture.detectChanges();
+
+    await expectNoAccessibilityViolations(fixture.nativeElement as HTMLElement);
   });
 
   it('should set role="dialog" and aria-modal="true" on the panel', () => {

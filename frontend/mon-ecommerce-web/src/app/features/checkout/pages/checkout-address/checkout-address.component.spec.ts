@@ -6,6 +6,7 @@ import { provideRouter, Router } from '@angular/router';
 import { CheckoutAddressComponent } from './checkout-address.component';
 import { CheckoutStore } from '../../checkout.store';
 import { environment } from '../../../../../environments/environment';
+import { expectNoAccessibilityViolations } from '../../../../core/testing/axe-helper';
 
 describe('CheckoutAddressComponent', () => {
   let httpMock: HttpTestingController;
@@ -174,5 +175,40 @@ describe('CheckoutAddressComponent', () => {
     const compiled = fixture.nativeElement as HTMLElement;
     expect(compiled.querySelector('[role="alert"]')).toBeTruthy();
     expect(compiled.querySelector('form')).toBeTruthy();
+  });
+
+  // Story 8.5, AC #7.
+  it('should have no axe-core accessibility violations', async () => {
+    const fixture = TestBed.createComponent(CheckoutAddressComponent);
+    fixture.detectChanges();
+    httpMock.expectOne(`${environment.apiUrl}/api/v1/account/profile`).flush({
+      name: 'Alice',
+      email: 'alice@example.com',
+      addresses: [],
+    });
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    await expectNoAccessibilityViolations(fixture.nativeElement as HTMLElement);
+  });
+
+  // Story 8.5, AC #7 — the dynamically-injected inline-error state specifically, not just the
+  // clean initial render (review finding: the two states can have different a11y profiles).
+  it('should have no axe-core accessibility violations with an inline field error shown', async () => {
+    const fixture = TestBed.createComponent(CheckoutAddressComponent);
+    fixture.detectChanges();
+    httpMock.expectOne(`${environment.apiUrl}/api/v1/account/profile`).flush({
+      name: 'Alice',
+      email: 'alice@example.com',
+      addresses: [],
+    });
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    const component = fixture.componentInstance;
+    component['form'].controls.street.markAsTouched();
+    fixture.detectChanges();
+
+    await expectNoAccessibilityViolations(fixture.nativeElement as HTMLElement);
   });
 });

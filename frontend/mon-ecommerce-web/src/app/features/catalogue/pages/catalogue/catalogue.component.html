@@ -30,7 +30,38 @@
           <app-product-card-skeleton />
         }
       } @else if (catalogueStore.results().length === 0) {
-        <p class="col-span-full text-center text-text-secondary py-16">Aucun produit dans cette catégorie.</p>
+        <div class="col-span-full text-center py-16">
+          <p class="text-text-secondary mb-6">Aucun produit dans cette catégorie.</p>
+
+          @if (otherCategories().length > 0) {
+            <p class="text-sm text-text-secondary mb-3">Essayez une de ces catégories :</p>
+            <ul class="flex flex-wrap justify-center gap-2 mb-6">
+              @for (category of otherCategories(); track category.id) {
+                <li>
+                  <a
+                    [routerLink]="['/catalogue']"
+                    [queryParams]="{ categoryId: category.id }"
+                    class="inline-block rounded-button border border-border px-4 py-2 text-sm text-text hover:border-accent transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
+                  >
+                    {{ category.name }}
+                  </a>
+                </li>
+              }
+            </ul>
+          }
+
+          <!-- Only shown when a category filter is actually active — with no filter applied,
+               there is nothing for the button to reset (review finding). -->
+          @if (catalogueStore.activeCategoryId()) {
+            <button
+              type="button"
+              (click)="onClearAll()"
+              class="rounded-button bg-text text-white px-6 py-2 text-sm font-semibold hover:bg-accent hover:text-text transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
+            >
+              Réinitialiser les filtres
+            </button>
+          }
+        </div>
       } @else {
         @for (product of catalogueStore.results(); track product.id) {
           <app-product-card [product]="product" />

@@ -1,5 +1,6 @@
-import { Component, ElementRef, HostListener, inject, OnDestroy, signal } from '@angular/core';
-import { Router } from '@angular/router';
+import { Component, DestroyRef, ElementRef, HostListener, inject, OnDestroy, OnInit, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { ActivatedRoute, Router } from '@angular/router';
 
 import { CatalogueStore } from '../../catalogue.store';
 
@@ -12,8 +13,10 @@ const MIN_TERM_LENGTH = 2;
   templateUrl: './search-bar.component.html',
   styleUrl: './search-bar.component.scss',
 })
-export class SearchBarComponent implements OnDestroy {
+export class SearchBarComponent implements OnInit, OnDestroy {
   private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
+  private readonly destroyRef = inject(DestroyRef);
   private readonly elementRef = inject(ElementRef<HTMLElement>);
   protected readonly catalogueStore = inject(CatalogueStore);
 
@@ -21,6 +24,19 @@ export class SearchBarComponent implements OnDestroy {
   protected readonly isOpen = signal(false);
 
   private debounceHandle: ReturnType<typeof setTimeout> | undefined;
+
+  // Review finding (Story 8.5): only used on SearchResultsComponent's route, which Angular's
+  // default RouteReuseStrategy REUSES (not recreates) across a /recherche?q=x -> /recherche
+  // navigation with no path change — same reasoning as ProductDetailComponent's paramMap
+  // subscription (Story 3.6). Without this, "Réinitialiser les filtres" correctly resets the
+  // results/message area (SearchResultsComponent reads the same query param) but left this
+  // input's own local `term` signal showing the stale typed text, since it was never wired to
+  // the URL at all — this keeps it in sync with whatever `q` the URL actually has.
+  ngOnInit(): void {
+    this.route.queryParamMap.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((params) => {
+      this.term.set(params.get('q') ?? '');
+    });
+  }
 
   ngOnDestroy(): void {
     // Without this, typing then navigating away within the 300ms debounce window still fires the

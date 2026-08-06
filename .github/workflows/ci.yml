@@ -32,6 +32,7 @@ jobs:
         with:
           node-version: '20'
       - run: npm ci
+      - run: npx ng test --watch=false --browsers=ChromeHeadless
       - run: npm run build
 
   mobile:

@@ -1,6 +1,6 @@
 import { Component, DestroyRef, inject, OnInit, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 
 import { CatalogueStore } from '../../catalogue.store';
 import { SearchBarComponent } from '../../components/search-bar/search-bar.component';
@@ -16,6 +16,7 @@ const MIN_TERM_LENGTH = 2;
 })
 export class SearchResultsComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
   private readonly destroyRef = inject(DestroyRef);
   protected readonly catalogueStore = inject(CatalogueStore);
 
@@ -36,5 +37,12 @@ export class SearchResultsComponent implements OnInit {
 
   protected formatAmount(cents: number): string {
     return (cents / 100).toFixed(2) + ' €';
+  }
+
+  // Story 8.5, AC #2 — matches CatalogueComponent.onClearAll()'s button-based pattern rather
+  // than a plain routerLink, for consistent semantics between this codebase's two "reset
+  // filters" affordances (review finding).
+  protected resetSearch(): void {
+    void this.router.navigate(['/recherche']);
   }
 }

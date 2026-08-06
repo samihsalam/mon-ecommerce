@@ -3,6 +3,7 @@ import { TestBed } from '@angular/core/testing';
 
 import { CookieBannerComponent } from './cookie-banner.component';
 import { ConsentService } from '../../services/consent.service';
+import { expectNoAccessibilityViolations } from '../../testing/axe-helper';
 
 @Component({
   standalone: true,
@@ -164,5 +165,13 @@ describe('CookieBannerComponent', () => {
     await fixture.whenStable();
 
     expect(document.activeElement).toBe(trigger);
+  });
+
+  // Story 8.5, AC #7.
+  it('should have no axe-core accessibility violations when open', async () => {
+    const fixture = TestBed.createComponent(CookieBannerComponent);
+    fixture.detectChanges();
+
+    await expectNoAccessibilityViolations(fixture.nativeElement as HTMLElement);
   });
 });

@@ -14,13 +14,13 @@
       <p class="text-text mb-6">Aucun résultat pour « {{ currentTerm() }} »</p>
       @if (catalogueStore.categories().length > 0) {
         <p class="text-sm text-text-secondary mb-3">Essayez une de ces catégories :</p>
-        <ul class="flex flex-wrap justify-center gap-2">
+        <ul class="flex flex-wrap justify-center gap-2 mb-6">
           @for (category of catalogueStore.categories(); track category.id) {
             <li>
               <a
                 [routerLink]="['/']"
                 [queryParams]="{ categoryId: category.id }"
-                class="inline-block rounded-button border border-border px-4 py-2 text-sm text-text hover:border-accent transition"
+                class="inline-block rounded-button border border-border px-4 py-2 text-sm text-text hover:border-accent transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
               >
                 {{ category.name }}
               </a>
@@ -28,6 +28,13 @@
           }
         </ul>
       }
+      <button
+        type="button"
+        (click)="resetSearch()"
+        class="rounded-button bg-text text-white px-6 py-2 text-sm font-semibold hover:bg-accent hover:text-text transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
+      >
+        Réinitialiser les filtres
+      </button>
     </div>
   } @else {
     <p class="text-sm text-text-secondary mb-4">

@@ -1,6 +1,6 @@
 import { Component, DestroyRef, inject, OnInit } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 
 import { CatalogueStore } from '../../catalogue.store';
 import { FilterChipBarComponent } from '../../components/filter-chip-bar/filter-chip-bar.component';
@@ -12,7 +12,7 @@ const SKELETON_COUNT = 8;
 @Component({
   selector: 'app-catalogue',
   standalone: true,
-  imports: [FilterChipBarComponent, ProductCardComponent, ProductCardSkeletonComponent],
+  imports: [RouterLink, FilterChipBarComponent, ProductCardComponent, ProductCardSkeletonComponent],
   templateUrl: './catalogue.component.html',
   styleUrl: './catalogue.component.scss',
 })
@@ -60,5 +60,14 @@ export class CatalogueComponent implements OnInit {
       .find((c) => c.id === this.catalogueStore.activeCategoryId());
     const noun = category ? category.name.toLowerCase() : 'produits';
     return `${this.catalogueStore.totalCount()} ${noun} trouvés`;
+  }
+
+  // Story 8.5, AC #2: suggested category links on the empty-filter state — excludes the
+  // currently-active (empty) category itself, since suggesting the one the visitor is already
+  // looking at (and that just returned nothing) isn't a useful suggestion.
+  protected otherCategories() {
+    return this.catalogueStore
+      .categories()
+      .filter((c) => c.id !== this.catalogueStore.activeCategoryId());
   }
 }
